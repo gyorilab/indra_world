@@ -284,7 +284,7 @@ class Corpus(object):
         Parameters
         ----------
         look_in_cache : bool
-            If True, when no curations are avaialbe check if there are
+            If True, when no curations are available check if there are
             curations cached locally. Default: False
         save_to_cache : bool
             If True, also save current curation state to cache. If
