@@ -122,7 +122,7 @@ class LiveCurator(object):
                                    curated_stmts.items()}}
         return data
 
-    def submit_curation(self, corpus_id, curations):
+    def submit_curation(self, corpus_id, curations, save=True):
         """Submit correct/incorrect curations fo a given corpus.
 
         Parameters
@@ -132,6 +132,9 @@ class LiveCurator(object):
         curations : dict
             A dict of curations with keys corresponding to Statement UUIDs and
             values corresponding to correct/incorrect feedback.
+        save : bool
+            If True, save the updated curations to the local cache as well
+            as to s3. Default: True
         """
         logger.info('Submitting curations for corpus "%s"' % corpus_id)
         corpus = self.get_corpus(corpus_id, check_s3=True, use_cache=True)
@@ -174,6 +177,10 @@ class LiveCurator(object):
                             += 1
         # Finally, we update the scorer with the new curation counts
         self.scorer.update_counts(prior_counts, subtype_counts)
+
+        # Save the updated curations to S3 and cache
+        if save:
+            self.save_curation(corpus_id, save_to_cache=True)
 
     def save_curation(self, corpus_id, save_to_cache=True):
         """Save the current state of curations for a corpus given its ID

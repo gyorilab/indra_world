@@ -74,7 +74,7 @@ def submit_curation():
     corpus_id = request.json.get('corpus_id')
     curations = request.json.get('curations', {})
     try:
-        curator.submit_curation(corpus_id, curations)
+        curator.submit_curation(corpus_id, curations, save=True)
     except InvalidCorpusError:
         abort(Response('The corpus_id "%s" is unknown.' % corpus_id, 400))
         return
