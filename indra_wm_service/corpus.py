@@ -69,6 +69,23 @@ class Corpus(object):
     def __repr__(self):
         return str(self)
 
+    def _get_local_file_key(self, key):
+        """Return local file key path from key
+
+        Parameters
+        ----------
+        key : str
+            Any of 'cur', 'meta',
+        Returns
+        -------
+        str
+        """
+        if key not in file_defaults.keys():
+            logger.warning('%s not a recognized file key')
+            return None
+        return '%s/%s/%s.json' % (default_key_base, self.corpus_id,
+                                  file_defaults[key])
+
     @classmethod
     def load_from_s3(cls, corpus_id, aws_name=default_profile,
                      bucket=default_bucket, force_s3_reload=False,
@@ -294,8 +311,7 @@ class Corpus(object):
             The bucket to upload to. Default: 'world-modelers'.
         """
         # Get curation file key
-        file_key = '%s/%s/%s.json' % (default_key_base, self.corpus_id,
-                                      file_defaults['cur'])
+        file_key = self._get_local_file_key('cur')
         # First see if we have any curations, then check in cache if
         # look_in_cache == True
         if self.curations:
@@ -317,8 +333,7 @@ class Corpus(object):
 
     def save_curations_to_cache(self):
         """Save current curations to cache"""
-        cur_key = '%s/%s/%s.json' % (default_key_base, self.corpus_id,
-                                     file_defaults['cur'])
+        cur_key = self._get_local_file_key('cur')
         self._save_to_cache(cur=cur_key)
 
     def get_curations(self, look_in_cache=False):
@@ -337,8 +352,7 @@ class Corpus(object):
         if self.curations:
             curations = self.curations
         elif look_in_cache:
-            file_key = '%s/%s/%s.json' % (default_key_base, self.corpus_id,
-                                          file_defaults['cur'])
+            file_key = self._get_local_file_key('cur')
             curations = self._load_from_cache(file_key) or {}
         else:
             curations = {}
