@@ -313,7 +313,13 @@ class Corpus(object):
                               bucket=bucket)
 
         if self.curations and save_to_cache and not look_in_cache:
-            self._save_to_cache(cur=file_key)
+            self.save_curations_to_cache()
+
+    def save_curations_to_cache(self):
+        """Save current curations to cache"""
+        cur_key = '%s/%s/%s.json' % (default_key_base, self.corpus_id,
+                                     file_defaults['cur'])
+        self._save_to_cache(cur=cur_key)
 
     def get_curations(self, look_in_cache=False):
         """Get curations for the corpus

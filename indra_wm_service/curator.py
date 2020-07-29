@@ -133,8 +133,8 @@ class LiveCurator(object):
             A dict of curations with keys corresponding to Statement UUIDs and
             values corresponding to correct/incorrect feedback.
         save : bool
-            If True, save the updated curations to the local cache as well
-            as to s3. Default: True
+            If True, save the updated curations to the local cache.
+            Default: True
         """
         logger.info('Submitting curations for corpus "%s"' % corpus_id)
         corpus = self.get_corpus(corpus_id, check_s3=True, use_cache=True)
@@ -180,7 +180,7 @@ class LiveCurator(object):
 
         # Save the updated curations to S3 and cache
         if save:
-            self.save_curation(corpus_id, save_to_cache=True)
+            corpus.save_curations_to_cache()
 
     def save_curation(self, corpus_id, save_to_cache=True):
         """Save the current state of curations for a corpus given its ID
