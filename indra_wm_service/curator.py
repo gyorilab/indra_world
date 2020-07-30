@@ -4,7 +4,7 @@ from indra.belief.wm_scorer import get_eidos_bayesian_scorer
 from indra.sources.eidos import reground_texts
 from indra.tools import assemble_corpus as ac
 from indra.belief import BeliefEngine
-from . import file_defaults, default_key_base, InvalidCorpusError
+from . import file_defaults, default_key_base, InvalidCorpusError, CACHE
 from .corpus import Corpus
 
 logger = logging.getLogger(__name__)
@@ -22,11 +22,12 @@ class LiveCurator(object):
     """
 
     def __init__(self, scorer=None, corpora=None, eidos_url=None,
-                 ont_manager=None):
+                 ont_manager=None, cache=CACHE):
         self.corpora = corpora if corpora else {}
         self.scorer = scorer if scorer else get_eidos_bayesian_scorer()
         self.ont_manager = ont_manager
         self.eidos_url = eidos_url
+        self.cache = cache
 
     # TODO: generalize this to other kinds of scorers
     def reset_scorer(self):
@@ -67,6 +68,7 @@ class LiveCurator(object):
             corpus = Corpus.load_from_s3(corpus_id,
                                          force_s3_reload=not use_cache,
                                          raise_exc=True)
+            corpus.cache = self.cache
             logger.info('Adding corpus to loaded corpora')
             self.corpora[corpus_id] = corpus
 

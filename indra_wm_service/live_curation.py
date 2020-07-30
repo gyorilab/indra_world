@@ -258,7 +258,7 @@ if __name__ == '__main__':
         logger.info(f'Changing local cache to provided path {args.cache}')
         cache = Path(args.cache)
         cache.mkdir(exist_ok=True)
-        CACHE = cache
+        curator.cache = cache
     else:
         logger.info(f'Using local cache {CACHE}')
 

@@ -38,7 +38,7 @@ class Corpus(object):
         A dict with meta data associated with the corpus
     """
     def __init__(self, corpus_id, statements=None, raw_statements=None,
-                 meta_data=None, aws_name=default_profile):
+                 meta_data=None, aws_name=default_profile, cache=CACHE):
         self.corpus_id = corpus_id
         self.statements = {st.uuid: st for st in statements} if statements \
             else {}
@@ -46,6 +46,7 @@ class Corpus(object):
         self.curations = {}
         self.meta_data = meta_data if meta_data else {}
         self.aws_name = aws_name
+        self.cache = cache
         self._s3 = None
 
     def _get_s3_client(self):
@@ -179,7 +180,7 @@ class Corpus(object):
 
         # Raw:
         if raw:
-            rawf = CACHE.joinpath(raw.replace(default_key_base + '/', ''))
+            rawf = self.cache.joinpath(raw.replace(default_key_base + '/', ''))
             if not rawf.is_file():
                 rawf.parent.mkdir(exist_ok=True, parents=True)
                 rawf.touch(exist_ok=True)
@@ -188,7 +189,7 @@ class Corpus(object):
 
         # Assembled
         if sts:
-            stsf = CACHE.joinpath(sts.replace(default_key_base + '/', ''))
+            stsf = self.cache.joinpath(sts.replace(default_key_base + '/', ''))
             if not stsf.is_file():
                 stsf.parent.mkdir(exist_ok=True, parents=True)
                 stsf.touch(exist_ok=True)
@@ -197,7 +198,7 @@ class Corpus(object):
 
         # Curation
         if cur:
-            curf = CACHE.joinpath(cur.replace(default_key_base + '/', ''))
+            curf = self.cache.joinpath(cur.replace(default_key_base + '/', ''))
             if not curf.is_file():
                 curf.parent.mkdir(exist_ok=True, parents=True)
                 curf.touch(exist_ok=True)
@@ -205,7 +206,8 @@ class Corpus(object):
 
         # Meta data
         if meta:
-            metaf = CACHE.joinpath(meta.replace(default_key_base + '/', ''))
+            metaf = self.cache.joinpath(
+                meta.replace(default_key_base + '/', ''))
             if not metaf.is_file():
                 metaf.parent.mkdir(exist_ok=True, parents=True)
                 metaf.touch(exist_ok=True)
@@ -358,14 +360,13 @@ class Corpus(object):
             curations = {}
         return curations
 
-    @staticmethod
-    def _load_from_cache(file_key):
+    def _load_from_cache(self, file_key):
         # Assuming file_key is cleaned, contains the file name and contains
         # the initial file base name:
         # <base_name>/<dirname>/<file>.json
 
         # Remove <base_name> and get local path to file
-        local_file = CACHE.joinpath(
+        local_file = self.cache.joinpath(
             '/'.join([s for s in file_key.split('/')[1:]]))
 
         # Load json object
