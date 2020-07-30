@@ -4,11 +4,12 @@ import pickle
 import logging
 import argparse
 from os import path
+from pathlib import Path
 from flask import Flask, request, jsonify, abort, Response
 from indra.statements import stmts_from_json_file, stmts_to_json
 from indra.ontology.world.ontology import world_ontology
 
-from . import InvalidCorpusError
+from . import InvalidCorpusError, CACHE
 from .corpus import Corpus
 from .curator import LiveCurator
 from .util import _json_loader
@@ -199,6 +200,7 @@ if __name__ == '__main__':
     parser.add_argument('--pickle')
     parser.add_argument('--meta-json', help='Meta data json file')
     parser.add_argument('--corpus_id')
+    parser.add_argument('--cache')
     parser.add_argument('--host', default='0.0.0.0')
     parser.add_argument('--eidos-url', default='http://localhost:9000')
     parser.add_argument('--port', default=8001, type=int)
@@ -251,6 +253,14 @@ if __name__ == '__main__':
             curator.corpora[args.corpus_id] = Corpus(stmts, raw_stmts,
                                                      meta_json_obj,
                                                      args.aws_cred)
+
+    if args.cache:
+        logger.info(f'Changing local cache to provided path {args.cache}')
+        cache = Path(args.cache)
+        cache.mkdir(exist_ok=True)
+        CACHE = cache
+    else:
+        logger.info(f'Using local cache {CACHE}')
 
     # Run the app
     app.run(host=args.host, port=args.port, threaded=False)
