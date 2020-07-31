@@ -70,13 +70,13 @@ class Corpus(object):
     def __repr__(self):
         return str(self)
 
-    def _get_local_file_key(self, key):
-        """Return local file key path from key
+    def _get_file_key(self, key):
+        """Return file path from key
 
         Parameters
         ----------
         key : str
-            Any of 'cur', 'meta',
+            Any of 'cur', 'meta', 'sts', 'raw'
         Returns
         -------
         str
@@ -313,7 +313,7 @@ class Corpus(object):
             The bucket to upload to. Default: 'world-modelers'.
         """
         # Get curation file key
-        file_key = self._get_local_file_key('cur')
+        file_key = self._get_file_key('cur')
         # First see if we have any curations, then check in cache if
         # look_in_cache == True
         if self.curations:
@@ -335,7 +335,7 @@ class Corpus(object):
 
     def save_curations_to_cache(self):
         """Save current curations to cache"""
-        cur_key = self._get_local_file_key('cur')
+        cur_key = self._get_file_key('cur')
         self._save_to_cache(cur=cur_key)
 
     def get_curations(self, look_in_cache=False):
@@ -354,7 +354,7 @@ class Corpus(object):
         if self.curations:
             curations = self.curations
         elif look_in_cache:
-            file_key = self._get_local_file_key('cur')
+            file_key = self._get_file_key('cur')
             curations = self._load_from_cache(file_key) or {}
         else:
             curations = {}
