@@ -200,7 +200,7 @@ if __name__ == '__main__':
     parser.add_argument('--pickle')
     parser.add_argument('--meta-json', help='Meta data json file')
     parser.add_argument('--corpus_id')
-    parser.add_argument('--cache')
+    parser.add_argument('--cache', help='Override the default local cache')
     parser.add_argument('--host', default='0.0.0.0')
     parser.add_argument('--eidos-url', default='http://localhost:9000')
     parser.add_argument('--port', default=8001, type=int)
