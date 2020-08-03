@@ -16,14 +16,20 @@ class Corpus(object):
 
     Parameters
     ----------
+    corpus_id : str
+        The key by which the corpus is identified.
     statements : list[indra.statement.Statement]
         A list of INDRA Statements to embed in the corpus.
     raw_statements : list[indra.statement.Statement]
         A List of raw statements forming the basis of the statements in
         'statements'.
+    meta_data : dict
+        A dict with meta data associated with the corpus
     aws_name : str
         The name of the profile in the AWS credential file to use. 'default' is
         used by default.
+    cache : Pathlib.path
+        A Pathlib.path object representing the path to a cache folder.
 
     Attributes
     ----------
@@ -34,8 +40,6 @@ class Corpus(object):
     curations : dict
         A dict keeping track of the curations submitted so far for Statement
         UUIDs in the corpus.
-    meta_data : dict
-        A dict with meta data associated with the corpus
     """
     def __init__(self, corpus_id, statements=None, raw_statements=None,
                  meta_data=None, aws_name=default_profile, cache=CACHE):
@@ -77,11 +81,13 @@ class Corpus(object):
         ----------
         key : str
             Any of 'cur', 'meta', 'sts', 'raw'
+
         Returns
         -------
         str
+            The S3 key for the given file.
         """
-        if key not in file_defaults.keys():
+        if key not in file_defaults:
             logger.warning('%s not a recognized file key')
             return None
         return '%s/%s/%s.json' % (default_key_base, self.corpus_id,
