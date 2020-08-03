@@ -5,7 +5,7 @@ cache:
 python:
   - "3.6"
 before_install:
-  - pip install nose coverage flask pyyaml
+  - pip install nose coverage flask pyyaml boto3
   - pip install git+https://github.com/sorgerlab/indra.git
 script:
   - nosetests indra_wm_service -v --with-coverage --cover-inclusive --cover-package=indra_wm_service
