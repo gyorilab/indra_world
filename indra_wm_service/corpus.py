@@ -16,14 +16,20 @@ class Corpus(object):
 
     Parameters
     ----------
+    corpus_id : str
+        The key by which the corpus is identified.
     statements : list[indra.statement.Statement]
         A list of INDRA Statements to embed in the corpus.
     raw_statements : list[indra.statement.Statement]
         A List of raw statements forming the basis of the statements in
         'statements'.
+    meta_data : dict
+        A dict with meta data associated with the corpus
     aws_name : str
         The name of the profile in the AWS credential file to use. 'default' is
         used by default.
+    cache : Pathlib.path
+        A Pathlib.path object representing the path to a cache folder.
 
     Attributes
     ----------
@@ -34,11 +40,9 @@ class Corpus(object):
     curations : dict
         A dict keeping track of the curations submitted so far for Statement
         UUIDs in the corpus.
-    meta_data : dict
-        A dict with meta data associated with the corpus
     """
     def __init__(self, corpus_id, statements=None, raw_statements=None,
-                 meta_data=None, aws_name=default_profile):
+                 meta_data=None, aws_name=default_profile, cache=CACHE):
         self.corpus_id = corpus_id
         self.statements = {st.uuid: st for st in statements} if statements \
             else {}
@@ -46,6 +50,7 @@ class Corpus(object):
         self.curations = {}
         self.meta_data = meta_data if meta_data else {}
         self.aws_name = aws_name
+        self.cache = cache
         self._s3 = None
 
     def _get_s3_client(self):
@@ -68,6 +73,25 @@ class Corpus(object):
 
     def __repr__(self):
         return str(self)
+
+    def _get_file_key(self, key):
+        """Return file path from key
+
+        Parameters
+        ----------
+        key : str
+            Any of 'cur', 'meta', 'sts', 'raw'
+
+        Returns
+        -------
+        str
+            The S3 key for the given file.
+        """
+        if key not in file_defaults:
+            logger.warning('%s not a recognized file key')
+            return None
+        return '%s/%s/%s.json' % (default_key_base, self.corpus_id,
+                                  file_defaults[key])
 
     @classmethod
     def load_from_s3(cls, corpus_id, aws_name=default_profile,
@@ -162,7 +186,7 @@ class Corpus(object):
 
         # Raw:
         if raw:
-            rawf = CACHE.joinpath(raw.replace(default_key_base + '/', ''))
+            rawf = self.cache.joinpath(raw.replace(default_key_base + '/', ''))
             if not rawf.is_file():
                 rawf.parent.mkdir(exist_ok=True, parents=True)
                 rawf.touch(exist_ok=True)
@@ -171,7 +195,7 @@ class Corpus(object):
 
         # Assembled
         if sts:
-            stsf = CACHE.joinpath(sts.replace(default_key_base + '/', ''))
+            stsf = self.cache.joinpath(sts.replace(default_key_base + '/', ''))
             if not stsf.is_file():
                 stsf.parent.mkdir(exist_ok=True, parents=True)
                 stsf.touch(exist_ok=True)
@@ -180,7 +204,7 @@ class Corpus(object):
 
         # Curation
         if cur:
-            curf = CACHE.joinpath(cur.replace(default_key_base + '/', ''))
+            curf = self.cache.joinpath(cur.replace(default_key_base + '/', ''))
             if not curf.is_file():
                 curf.parent.mkdir(exist_ok=True, parents=True)
                 curf.touch(exist_ok=True)
@@ -188,7 +212,8 @@ class Corpus(object):
 
         # Meta data
         if meta:
-            metaf = CACHE.joinpath(meta.replace(default_key_base + '/', ''))
+            metaf = self.cache.joinpath(
+                meta.replace(default_key_base + '/', ''))
             if not metaf.is_file():
                 metaf.parent.mkdir(exist_ok=True, parents=True)
                 metaf.touch(exist_ok=True)
@@ -284,7 +309,7 @@ class Corpus(object):
         Parameters
         ----------
         look_in_cache : bool
-            If True, when no curations are avaialbe check if there are
+            If True, when no curations are available check if there are
             curations cached locally. Default: False
         save_to_cache : bool
             If True, also save current curation state to cache. If
@@ -294,8 +319,7 @@ class Corpus(object):
             The bucket to upload to. Default: 'world-modelers'.
         """
         # Get curation file key
-        file_key = '%s/%s/%s.json' % (default_key_base, self.corpus_id,
-                                      file_defaults['cur'])
+        file_key = self._get_file_key('cur')
         # First see if we have any curations, then check in cache if
         # look_in_cache == True
         if self.curations:
@@ -313,7 +337,12 @@ class Corpus(object):
                               bucket=bucket)
 
         if self.curations and save_to_cache and not look_in_cache:
-            self._save_to_cache(cur=file_key)
+            self.save_curations_to_cache()
+
+    def save_curations_to_cache(self):
+        """Save current curations to cache"""
+        cur_key = self._get_file_key('cur')
+        self._save_to_cache(cur=cur_key)
 
     def get_curations(self, look_in_cache=False):
         """Get curations for the corpus
@@ -331,21 +360,19 @@ class Corpus(object):
         if self.curations:
             curations = self.curations
         elif look_in_cache:
-            file_key = '%s/%s/%s.json' % (default_key_base, self.corpus_id,
-                                          file_defaults['cur'])
+            file_key = self._get_file_key('cur')
             curations = self._load_from_cache(file_key) or {}
         else:
             curations = {}
         return curations
 
-    @staticmethod
-    def _load_from_cache(file_key):
+    def _load_from_cache(self, file_key):
         # Assuming file_key is cleaned, contains the file name and contains
         # the initial file base name:
         # <base_name>/<dirname>/<file>.json
 
         # Remove <base_name> and get local path to file
-        local_file = CACHE.joinpath(
+        local_file = self.cache.joinpath(
             '/'.join([s for s in file_key.split('/')[1:]]))
 
         # Load json object

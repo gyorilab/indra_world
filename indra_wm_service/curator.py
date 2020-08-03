@@ -4,7 +4,7 @@ from indra.belief.wm_scorer import get_eidos_bayesian_scorer
 from indra.sources.eidos import reground_texts
 from indra.tools import assemble_corpus as ac
 from indra.belief import BeliefEngine
-from . import file_defaults, default_key_base, InvalidCorpusError
+from . import file_defaults, default_key_base, InvalidCorpusError, CACHE
 from .corpus import Corpus
 
 logger = logging.getLogger(__name__)
@@ -22,11 +22,12 @@ class LiveCurator(object):
     """
 
     def __init__(self, scorer=None, corpora=None, eidos_url=None,
-                 ont_manager=None):
+                 ont_manager=None, cache=CACHE):
         self.corpora = corpora if corpora else {}
         self.scorer = scorer if scorer else get_eidos_bayesian_scorer()
         self.ont_manager = ont_manager
         self.eidos_url = eidos_url
+        self.cache = cache
 
     # TODO: generalize this to other kinds of scorers
     def reset_scorer(self):
@@ -67,6 +68,7 @@ class LiveCurator(object):
             corpus = Corpus.load_from_s3(corpus_id,
                                          force_s3_reload=not use_cache,
                                          raise_exc=True)
+            corpus.cache = self.cache
             logger.info('Adding corpus to loaded corpora')
             self.corpora[corpus_id] = corpus
 
@@ -122,7 +124,7 @@ class LiveCurator(object):
                                    curated_stmts.items()}}
         return data
 
-    def submit_curation(self, corpus_id, curations):
+    def submit_curation(self, corpus_id, curations, save=True):
         """Submit correct/incorrect curations fo a given corpus.
 
         Parameters
@@ -132,6 +134,9 @@ class LiveCurator(object):
         curations : dict
             A dict of curations with keys corresponding to Statement UUIDs and
             values corresponding to correct/incorrect feedback.
+        save : bool
+            If True, save the updated curations to the local cache.
+            Default: True
         """
         logger.info('Submitting curations for corpus "%s"' % corpus_id)
         corpus = self.get_corpus(corpus_id, check_s3=True, use_cache=True)
@@ -174,6 +179,10 @@ class LiveCurator(object):
                             += 1
         # Finally, we update the scorer with the new curation counts
         self.scorer.update_counts(prior_counts, subtype_counts)
+
+        # Save the updated curations to S3 and cache
+        if save:
+            corpus.save_curations_to_cache()
 
     def save_curation(self, corpus_id, save_to_cache=True):
         """Save the current state of curations for a corpus given its ID
