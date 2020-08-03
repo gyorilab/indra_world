@@ -4,10 +4,10 @@ import logging
 import unittest
 from nose.plugins.attrib import attr
 from indra.statements import *
-from wm_indra_service.live_curation import app, curator
-from wm_indra_service.corpus import Corpus
-from wm_indra_service.curator import LiveCurator
-from wm_indra_service.util import _json_to_stmts_dict, \
+from indra_wm_service.live_curation import app, curator
+from indra_wm_service.corpus import Corpus
+from indra_wm_service.curator import LiveCurator
+from indra_wm_service.util import _json_to_stmts_dict, \
     _stmts_dict_to_json
 
 
