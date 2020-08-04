@@ -124,59 +124,62 @@ class LiveCurator(object):
                                    curated_stmts.items()}}
         return data
 
-    def submit_curation(self, corpus_id, curations, save=True):
+    def submit_curations(self, curations, save=True):
         """Submit correct/incorrect curations fo a given corpus.
 
         Parameters
         ----------
-        corpus_id : str
-            The ID of the corpus to which the curations apply.
-        curations : dict
-            A dict of curations with keys corresponding to Statement UUIDs and
-            values corresponding to correct/incorrect feedback.
+        curations : list of dict
+            A list of curationss.
         save : bool
             If True, save the updated curations to the local cache.
             Default: True
         """
-        logger.info('Submitting curations for corpus "%s"' % corpus_id)
+        logger.info('Submitting %d curations' % len(curations))
+        for curation in curations:
+            self.submit_curation(curation, save=True)
+
+    def submit_curation(self, curation, save=True):
+        corpus_id = curation['corpus_idf']
+        uuid = curation['statement_id']
+        update_type = curation['update_type']
+        belief_count_idx = 0 if update_type in correct_flags else 1
+        # Try getting the corpus first
         corpus = self.get_corpus(corpus_id, check_s3=True, use_cache=True)
         # Start tabulating the curation counts
         prior_counts = {}
         subtype_counts = {}
         # Take each curation from the input
-        for uuid, correct in curations.items():
-            # Save the curation in the corpus
-            # TODO: handle already existing curation
-            stmt = corpus.statements.get(uuid)
-            if stmt is None:
-                logger.warning('%s is not in the corpus.' % uuid)
-                continue
-            corpus.curations[uuid] = correct
-            # Now take all the evidences of the statement and assume that
-            # they follow the correctness of the curation and contribute to
-            # counts for their sources
-            for ev in stmt.evidence:
-                # Make the index in the curation count list
-                idx = 0 if correct else 1
-                extraction_rule = ev.annotations.get('found_by')
-                # If there is no extraction rule then we just score the source
-                if not extraction_rule:
-                    try:
-                        prior_counts[ev.source_api][idx] += 1
-                    except KeyError:
-                        prior_counts[ev.source_api] = [0, 0]
-                        prior_counts[ev.source_api][idx] += 1
-                # Otherwise we score the specific extraction rule
-                else:
-                    try:
-                        subtype_counts[ev.source_api][extraction_rule][idx] \
-                            += 1
-                    except KeyError:
-                        if ev.source_api not in subtype_counts:
-                            subtype_counts[ev.source_api] = {}
-                        subtype_counts[ev.source_api][extraction_rule] = [0, 0]
-                        subtype_counts[ev.source_api][extraction_rule][idx] \
-                            += 1
+        stmt = corpus.statements.get(uuid)
+        if stmt is None:
+            logger.warning('%s is not in the corpus.' % uuid)
+            return None
+        # Save the curation in the corpus
+        corpus.curations.append(curation)
+        # Now take all the evidences of the statement and assume that
+        # they follow the correctness of the curation and contribute to
+        # counts for their sources
+        for ev in stmt.evidence:
+            # Make the index in the curation count list
+            extraction_rule = ev.annotations.get('found_by')
+            # If there is no extraction rule then we just score the source
+            if not extraction_rule:
+                try:
+                    prior_counts[ev.source_api][belief_count_idx] += 1
+                except KeyError:
+                    prior_counts[ev.source_api] = [0, 0]
+                    prior_counts[ev.source_api][belief_count_idx] += 1
+            # Otherwise we score the specific extraction rule
+            else:
+                try:
+                    subtype_counts[ev.source_api][extraction_rule][belief_count_idx] \
+                        += 1
+                except KeyError:
+                    if ev.source_api not in subtype_counts:
+                        subtype_counts[ev.source_api] = {}
+                    subtype_counts[ev.source_api][extraction_rule] = [0, 0]
+                    subtype_counts[ev.source_api][extraction_rule][belief_count_idx] \
+                        += 1
         # Finally, we update the scorer with the new curation counts
         self.scorer.update_counts(prior_counts, subtype_counts)
 
@@ -301,3 +304,8 @@ def default_assembly(stmts):
     stmts = ac.merge_deltas(stmts)
     stmts = ac.standardize_names_groundings(stmts)
     return stmts
+
+
+correct_flags = {'vet_statement'}
+incorrect_flags = {'factor_grounding', 'discard_statement', 'reverse_relation',
+                   'factor_polarity'}
