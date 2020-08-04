@@ -39,7 +39,7 @@ def _make_corpus():
 
 def test_no_curation():
     curator = LiveCurator(corpora={'1': _make_corpus()})
-    curator.submit_curation(corpus_id='1', curations={})
+    curator.submit_curations(curations=[])
     beliefs = curator.update_beliefs(corpus_id='1')
     expected = {'1': 0.91675,
                 '2': 0.8968,
@@ -51,7 +51,10 @@ def test_no_curation():
 
 def test_eid_rule1_incorrect():
     curator = LiveCurator(corpora={'1': _make_corpus()})
-    curator.submit_curation(corpus_id='1', curations={'1': 0})
+    curations = [{'corpus_id': '1',
+                  'statement_id': '1',
+                  'update_type': 'discard_statement'}]
+    curator.submit_curations(curations=curations)
     expected = {'1': 0,
                 '2': 0.8942,
                 '3': 0.957125,
@@ -61,7 +64,7 @@ def test_eid_rule1_incorrect():
     assert close_enough(beliefs, expected), (beliefs, expected)
 
     # Submit another curation
-    curator.submit_curation(corpus_id='1', curations={'1': 0})
+    curator.submit_curations(curations=curations)
     expected = {'1': 0,
                 '2': 0.8917,
                 '3': 0.957125,
@@ -72,8 +75,11 @@ def test_eid_rule1_incorrect():
 
 
 def test_eid_rule1_correct():
+    curations = [{'corpus_id': '1',
+                  'statement_id': '1',
+                  'update_type': 'vet_statement'}]
     curator = LiveCurator(corpora={'1': _make_corpus()})
-    curator.submit_curation(corpus_id='1', curations={'1': 1})
+    curator.submit_curations(curations=curations)
     expected = {'1': 1,
                 '2': 0.8979,
                 '3': 0.957125,
@@ -84,8 +90,11 @@ def test_eid_rule1_correct():
 
 
 def test_eid_rule2_correct():
+    curations = [{'corpus_id': '1',
+                  'statement_id': '2',
+                  'update_type': 'vet_statement'}]
     curator = LiveCurator(corpora={'1': _make_corpus()})
-    curator.submit_curation(corpus_id='1', curations={'2': 1})
+    curator.submit_curations(curations=curations)
     expected = {'1': 0.91717,
                 '2': 1,
                 '3': 0.95916,
@@ -96,8 +105,11 @@ def test_eid_rule2_correct():
 
 
 def test_hume_incorrect():
+    curations = [{'corpus_id': '1',
+                  'statement_id': '3',
+                  'update_type': 'discard_statement'}]
     curator = LiveCurator(corpora={'1': _make_corpus()})
-    curator.submit_curation(corpus_id='1', curations={'3': 0})
+    curator.submit_curations(curations=curations)
     expected = {'1': 0.91675,
                 '2': 0.88772,
                 '3': 0,
@@ -108,8 +120,11 @@ def test_hume_incorrect():
 
 
 def test_sofia_incorrect():
+    curations = [{'corpus_id': '1',
+                  'statement_id': '4',
+                  'update_type': 'discard_statement'}]
     curator = LiveCurator(corpora={'1': _make_corpus()})
-    curator.submit_curation(corpus_id='1', curations={'4': 0})
+    curator.submit_curations(curations=curations)
     expected = {'1': 0.91675,
                 '2': 0.89684,
                 '3': 0.9533,
@@ -118,7 +133,10 @@ def test_sofia_incorrect():
     beliefs = curator.update_beliefs(corpus_id='1')
     assert close_enough(beliefs, expected), (beliefs, expected)
 
-    curator.submit_curation(corpus_id='1', curations={'5': 0})
+    curations = [{'corpus_id': '1',
+                  'statement_id': '5',
+                  'update_type': 'discard_statement'}]
+    curator.submit_curations(curations=curations)
     expected = {'1': 0.91675,
                 '2': 0.89684,
                 '3': 0.9533,
