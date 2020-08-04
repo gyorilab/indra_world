@@ -101,7 +101,8 @@ class LiveCurator(object):
         corpus_curations = corpus.get_curations(look_in_cache=True)
         # Get all statements that have curations
         curated_stmts = {}
-        for uuid in corpus_curations:
+        for curation in corpus_curations:
+            uuid = curation['statement_id']
             curated_stmts[uuid] = corpus.statements[uuid]
         if reader and reader != 'all':
             # Filter out statements and curations that don't contain material
@@ -137,7 +138,7 @@ class LiveCurator(object):
         """
         logger.info('Submitting %d curations' % len(curations))
         for curation in curations:
-            self.submit_curation(curation, save=True)
+            self.submit_curation(curation, save=save)
 
     def submit_curation(self, curation, save=True):
         corpus_id = curation['corpus_idf']
@@ -187,7 +188,7 @@ class LiveCurator(object):
         if save:
             corpus.save_curations_to_cache()
 
-    def save_curation(self, corpus_id, save_to_cache=True):
+    def save_curations(self, corpus_id, save_to_cache=True):
         """Save the current state of curations for a corpus given its ID
 
         If the corpus ID cannot be found, an InvalidCorpusError is raised.
@@ -253,12 +254,19 @@ class LiveCurator(object):
         stmts = list(corpus.statements.values())
         be.set_prior_probs(stmts)
         # Here we set beliefs based on actual curation
-        for uuid, correct in corpus.curations.items():
-            stmt = corpus.statements.get(uuid)
+        for curation in corpus.curations:
+            stmt = corpus.statements.get(curation['statement_id'])
             if stmt is None:
-                logger.warning('%s is not in the corpus.' % uuid)
+                logger.warning('%s is not in the corpus.' %
+                               curation['statement_id'])
                 continue
-            stmt.belief = correct
+            # If the statement was thrown away, we set its belief to 0
+            if curation['update_type'] == 'discart_statement':
+                stmt.belief = 0
+            # In this case the statement was either vetted to be correct
+            # or was corrected manually
+            else:
+                stmt.belief = 1
         belief_dict = {st.uuid: st.belief for st in stmts}
         return belief_dict
 
