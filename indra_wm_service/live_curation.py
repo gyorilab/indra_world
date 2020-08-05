@@ -74,7 +74,12 @@ def submit_curations():
         abort(Response('Missing application/json header.', 415))
     # Get input parameters
     curations = request.json.get('curations', [])
-    curator.submit_curations(curations, save=True)
+    try:
+        curator.submit_curations(curations, save=True)
+    except ValueError:
+        abort(Response('A required parameter is missing.', 400))
+        return
+
     return jsonify({})
 
 

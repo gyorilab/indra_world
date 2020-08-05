@@ -35,7 +35,7 @@ class LiveCurator(object):
         logger.info('Resetting the scorer')
         self.scorer = get_eidos_bayesian_scorer()
         for corpus_id, corpus in self.corpora.items():
-            corpus.curations = {}
+            corpus.curations = []
 
     def get_corpus(self, corpus_id, check_s3=True, use_cache=True):
         """Return a corpus given an ID.
@@ -141,9 +141,12 @@ class LiveCurator(object):
             self.submit_curation(curation, save=save)
 
     def submit_curation(self, curation, save=True):
-        corpus_id = curation['corpus_id']
-        uuid = curation['statement_id']
-        update_type = curation['update_type']
+        try:
+            corpus_id = curation['corpus_id']
+            uuid = curation['statement_id']
+            update_type = curation['update_type']
+        except KeyError:
+            raise ValueError('Required parameters missing.')
         belief_count_idx = 0 if update_type in correct_flags else 1
         # Try getting the corpus first
         corpus = self.get_corpus(corpus_id, check_s3=True, use_cache=True)
@@ -261,7 +264,7 @@ class LiveCurator(object):
                                curation['statement_id'])
                 continue
             # If the statement was thrown away, we set its belief to 0
-            if curation['update_type'] == 'discart_statement':
+            if curation['update_type'] == 'discard_statement':
                 stmt.belief = 0
             # In this case the statement was either vetted to be correct
             # or was corrected manually

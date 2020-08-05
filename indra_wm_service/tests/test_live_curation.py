@@ -32,7 +32,7 @@ def _make_corpus():
     stmt3.uuid = '3'
     stmt4.uuid = '4'
     stmt5.uuid = '5'
-    stmts = [stmt1, stmt2, stmt3, stmt4]
+    stmts = [stmt1, stmt2, stmt3, stmt4, stmt5]
     raw_stmts = copy.deepcopy(stmts)
     return Corpus(corpus_id='x', statements=stmts, raw_statements=raw_stmts)
 
@@ -148,7 +148,6 @@ def test_sofia_incorrect():
 
 class LiveCurationTestCase(unittest.TestCase):
     def setUp(self):
-        _make_corpus()
         app.testing = True
         self.app = app.test_client()
         curator.corpora = {'1': _make_corpus()}
@@ -178,9 +177,7 @@ class LiveCurationTestCase(unittest.TestCase):
         assert resp.status_code == 400, resp
 
     def test_no_curation(self):
-        curs = {'curations': [
-            {'corpus_id': '1'}
-        ]}
+        curs = {'curations': []}
         self._reset_scorer()
         self._send_request('submit_curations', curs)
         resp = self._send_request('update_beliefs', {'corpus_id': '1'})
@@ -211,25 +208,34 @@ class LiveCurationTestCase(unittest.TestCase):
         assert close_enough(res, expected), (res, expected)
 
     def test_eid_rule1_incorrect_again(self):
+        curs = {'curations': [
+            {'corpus_id': '1',
+             'update_type': 'discard_statement',
+             'statement_id': '1'},
+            {'corpus_id': '1',
+             'update_type': 'discard_statement',
+             'statement_id': '1'},
+        ]}
         self._reset_scorer()
-        self._send_request('submit_curations', {'corpus_id': '1',
-                                                'curations': {'1': 0}})
-        self._send_request('submit_curations', {'corpus_id': '1',
-                                                'curations': {'1': 0}})
+        self._send_request('submit_curations', curs)
+        self._send_request('submit_curations', curs)
         resp = self._send_request('update_beliefs', {'corpus_id': '1'})
         assert resp.status_code == 200, resp
         res = json.loads(resp.data.decode('utf-8'))
         expected = {'1': 0,
-                    '2': 0.8917,
+                    '2': 0.88687,
                     '3': 0.957125,
                     '4': 0.65,
                     '5': 0.65}
         assert close_enough(res, expected), (res, expected)
 
     def test_eid_rule1_correct(self):
+        curs = {'curations': [
+            {'corpus_id': '1',
+             'update_type': 'vet_statement',
+             'statement_id': '1'}]}
         self._reset_scorer()
-        self._send_request('submit_curations', {'corpus_id': '1',
-                                                'curations': {'1': 1}})
+        self._send_request('submit_curations', curs)
         resp = self._send_request('update_beliefs', {'corpus_id': '1'})
         assert resp.status_code == 200
         res = json.loads(resp.data.decode('utf-8'))
@@ -241,9 +247,12 @@ class LiveCurationTestCase(unittest.TestCase):
         assert close_enough(res, expected), (res, expected)
 
     def test_eid_rule2_correct(self):
+        curs = {'curations': [
+            {'corpus_id': '1',
+             'update_type': 'vet_statement',
+             'statement_id': '2'}]}
         self._reset_scorer()
-        self._send_request('submit_curations', {'corpus_id': '1',
-                                                'curations': {'2': 1}})
+        self._send_request('submit_curations', curs)
         resp = self._send_request('update_beliefs', {'corpus_id': '1'})
         assert resp.status_code == 200
         res = json.loads(resp.data.decode('utf-8'))
@@ -255,9 +264,12 @@ class LiveCurationTestCase(unittest.TestCase):
         assert close_enough(res, expected), (res, expected)
 
     def test_hume_incorrect(self):
+        curs = {'curations': [
+            {'corpus_id': '1',
+             'update_type': 'discard_statement',
+             'statement_id': '3'}]}
         self._reset_scorer()
-        self._send_request('submit_curations', {'corpus_id': '1',
-                                                'curations': {'3': 0}})
+        self._send_request('submit_curations', curs)
         resp = self._send_request('update_beliefs', {'corpus_id': '1'})
         assert resp.status_code == 200
         res = json.loads(resp.data.decode('utf-8'))
@@ -269,9 +281,12 @@ class LiveCurationTestCase(unittest.TestCase):
         assert close_enough(res, expected), (res, expected)
 
     def test_sofia_incorrect(self):
+        curs = {'curations': [
+            {'corpus_id': '1',
+             'update_type': 'discard_statement',
+             'statement_id': '4'}]}
         self._reset_scorer()
-        self._send_request('submit_curations', {'corpus_id': '1',
-                                                'curations': {'4': 0}})
+        self._send_request('submit_curations', curs)
         resp = self._send_request('update_beliefs', {'corpus_id': '1'})
         assert resp.status_code == 200
         res = json.loads(resp.data.decode('utf-8'))
@@ -281,8 +296,12 @@ class LiveCurationTestCase(unittest.TestCase):
                     '4': 0.0,
                     '5': 0.61904}
         assert close_enough(res, expected), (res, expected)
-        self._send_request('submit_curations', {'corpus_id': '1',
-                                                'curations': {'5': 0}})
+
+        curs = {'curations': [
+            {'corpus_id': '1',
+             'update_type': 'discard_statement',
+             'statement_id': '5'}]}
+        self._send_request('submit_curations', curs)
         resp = self._send_request('update_beliefs', {'corpus_id': '1'})
         assert resp.status_code == 200
         res = json.loads(resp.data.decode('utf-8'))

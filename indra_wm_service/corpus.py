@@ -47,7 +47,7 @@ class Corpus(object):
         self.statements = {st.uuid: st for st in statements} if statements \
             else {}
         self.raw_statements = raw_statements if raw_statements else []
-        self.curations = {}
+        self.curations = []
         self.meta_data = meta_data if meta_data else {}
         self.aws_name = aws_name
         self.cache = cache
@@ -274,12 +274,12 @@ class Corpus(object):
             self.statements = {s.uuid: s for s in stmts_from_json(json_stmts)}
 
             # Get and process curations if any
-            curation_json = {}
+            curation_json = []
             if cache:
-                curation_json = self._load_from_cache(cur) or {}
+                curation_json = self._load_from_cache(cur) or []
             if not curation_json:
                 curation_json = json.loads(s3.get_object(
-                    Bucket=bucket, Key=cur)['Body'].read()) or {}
+                    Bucket=bucket, Key=cur)['Body'].read()) or []
             self.curations = curation_json
 
             meta_json = {}
