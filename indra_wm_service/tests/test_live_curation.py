@@ -139,7 +139,7 @@ def test_sofia_incorrect():
     curator.submit_curations(curations=curations)
     expected = {'1': 0.91675,
                 '2': 0.89684,
-                '3': 0.9533,
+                '3': 0.9499,
                 '4': 0,
                 '5': 0}
     beliefs = curator.update_beliefs(corpus_id='1')
@@ -307,7 +307,7 @@ class LiveCurationTestCase(unittest.TestCase):
         res = json.loads(resp.data.decode('utf-8'))
         expected = {'1': 0.91675,
                     '2': 0.89684,
-                    '3': 0.9533,
+                    '3': 0.9499,
                     '4': 0,
                     '5': 0}
         assert close_enough(res, expected), (res, expected)
