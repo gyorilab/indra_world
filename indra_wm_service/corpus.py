@@ -37,9 +37,9 @@ class Corpus(object):
         A dict of INDRA Statements keyed by UUID.
     raw_statements : list
         A list of the raw statements
-    curations : dict
-        A dict keeping track of the curations submitted so far for Statement
-        UUIDs in the corpus.
+    curations : list
+        A list keeping track of the curations submitted so far for Statements
+        in the corpus.
     """
     def __init__(self, corpus_id, statements=None, raw_statements=None,
                  meta_data=None, aws_name=default_profile, cache=CACHE):
@@ -47,7 +47,7 @@ class Corpus(object):
         self.statements = {st.uuid: st for st in statements} if statements \
             else {}
         self.raw_statements = raw_statements if raw_statements else []
-        self.curations = {}
+        self.curations = []
         self.meta_data = meta_data if meta_data else {}
         self.aws_name = aws_name
         self.cache = cache
@@ -69,7 +69,8 @@ class Corpus(object):
         return self._s3
 
     def __str__(self):
-        return 'Corpus(%s -> %s)' % (str(self.statements), str(self.curations))
+        return ('Corpus(%s, %d statements, %d curations)' %
+            (self.corpus_id, len(self.statements), len(self.curations)))
 
     def __repr__(self):
         return str(self)
@@ -273,12 +274,12 @@ class Corpus(object):
             self.statements = {s.uuid: s for s in stmts_from_json(json_stmts)}
 
             # Get and process curations if any
-            curation_json = {}
+            curation_json = []
             if cache:
-                curation_json = self._load_from_cache(cur) or {}
+                curation_json = self._load_from_cache(cur) or []
             if not curation_json:
                 curation_json = json.loads(s3.get_object(
-                    Bucket=bucket, Key=cur)['Body'].read()) or {}
+                    Bucket=bucket, Key=cur)['Body'].read()) or []
             self.curations = curation_json
 
             meta_json = {}

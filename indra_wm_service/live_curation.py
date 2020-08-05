@@ -1,5 +1,6 @@
 """This REST service allows real-time curation and belief updates for
 a corpus of INDRA Statements."""
+import copy
 import pickle
 import logging
 import argparse
@@ -26,8 +27,8 @@ curator = LiveCurator(corpora=corpora, ont_manager=ontology)
 
 
 # From here on, a Flask app built around a LiveCurator is implemented
-@app.route('/download_curation', methods=['POST'])
-def download_curation():
+@app.route('/download_curations', methods=['POST'])
+def download_curations():
     """Download the curations for the given corpus id"""
     if request.json is None:
         abort(Response('Missing application/json header.', 415))
@@ -43,8 +44,8 @@ def download_curation():
     return jsonify(curation_data)
 
 
-@app.route('/reset_curation', methods=['POST'])
-def reset_curation():
+@app.route('/reset_curations', methods=['POST'])
+def reset_curations():
     """Reset the curations submitted until now."""
     if request.json is None:
         abort(Response('Missing application/json header.', 415))
@@ -52,8 +53,8 @@ def reset_curation():
     return jsonify({})
 
 
-@app.route('/submit_curation', methods=['POST'])
-def submit_curation():
+@app.route('/submit_curations', methods=['POST'])
+def submit_curations():
     """Submit curations for a given corpus.
 
     The submitted curations are handled to update the probability model but
@@ -72,13 +73,13 @@ def submit_curation():
     if request.json is None:
         abort(Response('Missing application/json header.', 415))
     # Get input parameters
-    corpus_id = request.json.get('corpus_id')
-    curations = request.json.get('curations', {})
+    curations = request.json.get('curations', [])
     try:
-        curator.submit_curation(corpus_id, curations, save=True)
-    except InvalidCorpusError:
-        abort(Response('The corpus_id "%s" is unknown.' % corpus_id, 400))
+        curator.submit_curations(curations, save=True)
+    except ValueError:
+        abort(Response('A required parameter is missing.', 400))
         return
+
     return jsonify({})
 
 
@@ -117,7 +118,7 @@ def reset_ontology():
         abort(Response('Missing application/json header.', 415))
 
     # Reload the original ontology
-    curator.ont_manager = WorldOntology(wm_ont_url)
+    curator.ont_manager = copy.deepcopy(world_ontology)
 
     return jsonify({})
 
@@ -152,15 +153,15 @@ def update_metadata():
     return jsonify({'result': 'endpoint disabled'})
 
 
-@app.route('/save_curation', methods=['POST'])
+@app.route('/save_curations', methods=['POST'])
 def save_curations():
     if request.json is None:
         abort(Response('Missing application/json header.', 415))
 
+    # Get input parameters
+    corpus_id = request.json.get('corpus_id')
     try:
-        # Get input parameters
-        corpus_id = request.json.get('corpus_id')
-        curator.save_curation(corpus_id, save_to_cache=True)
+        curator.save_curations(corpus_id, save_to_cache=True)
     except InvalidCorpusError:
         abort(Response('The corpus_id "%s" is unknown.' % corpus_id, 400))
         return
