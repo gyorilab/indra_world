@@ -37,9 +37,9 @@ class Corpus(object):
         A dict of INDRA Statements keyed by UUID.
     raw_statements : list
         A list of the raw statements
-    curations : dict
-        A dict keeping track of the curations submitted so far for Statement
-        UUIDs in the corpus.
+    curations : list
+        A list keeping track of the curations submitted so far for Statements
+        in the corpus.
     """
     def __init__(self, corpus_id, statements=None, raw_statements=None,
                  meta_data=None, aws_name=default_profile, cache=CACHE):
@@ -69,7 +69,8 @@ class Corpus(object):
         return self._s3
 
     def __str__(self):
-        return 'Corpus(%s -> %s)' % (str(self.statements), str(self.curations))
+        return ('Corpus(%s, %d statements, %d curations)' %
+            (self.corpus_id, len(self.statements), len(self.curations)))
 
     def __repr__(self):
         return str(self)

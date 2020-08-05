@@ -28,7 +28,7 @@ curator = LiveCurator(corpora=corpora, ont_manager=ontology)
 
 # From here on, a Flask app built around a LiveCurator is implemented
 @app.route('/download_curations', methods=['POST'])
-def download_curatiosn():
+def download_curations():
     """Download the curations for the given corpus id"""
     if request.json is None:
         abort(Response('Missing application/json header.', 415))

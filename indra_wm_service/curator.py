@@ -141,7 +141,7 @@ class LiveCurator(object):
             self.submit_curation(curation, save=save)
 
     def submit_curation(self, curation, save=True):
-        corpus_id = curation['corpus_idf']
+        corpus_id = curation['corpus_id']
         uuid = curation['statement_id']
         update_type = curation['update_type']
         belief_count_idx = 0 if update_type in correct_flags else 1
