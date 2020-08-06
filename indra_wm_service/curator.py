@@ -293,27 +293,30 @@ class LiveCurator(object):
         # STAGE 2: grounding
         grounding_curations = self.get_project_curations(corpus_id, project_id,
                                                          'factor_grounding')
-        # Modify the ontology here according to any grounding
-        # updates
-        for cur in grounding_curations:
-            txt, grounding = parse_factor_grounding_curation(cur)
-            self.ont_manager.add_entry(grounding, [txt])
+        # Since this is an expensive step, we only do it if there are actual
+        # grounding changes
+        if grounding_curations:
+            # Modify the ontology here according to any grounding
+            # updates
+            for cur in grounding_curations:
+                txt, grounding = parse_factor_grounding_curation(cur)
+                self.ont_manager.add_entry(grounding, [txt])
 
-        # Send the latest ontology and list of concept texts to Eidos
-        yaml_str = yaml.dump(self.ont_manager.yml)
-        concepts = []
-        for stmt in raw_stmts:
-            for concept in stmt.agent_list():
-                concept_txt = concept.db_refs.get('TEXT')
-                concepts.append(concept_txt)
-        groundings = reground_texts(concepts, yaml_str,
-                                    webservice=self.eidos_url)
-        # Update the corpus with new groundings
-        idx = 0
-        for stmt in corpus.raw_statements:
-            for concept in stmt.agent_list():
-                concept.db_refs['WM'] = groundings[idx]
-                idx += 1
+            # Send the latest ontology and list of concept texts to Eidos
+            yaml_str = yaml.dump(self.ont_manager.yml)
+            concepts = []
+            for stmt in raw_stmts:
+                for concept in stmt.agent_list():
+                    concept_txt = concept.db_refs.get('TEXT')
+                    concepts.append(concept_txt)
+            groundings = reground_texts(concepts, yaml_str,
+                                        webservice=self.eidos_url)
+            # Update the corpus with new groundings
+            idx = 0
+            for stmt in raw_stmts:
+                for concept in stmt.agent_list():
+                    concept.db_refs['WM'] = groundings[idx]
+                    idx += 1
 
         # Stage 3: run normalization
         pa = Preassembler(ontology=self.ont_manager, stmts=raw_stmts)
@@ -389,7 +392,7 @@ class LiveCurator(object):
         corpus = self.get_corpus(corpus_id)
         return [cur for cur in corpus.curations
                 if cur['project_id'] == project_id
-                and not curation_type or curation_type == curation_type]
+                and not curation_type or cur['update_type'] == curation_type]
 
 
 def parse_factor_grounding_curation(cur):
