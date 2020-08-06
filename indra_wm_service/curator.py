@@ -293,10 +293,13 @@ class LiveCurator(object):
                      if s.uuid not in discard_stmt_raw_ids]
 
         # STAGE 2: grounding
-        # TODO: Modify the ontology here according to any grounding
-        # updates
         grounding_curations = self.get_project_curations(corpus_id, project_id,
                                                          'factor_grounding')
+        # Modify the ontology here according to any grounding
+        # updates
+        for cur in grounding_curations:
+            txt, grounding = parse_factor_grounding_curation(cur)
+            self.ont_manager.add_entry(grounding, [txt])
 
         # Send the latest ontology and list of concept texts to Eidos
         yaml_str = yaml.dump(self.ont_manager.yml)
@@ -323,14 +326,24 @@ class LiveCurator(object):
         # Stage 4: apply polarity curations
         polarity_curations = self.get_project_curations(corpus_id, project_id,
                                                         'factor_polarity')
-        # TODO: figure out based on the curation which polarity changed
-        # and how
+        for cur in polarity_curations:
+            polarity_stmt_raw_ids = set(
+                corpus.statements[
+                    cur['statement_id']].evidence[0].annotations[
+                    'prior_uuids'])
+            role, new_polarity = parse_factor_polarity_curation(cur)
+            for stmt in stmts:
+                if stmt.uuid in polarity_stmt_raw_ids:
+                    if role == 'subj':
+                        stmt.subj.delta.polarity = new_polarity
+                    elif role == 'obj':
+                        stmt.obj.delta.polarity = new_polarity
 
         # Stage 5: apply reverse relation curations
         reverse_curations = self.get_project_curations(corpus_id, project_id,
                                                        'reverse_relation')
         reverse_stmt_raw_ids = {}
-        for cur in reverse_stmt_raw_ids:
+        for cur in reverse_curations:
             reverse_stmt_raw_ids |= set(
                 corpus.statements[
                     cur['statement_id']].evidence[0].annotations['prior_uuids'])
@@ -346,6 +359,7 @@ class LiveCurator(object):
                                    return_toplevel=False,
                                    poolsize=4,
                                    ontology=self.ont_manager)
+        # TODO: do these need to be done before polarity curation?
         stmts = ac.merge_groundings(stmts)
         stmts = ac.merge_deltas(stmts)
         stmts = ac.standardize_names_groundings(stmts)
@@ -374,6 +388,34 @@ class LiveCurator(object):
         return [cur for cur in corpus.curations
                 if cur['project_id'] == project_id
                 and not curation_type or curation_type == curation_type]
+
+
+def parse_factor_grounding_curation(cur):
+    bef_subj = cur['before']['subj']
+    bef_obj = cur['before']['obj']
+    aft_subj = cur['after']['subj']
+    aft_obj = cur['after']['obj']
+
+    if bef_subj['concept'] != aft_subj['concept']:
+        return aft_subj['factor'], aft_subj['concept']
+    elif bef_obj['concept'] != aft_obj['concept']:
+        return aft_obj['factor'], aft_obj['concept']
+    else:
+        return None, None
+
+
+def parse_factor_polarity_curation(cur):
+    bef_subj = cur['before']['subj']
+    bef_obj = cur['before']['obj']
+    aft_subj = cur['after']['subj']
+    aft_obj = cur['after']['obj']
+
+    if bef_subj['polarity'] != aft_subj['polarity']:
+        return 'subj', aft_subj['polarity']
+    elif bef_obj['polarity'] != aft_obj['polarity']:
+        return 'obj', aft_obj['polarity']
+    else:
+        return None, None
 
 
 correct_flags = {'vet_statement'}
