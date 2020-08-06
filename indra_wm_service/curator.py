@@ -274,11 +274,33 @@ class LiveCurator(object):
         return belief_dict
 
     def run_assembly(self, corpus_id, project_id=None):
+        from indra.preassembler import Preassembler
+        from indra.belief.wm_scorer import get_eidos_scorer
+        from indra.ontology.world import world_ontology
+
         corpus = self.get_corpus(corpus_id)
+        # STAGE 1: remove any discarded statements
+        discard_curations = self.get_project_curations(corpus_id, project_id,
+                                                       'discard_statement')
+        discard_stmt_raw_ids = {}
+        for cur in discard_curations:
+            discard_stmt_raw_ids |= set(
+                corpus.statements[
+                    cur['statement_id']].evidence[0].annotations['prior_uuids'])
+
+        raw_stmts = [s for s in corpus.statements
+                     if s.uuid not in discard_stmt_raw_ids]
+
+        # STAGE 2: grounding
+        # TODO: Modify the ontology here according to any grounding
+        # updates
+        grounding_curations = self.get_project_curations(corpus_id, project_id,
+                                                         'factor_grounding')
+
         # Send the latest ontology and list of concept texts to Eidos
         yaml_str = yaml.dump(self.ont_manager.yml)
         concepts = []
-        for stmt in corpus.raw_statements:
+        for stmt in raw_stmts:
             for concept in stmt.agent_list():
                 concept_txt = concept.db_refs.get('TEXT')
                 concepts.append(concept_txt)
@@ -290,11 +312,47 @@ class LiveCurator(object):
             for concept in stmt.agent_list():
                 concept.db_refs['WM'] = groundings[idx]
                 idx += 1
-        assembled_statements = default_assembly(corpus.raw_statements)
+
+        # Stage 3: run normalization
+        pa = Preassembler(ontology=self.ont_manager, stmts=raw_stmts)
+        pa.normalize_equivalences('WM')
+        pa.normalize_opposites('WM')
+        stmts = pa.stmts
+
+        # Stage 4: apply polarity curations
+        polarity_curations = self.get_project_curations(corpus_id, project_id,
+                                                        'factor_polarity')
+        # TODO: figure out based on the curation which polarity changed
+        # and how
+
+        # Stage 5: apply reverse relation curations
+        reverse_curations = self.get_project_curations(corpus_id, project_id,
+                                                       'reverse_relation')
+        reverse_stmt_raw_ids = {}
+        for cur in reverse_stmt_raw_ids:
+            reverse_stmt_raw_ids |= set(
+                corpus.statements[
+                    cur['statement_id']].evidence[0].annotations['prior_uuids'])
+        for stmt in stmts:
+            if stmt.uuid in reverse_stmt_raw_ids:
+                tmp = stmt.subj
+                stmt.subj = stmt.obj
+                stmt.obj = tmp
+                # TODO: update any necessary annotations
+
+        stmts = ac.run_preassembly(stmts,
+                                   belief_scorer=self.scorer,
+                                   return_toplevel=False,
+                                   poolsize=4,
+                                   ontology=self.ont_manager)
+        stmts = ac.merge_groundings(stmts)
+        stmts = ac.merge_deltas(stmts)
+        stmts = ac.standardize_names_groundings(stmts)
+
         if self.project_id:
-            self.dump_project(corpus_id, project_id, assembled_statements)
+            self.dump_project(corpus_id, project_id, stmts)
         else:
-            corpus.statements = {s.uuid: s for s in assembled_statements}
+            corpus.statements = {s.uuid: s for s in stmts}
 
     def dump_project(self, corpus_id, project_id, stmts):
         import json
@@ -308,33 +366,15 @@ class LiveCurator(object):
             f'{default_key_base}/{corpus_id}/{project_id}/statements.json',
             stmts_json, default_bucket)
 
-
-    def update_groundings(self, corpus_id, project_id):
-        # TODO check which options are appropriate for get_corpus
-        logger.info('Updating groundings for corpus "%s"' % corpus_id)
+    def get_project_curations(self, corpus_id, project_id,
+                              curation_type=None):
         corpus = self.get_corpus(corpus_id)
-
-        # Send the latest ontology and list of concept texts to Eidos
-        yaml_str = yaml.dump(self.ont_manager.yml)
-        concepts = []
-        for stmt in corpus.raw_statements:
-            for concept in stmt.agent_list():
-                concept_txt = concept.db_refs.get('TEXT')
-                concepts.append(concept_txt)
-        groundings = reground_texts(concepts, yaml_str,
-                                    webservice=self.eidos_url)
-        # Update the corpus with new groundings
-        idx = 0
-        for stmt in corpus.raw_statements:
-            for concept in stmt.agent_list():
-                concept.db_refs['WM'] = groundings[idx]
-                idx += 1
-        assembled_statements = default_assembly(corpus.raw_statements)
-        corpus.statements = {s.uuid: s for s in assembled_statements}
-        return assembled_statements
+        return [cur for cur in corpus.curations
+                if cur['project_id'] == project_id
+                and not curation_type or curation_type == curation_type]
 
 
-def default_assembly(stmts):
+def default_assembly(stmts, curations):
     from indra.belief.wm_scorer import get_eidos_scorer
     from indra.ontology.world import world_ontology
     scorer = get_eidos_scorer()
