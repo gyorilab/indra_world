@@ -42,13 +42,18 @@ def _make_curator():
 
 
 def test_curation_assembly():
+    proj_id = 'project-0c970384-9f57-4ded-a535-96b613811a89'
     curator = _make_curator()
     curator.submit_curation(curations[0])
+
+    # test factor_grounding
     assembled_stmts = curator.run_assembly(
         'dart-20200313-interventions-grounding')
-    # TODO: Test if this comes out correctly
+    subj, obj = assembled_stmts[0].agent_list()
+    assert subj.get_grounding()[1] == curations[0]['after']['subj']['concept']
 
     assembled_stmts = curator.run_assembly(
         'dart-20200313-interventions-grounding',
-        project_id='project-0c970384-9f57-4ded-a535-96b613811a89')
-    # TODO: Test if this comes out correctly
+        project_id=proj_id)
+    subj, obj = assembled_stmts[0].agent_list()
+    assert subj.get_grounding()[1] == curations[0]['after']['subj']['concept']
