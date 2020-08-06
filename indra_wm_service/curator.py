@@ -279,6 +279,7 @@ class LiveCurator(object):
         from indra.ontology.world import world_ontology
 
         corpus = self.get_corpus(corpus_id)
+
         # STAGE 1: remove any discarded statements
         discard_curations = self.get_project_curations(corpus_id, project_id,
                                                        'discard_statement')
@@ -349,7 +350,7 @@ class LiveCurator(object):
         stmts = ac.merge_deltas(stmts)
         stmts = ac.standardize_names_groundings(stmts)
 
-        if self.project_id:
+        if project_id:
             self.dump_project(corpus_id, project_id, stmts)
         else:
             corpus.statements = {s.uuid: s for s in stmts}
@@ -373,25 +374,6 @@ class LiveCurator(object):
         return [cur for cur in corpus.curations
                 if cur['project_id'] == project_id
                 and not curation_type or curation_type == curation_type]
-
-
-def default_assembly(stmts, curations):
-    from indra.belief.wm_scorer import get_eidos_scorer
-    from indra.ontology.world import world_ontology
-    scorer = get_eidos_scorer()
-    stmts = ac.run_preassembly(stmts, belief_scorer=scorer,
-                               return_toplevel=True,
-                               flatten_evidence=True,
-                               normalize_equivalences=True,
-                               normalize_opposites=True,
-                               normalize_ns='WM',
-                               flatten_evidence_collect_from='supported_by',
-                               poolsize=4,
-                               ontology=world_ontology)
-    stmts = ac.merge_groundings(stmts)
-    stmts = ac.merge_deltas(stmts)
-    stmts = ac.standardize_names_groundings(stmts)
-    return stmts
 
 
 correct_flags = {'vet_statement'}
