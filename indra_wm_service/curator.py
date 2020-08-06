@@ -275,8 +275,6 @@ class LiveCurator(object):
 
     def run_assembly(self, corpus_id, project_id=None):
         from indra.preassembler import Preassembler
-        from indra.belief.wm_scorer import get_eidos_scorer
-        from indra.ontology.world import world_ontology
 
         corpus = self.get_corpus(corpus_id)
 
@@ -354,6 +352,7 @@ class LiveCurator(object):
                 stmt.obj = tmp
                 # TODO: update any necessary annotations
 
+        # Stage 6: run preassembly
         stmts = ac.run_preassembly(stmts,
                                    belief_scorer=self.scorer,
                                    return_toplevel=False,
@@ -364,9 +363,12 @@ class LiveCurator(object):
         stmts = ac.merge_deltas(stmts)
         stmts = ac.standardize_names_groundings(stmts)
 
+        # Stage 7: persist results either as an S3 dump or by
+        # rewriting the corpus
         if project_id:
             self.dump_project(corpus_id, project_id, stmts)
         else:
+            # TODO: shouldn't we do an S3 dump here?
             corpus.statements = {s.uuid: s for s in stmts}
         return stmts
 
