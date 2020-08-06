@@ -273,7 +273,43 @@ class LiveCurator(object):
         belief_dict = {st.uuid: st.belief for st in stmts}
         return belief_dict
 
-    def update_groundings(self, corpus_id):
+    def run_assembly(self, corpus_id, project_id=None):
+        corpus = self.get_corpus(corpus_id)
+        # Send the latest ontology and list of concept texts to Eidos
+        yaml_str = yaml.dump(self.ont_manager.yml)
+        concepts = []
+        for stmt in corpus.raw_statements:
+            for concept in stmt.agent_list():
+                concept_txt = concept.db_refs.get('TEXT')
+                concepts.append(concept_txt)
+        groundings = reground_texts(concepts, yaml_str,
+                                    webservice=self.eidos_url)
+        # Update the corpus with new groundings
+        idx = 0
+        for stmt in corpus.raw_statements:
+            for concept in stmt.agent_list():
+                concept.db_refs['WM'] = groundings[idx]
+                idx += 1
+        assembled_statements = default_assembly(corpus.raw_statements)
+        if self.project_id:
+            self.dump_project(corpus_id, project_id, assembled_statements)
+        else:
+            corpus.statements = {s.uuid: s for s in assembled_statements}
+
+    def dump_project(self, corpus_id, project_id, stmts):
+        import json
+        from indra.statements import stmts_to_json
+        from . import default_bucket, default_profile, default_key_base
+        # Structure and upload assembled statements
+        stmts_json = '\n'.join(json.dumps(jo) for jo in
+                               stmts_to_json(list(stmts.values())))
+        Corpus._s3_put_file(
+            Corpus._make_s3_client(default_profile),
+            f'{default_key_base}/{corpus_id}/{project_id}/statements.json',
+            stmts_json, default_bucket)
+
+
+    def update_groundings(self, corpus_id, project_id):
         # TODO check which options are appropriate for get_corpus
         logger.info('Updating groundings for corpus "%s"' % corpus_id)
         corpus = self.get_corpus(corpus_id)
