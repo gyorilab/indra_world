@@ -43,17 +43,27 @@ def _make_curator():
 
 def test_curation_assembly():
     proj_id = 'project-0c970384-9f57-4ded-a535-96b613811a89'
+    corp_id = 'dart-20200313-interventions-grounding'
     curator = _make_curator()
     curator.submit_curation(curations[0])
 
     # test factor_grounding
-    assembled_stmts = curator.run_assembly(
-        'dart-20200313-interventions-grounding')
+    assembled_stmts = curator.run_assembly(corp_id)
     subj, obj = assembled_stmts[0].agent_list()
     assert subj.get_grounding()[1] == curations[0]['after']['subj']['concept']
 
-    assembled_stmts = curator.run_assembly(
-        'dart-20200313-interventions-grounding',
-        project_id=proj_id)
+    assembled_stmts = curator.run_assembly(corp_id, proj_id)
     subj, obj = assembled_stmts[0].agent_list()
     assert subj.get_grounding()[1] == curations[0]['after']['subj']['concept']
+
+    # Test vet statement
+    # curator.submit_curation(curations[1])
+    # assembled_stmts = curator.run_assembly(corp_id, proj_id)
+    # subj, obj = assembled_stmts[0].agent_list()
+
+    # test discard statement: should remove one raw stmt
+    curator.submit_curation(curations[2])
+    assembled_stmts = curator.run_assembly(corp_id, proj_id)
+    assert len(assembled_stmts[0].evidence) == 3
+
+    # 
