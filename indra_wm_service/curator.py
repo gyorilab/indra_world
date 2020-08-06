@@ -288,7 +288,7 @@ class LiveCurator(object):
                 corpus.statements[
                     cur['statement_id']].evidence[0].annotations['prior_uuids'])
 
-        raw_stmts = [s for s in corpus.statements
+        raw_stmts = [s for s in corpus.raw_statements
                      if s.uuid not in discard_stmt_raw_ids]
 
         # STAGE 2: grounding
@@ -353,6 +353,7 @@ class LiveCurator(object):
             self.dump_project(corpus_id, project_id, stmts)
         else:
             corpus.statements = {s.uuid: s for s in stmts}
+        return stmts
 
     def dump_project(self, corpus_id, project_id, stmts):
         import json
