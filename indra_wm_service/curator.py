@@ -368,11 +368,12 @@ class LiveCurator(object):
 
         # Stage 7: persist results either as an S3 dump or by
         # rewriting the corpus
+        stmt_dict = {s.uuid: s for s in stmts}
         if project_id:
-            self.dump_project(corpus_id, project_id, stmts)
+            self.dump_project(corpus_id, project_id, stmt_dict)
         else:
             # TODO: shouldn't we do an S3 dump here?
-            corpus.statements = {s.uuid: s for s in stmts}
+            corpus.statements = stmt_dict
         return stmts
 
     def dump_project(self, corpus_id, project_id, stmts):
