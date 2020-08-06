@@ -3,6 +3,7 @@ from indra_wm_service.corpus import Corpus
 from indra_wm_service.curator import LiveCurator
 from indra.statements import *
 from indra.tools import assemble_corpus as ac
+from indra.ontology.world.ontology import world_ontology
 
 with open('test_curations.json', 'r') as fh:
     curations = json.load(fh)
@@ -30,9 +31,13 @@ def _make_curator():
 
     assembled_stmts = ac.run_preassembly(stmts)
 
-    corpus = Corpus(statements=assembled_stmts, raw_statements=stmts)
+    corpus = Corpus('dart-20200313-interventions-grounding',
+                    statements=assembled_stmts, raw_statements=stmts)
 
-    curator = LiveCurator(corpora={'dart-20200313-interventions-grounding': corpus})
+    curator = LiveCurator(
+        corpora={'dart-20200313-interventions-grounding': corpus},
+        ont_manager=world_ontology
+    )
     return curator
 
 
