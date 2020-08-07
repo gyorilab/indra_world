@@ -118,7 +118,9 @@ otherwise all curations and their corresponding statements are returned.
     Output: {"curations": <list of curations>,
              "statements": {"38ce0c14-2c7e-4df8-bd53-3006afeaa193": <stmt json>}}
 
-Notify INDRA of a new reader output in DART.
+
+Notify INDRA of a new reader output in DART
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: sh
 
@@ -132,6 +134,7 @@ Notify INDRA of a new reader output in DART.
 
 
 .. _wm-service-s3:
+
 INDRA assemblies on S3
 ----------------------
 Access to the INDRA-assembled corpora requires credentails to the shared
