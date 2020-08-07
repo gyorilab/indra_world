@@ -236,7 +236,7 @@ class LiveCurator(object):
                                                file_defaults['meta'])
             corpus._save_to_cache(meta=meta_file_key)
 
-    def update_beliefs(self, corpus_id):
+    def update_beliefs(self, corpus_id, project_id=None):
         """Return updated belief scores for a given corpus.
 
         Parameters
@@ -258,6 +258,8 @@ class LiveCurator(object):
         be.set_prior_probs(stmts)
         # Here we set beliefs based on actual curation
         for curation in corpus.curations:
+            if project_id and curation['project_id'] != project_id:
+                continue
             stmt = corpus.statements.get(curation['statement_id'])
             if stmt is None:
                 logger.warning('%s is not in the corpus.' %

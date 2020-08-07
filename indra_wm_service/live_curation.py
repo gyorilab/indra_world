@@ -90,8 +90,9 @@ def update_beliefs():
         abort(Response('Missing application/json header.', 415))
     # Get input parameters
     corpus_id = request.json.get('corpus_id')
+    project_id = request.json.get('project_id')
     try:
-        belief_dict = curator.update_beliefs(corpus_id)
+        belief_dict = curator.update_beliefs(corpus_id, project_id=project_id)
     except InvalidCorpusError:
         abort(Response('The corpus_id "%s" is unknown.' % corpus_id, 400))
         return
