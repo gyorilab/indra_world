@@ -45,6 +45,8 @@ def test_curation_assembly():
     proj_id = 'project-0c970384-9f57-4ded-a535-96b613811a89'
     corp_id = 'dart-20200313-interventions-grounding'
     curator = _make_curator()
+    corpus = curator.corpora[corp_id]
+    init_evidence_count = len(corpus.statements[0].evidence)
     curator.submit_curation(curations[0])
 
     # test factor_grounding
@@ -56,14 +58,28 @@ def test_curation_assembly():
     subj, obj = assembled_stmts[0].agent_list()
     assert subj.get_grounding()[1] == curations[0]['after']['subj']['concept']
 
-    # Test vet statement
+    # Test vet statement: curation 1
     # curator.submit_curation(curations[1])
     # assembled_stmts = curator.run_assembly(corp_id, proj_id)
-    # subj, obj = assembled_stmts[0].agent_list()
+    # stmt = assembled_stmts[0]
+    # fixme what do we expect from a "correct" curation? belief == 1?
 
-    # test discard statement: should remove one raw stmt
+    # test discard statement: curation 2
     curator.submit_curation(curations[2])
     assembled_stmts = curator.run_assembly(corp_id, proj_id)
-    assert len(assembled_stmts[0].evidence) == 3
+    assert len(assembled_stmts[0].evidence) == init_evidence_count-1
 
-    # 
+    # Test reverse relation: curation 4
+    curator.submit_curation(curations[4])
+    assembled_stmts = curator.run_assembly(corp_id, proj_id)
+    subj, obj = assembled_stmts[0].agent_list()
+    assert subj.get_grounding()[1] == curations[4]['before']['obj']['concept']
+    assert obj.get_grounding()[1] == curations[4]['before']['subj']['concept']
+
+    # Factor polarity: curation 6
+    curator.submit_curation(curations[5])
+    assembled_stmts = curator.run_assembly(corp_id, proj_id)
+    stmt = assembled_stmts[0]
+    assert stmt.overall_polarity() == \
+        curations[5]['after']['subj']['polarity'] * \
+        curations[5]['after']['obj']['polarity']
