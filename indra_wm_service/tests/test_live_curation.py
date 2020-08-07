@@ -328,14 +328,61 @@ class LiveGroundingTestCase(unittest.TestCase):
         curator.eidos_url = 'http://localhost:9000'
         curator.corpora = {'1': _make_corpus()}
 
-    def test_add_ontology_node(self):
-        self._send_request('add_ontology_entry',
-                           {'entry': 'wm/animal/dog',
-                            'examples': ['canine', 'dog', 'puppy']})
-        resp = self._send_request('update_groundings', {'corpus_id': '1'})
-        res = json.loads(resp.data.decode('utf-8'))
-        stmts = stmts_from_json(res)
-        assert stmts, stmts
+    def test_submit_grounding_curation(self):
+        stmt_ids = list(curator.corpora['1'].statements.keys())
+        curation = {
+            "modified_at": 1594852169356,
+            "corpus_id": "1",
+            "project_id": "1",
+            "batch_id": "dab0eed4-865b-42f7-a495-84d5ea0a0112",
+            "statement_id": stmt_ids[0],
+            "update_type": "factor_grounding",
+            "before": {
+              "wm": {
+                "state": 1,
+                "readers": [
+                  "cwms",
+                  "hume"
+                ]
+              },
+              "subj": {
+                "factor": "canine",
+                "concept": "wm/x",
+                "polarity": 1,
+                "concept_score": 0.88475215
+              },
+              "obj": {
+                "factor": "rains",
+                "concept": "wm/y",
+                "polarity": 1,
+                "concept_score": 0.91073143
+              }
+            },
+            "after": {
+              "wm": {
+                "state": 1,
+                "readers": [
+                  "cwms",
+                  "hume"
+                ]
+              },
+              "subj": {
+                "factor": "canine",
+                "concept": "wm/animal/dog",
+                "polarity": 1,
+                "concept_score": 1
+              },
+              "obj": {
+                "factor": "rains",
+                "concept": "wm/y",
+                "polarity": 1,
+                "concept_score": 0.91073143
+              }
+            }
+          }
+        self._send_request('submit_curations', {'curations': [curation]})
+        resp = self._send_request('run_assembly', {'corpus_id': '1'})
+        stmts = list(curator.corpora['1'].statements.values())
         dr = stmts[0].subj.concept.db_refs
         assert 'WM' in dr, dr
         assert dr['WM'], dr
