@@ -12,9 +12,11 @@ with open('test_curations.json', 'r') as fh:
 def _make_curator(curation_idx):
     cur = curations[curation_idx]
     subj = Concept(cur['before']['subj']['factor'],
-                   db_refs={'WM': cur['before']['subj']['concept']})
+                   db_refs={'WM': cur['before']['subj']['concept'],
+                            'TEXT': cur['before']['subj']['factor']})
     obj = Concept(cur['before']['obj']['factor'],
-                  db_refs={'WM': cur['before']['obj']['concept']})
+                  db_refs={'WM': cur['before']['obj']['concept'],
+                           'TEXT': cur['before']['obj']['factor']})
     subj_delta = QualitativeDelta(polarity=cur['before']['subj']['polarity'])
     subj_event = Event(subj, delta=subj_delta)
     obj_delta = QualitativeDelta(polarity=cur['before']['obj']['polarity'])
@@ -32,10 +34,14 @@ def _make_curator(curation_idx):
     corpus = Corpus('dart-20200313-interventions-grounding',
                     statements=assembled_stmts, raw_statements=[stmt])
 
+    world_ontology.initialize()
     curator = LiveCurator(
         corpora={'dart-20200313-interventions-grounding': corpus},
         ont_manager=world_ontology
     )
+
+    curator.eidos_url = 'http://localhost:9000'
+
     return curator
 
 
@@ -46,6 +52,7 @@ corp_id = 'dart-20200313-interventions-grounding'
 def test_factor_grounding():
     curator = _make_curator(0)
     # test factor_grounding
+    curator.submit_curation(curations[0])
     assembled_stmts = curator.run_assembly(corp_id)
     subj, obj = assembled_stmts[0].agent_list()
     assert subj.get_grounding()[1] == curations[0]['after']['subj']['concept']
@@ -83,7 +90,7 @@ def test_reverse_relation():
 
 
 def test_factor_polarity():
-    curator = _make_curator(7)
+    curator = _make_curator(6)
     # Factor polarity: curation 6
     curator.submit_curation(curations[6])
     assembled_stmts = curator.run_assembly(corp_id, proj_id)
