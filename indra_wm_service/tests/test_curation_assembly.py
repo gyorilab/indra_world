@@ -69,7 +69,7 @@ def test_discard_statement():
     # test discard statement: curation 2
     curator.submit_curation(curations[2])
     assembled_stmts = curator.run_assembly(corp_id, proj_id)
-    assert len(assembled_stmts[0].evidence) == init_evidence_count-1
+    assert len(assembled_stmts) == 0
 
 
 def test_reverse_relation():

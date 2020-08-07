@@ -281,7 +281,7 @@ class LiveCurator(object):
         # STAGE 1: remove any discarded statements
         discard_curations = self.get_project_curations(corpus_id, project_id,
                                                        'discard_statement')
-        discard_stmt_raw_ids = {}
+        discard_stmt_raw_ids = set()
         for cur in discard_curations:
             discard_stmt_raw_ids |= set(
                 corpus.statements[
@@ -343,7 +343,7 @@ class LiveCurator(object):
         # Stage 5: apply reverse relation curations
         reverse_curations = self.get_project_curations(corpus_id, project_id,
                                                        'reverse_relation')
-        reverse_stmt_raw_ids = {}
+        reverse_stmt_raw_ids = set()
         for cur in reverse_curations:
             reverse_stmt_raw_ids |= set(
                 corpus.statements[
