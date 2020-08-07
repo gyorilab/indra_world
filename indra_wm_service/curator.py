@@ -358,7 +358,18 @@ class LiveCurator(object):
         stmts = ac.merge_deltas(stmts)
         stmts = ac.standardize_names_groundings(stmts)
 
-        # STAGE 7: persist results either as an S3 dump or by
+        # STAGE 7: set beliefs of vetted statements
+        vetted_curations = self.get_project_curations(corpus_id, project_id,
+                                                      'vet_statement')
+        for cur in vetted_curations:
+            prior_uuids = self.get_raw_stmt_ids_for_curations(corpus_id, [cur])
+            for stmt in stmts:
+                for ev in stmt.evidence:
+                    if prior_uuids & set(ev.annotations['prior_uuids']):
+                        stmt.belief = 1
+                        break
+
+        # STAGE 8: persist results either as an S3 dump or by
         # rewriting the corpus
         stmt_dict = {s.uuid: s for s in stmts}
         if project_id:
