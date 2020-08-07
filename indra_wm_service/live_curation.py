@@ -44,15 +44,6 @@ def download_curations():
     return jsonify(curation_data)
 
 
-@app.route('/reset_curations', methods=['POST'])
-def reset_curations():
-    """Reset the curations submitted until now."""
-    if request.json is None:
-        abort(Response('Missing application/json header.', 415))
-    curator.reset_scorer()
-    return jsonify({})
-
-
 @app.route('/submit_curations', methods=['POST'])
 def submit_curations():
     """Submit curations for a given corpus.
@@ -98,59 +89,17 @@ def update_beliefs():
     return jsonify(belief_dict)
 
 
-@app.route('/add_ontology_entry', methods=['POST'])
-def add_ontology_entry():
-    if request.json is None:
-        abort(Response('Missing application/json header.', 415))
-
-    # Get input parameters
-    entry = request.json.get('entry')
-    examples = request.json.get('examples', [])
-    # Add the entry and examples to the in-memory representation
-    # of the onotology
-    curator.ont_manager.add_entry(entry, examples)
-    return jsonify({})
-
-
-@app.route('/reset_ontology', methods=['POST'])
-def reset_ontology():
-    if request.json is None:
-        abort(Response('Missing application/json header.', 415))
-
-    # Reload the original ontology
-    curator.ont_manager = copy.deepcopy(world_ontology)
-
-    return jsonify({})
-
-
-@app.route('/update_groundings', methods=['POST'])
-def update_groundings():
+@app.route('/run_assembly', methods=['POST'])
+def run_assembly():
     if request.json is None:
         abort(Response('Missing application/json header.', 415))
 
     # Get input parameters
     corpus_id = request.json.get('corpus_id')
-    # Run the actual regrounding
-    stmts = curator.update_groundings(corpus_id)
-    stmts_json = stmts_to_json(stmts)
-    return jsonify(stmts_json)
-
-
-@app.route('/update_metadata', methods=['POST'])
-def update_metadata():
-    # if request.json is None:
-    #     abort(Response('Missing application/json header.', 415))
-
-    # try:
-    #     # Get input parameters
-    #     corpus_id = request.json.get('corpus_id')
-    #     meta_data = request.json.get('meta_data')
-    #     curator.update_metadata(corpus_id, meta_data, save_to_cache=True)
-    # except InvalidCorpusError:
-    #     abort(Response('The corpus_id "%s" is unknown.' % corpus_id, 400))
-    #     return
-    logger.info('Update metadata is currently disabled')
-    return jsonify({'result': 'endpoint disabled'})
+    project_id = request.json.get('project_id')
+    # Run assembly
+    curator.run_assembly(corpus_id, project_id)
+    return jsonify({})
 
 
 @app.route('/save_curations', methods=['POST'])
