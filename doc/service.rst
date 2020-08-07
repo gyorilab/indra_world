@@ -33,7 +33,7 @@ on which the Eidos web service is running (see above):
     URL: http://SERVICE_HOST:8000/<reader>/process_text
     Method: POST with JSON content header
     Input parameters: {"text": "rainfall causes floods"}
-    Output: {}
+    Output: <indra statements json>
 
 Submit curations
 ~~~~~~~~~~~~~~~~
