@@ -59,10 +59,10 @@ def test_curation_assembly():
     assert subj.get_grounding()[1] == curations[0]['after']['subj']['concept']
 
     # Test vet statement: curation 1
-    # curator.submit_curation(curations[1])
-    # assembled_stmts = curator.run_assembly(corp_id, proj_id)
-    # stmt = assembled_stmts[0]
-    # fixme what do we expect from a "correct" curation? belief == 1?
+    curator.submit_curation(curations[1])
+    assembled_stmts = curator.run_assembly(corp_id, proj_id)
+    stmt = assembled_stmts[0]
+    assert stmt.belief == 1
 
     # test discard statement: curation 2
     curator.submit_curation(curations[2])
