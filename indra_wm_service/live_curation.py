@@ -44,15 +44,6 @@ def download_curations():
     return jsonify(curation_data)
 
 
-@app.route('/reset_curations', methods=['POST'])
-def reset_curations():
-    """Reset the curations submitted until now."""
-    if request.json is None:
-        abort(Response('Missing application/json header.', 415))
-    curator.reset_scorer()
-    return jsonify({})
-
-
 @app.route('/submit_curations', methods=['POST'])
 def submit_curations():
     """Submit curations for a given corpus.

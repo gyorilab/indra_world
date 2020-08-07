@@ -159,10 +159,10 @@ class LiveCurationTestCase(unittest.TestCase):
         return resp
 
     def _reset_scorer(self):
-        resp = self.app.post('reset_curations',
-                             data='{}',
-                             headers={'Content-Type': 'application/json'})
-        assert resp.status_code == 200, resp
+        curator.reset_scorer()
+        #resp = self.app.post('reset_curations',
+        #                     data='{}',
+        #                     headers={'Content-Type': 'application/json'})
 
     # Tests ==================
     def test_alive(self):

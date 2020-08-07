@@ -8,7 +8,11 @@ Using the services
 Below, SERVICE_HOST should be replaced by the address of the server on which
 the services are running.
 
-Check that the service is running:
+Check that the service is running
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This is a simple health endpoint that can be pinged to check that the service
+is running.
 
 .. code-block:: sh
 
@@ -17,6 +21,8 @@ Check that the service is running:
     Output: {"state": "healthy", "version": "1.0.0"}
 
 
+Read text to produce INDRA Statements
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Read a given text with a reader and return INDRA Statements (below, <reader>
 can be eidos, sofia or cwms). Note that for `eidos` specifically, a
 `webservice` parameter should also be passed which points to the address
@@ -29,66 +35,88 @@ on which the Eidos web service is running (see above):
     Input parameters: {"text": "rainfall causes floods"}
     Output: {}
 
-Submit curations for a set of Statements in a corpus:
+Submit curations
+~~~~~~~~~~~~~~~~
+
+This endpoint take a single `curations` parameter which is a list
+of curations according to the CauseMos JSON format in which curations
+are represented. This representation contains a `corpus_id` and a
+`project_id` as part of each curation entry, therefore these do not need
+to be specified separately.
 
 .. code-block:: sh
 
     URL: http://SERVICE_HOST:8001/submit_curations
     Method: POST with JSON content header
-    Input parameters: {"corpus_id": "<corpus-id>", "curations": [<curations>]}
+    Input parameters: {"curations": <list of curations>}
     Output: {}
 
-Save curations for a given corpus on S3:
+Persist curations for a given corpus on S3
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The service does local caching of curations, however, it does not push
+curations submitted during runtime to S3 (which can be useful if someone
+wants to access them as a file independent of the service). This endpoint
+allows pushing all the curations for a given `corpus_id` to S3.
 
 .. code-block:: sh
 
     URL: http://SERVICE_HOST:8001/save_curations
     Method: POST with JSON content header
-    Input parameters: {"corpus_id": "<corpus-id>"}
+    Input parameters: {"corpus_id": "<corpus id>"}
     Output: {}
 
-Update beliefs of a corpus:
+Update beliefs
+~~~~~~~~~~~~~~
+
+This endpoint performs a lightweight belief re-calculation based on curations
+obtained so far. It takes a required `corpus_id` argument and an optional
+`project_id` argument. If a `project_id` is provided, beliefs are calculated
+based on project-specific curations, otherwise, all the curations for the given
+corpus are taken into account.
 
 .. code-block:: sh
 
     URL: http://SERVICE_HOST:8001/update_beliefs
     Method: POST with JSON content header
-    Input parameters: {"corpus_id": "<corpus-id>"}
+    Input parameters: {"corpus_id": "<corpus id>",
+                       "project_id": "<project id>"}
     Output: {"38ce0c14-2c7e-4df8-bd53-3006afeaa193": 0,
      "6f2b2d69-16af-40ea-aa03-9b3a9a1d2ac3": 0.6979166666666666,
      "727adb95-4890-4bbc-a985-fd985c355215": 0.6979166666666666}
 
-Reset all submitted curations so far:
+Re-assemble corpus
+~~~~~~~~~~~~~~~~~~
 
-.. code-block:: sh
-
-    URL: http://SERVICE_HOST:8001/reset_curation
-    Method: POST with JSON content header
-    Input parameters: {}
-    Output: {}
-
-Re-assemble corpus for a given project based on curations and dump the results
-on S3.
+This endpoint runs a new assembly for a given `corpus_id` and `project_id`
+based on curations and dumps the results on S3. The project-specific
+statement dump appears as a sub-key under the corpus key base, as
+`indra-models/<corpus id>/<project id>/statements.json`.
 
 .. code-block:: sh
 
     URL: http://SERVICE_HOST:8001/run_assembly
     Method: POST with JSON content header
-    Input parameters: {"corpus_id": "<corpus_id>", "project_id": "<project_id>"}
+    Input parameters: {"corpus_id": "<corpus id>",
+                       "project_id": "<project id>"}
     Output: {}
 
-Download curations and the corresponding curated statements for a corpus.
-If a reader name is provided, filter the results to curations for statements
-that have the provided reader among its sources, otherwise all curations and
-their corresponding statements are returned.
+Download curations
+~~~~~~~~~~~~~~~~~~
+
+This endpoint allows downloading curations and the corresponding curated
+statements for a corpus. If a reader name is provided, the results are filtered
+to curations for statements that have the provided reader among its sources,
+otherwise all curations and their corresponding statements are returned.
 
 .. code-block:: sh
 
     URL: http://SERVICE_HOST:8001/download_curation
     Method: POST with JSON content header
-    Input parameters: {"corpus_id": "1", "reader": "<reader name>"}
-    Output: {"curations": [<curations>],
-             "statements": {"38ce0c14-2c7e-4df8-bd53-3006afeaa193": <stmt_json>}}
+    Input parameters: {"corpus_id": "<corpus id>",
+                       "reader": "<reader name>"}
+    Output: {"curations": <list of curations>,
+             "statements": {"38ce0c14-2c7e-4df8-bd53-3006afeaa193": <stmt json>}}
 
 Notify INDRA of a new reader output in DART.
 
