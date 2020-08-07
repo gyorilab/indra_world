@@ -77,9 +77,9 @@ def test_curation_assembly():
     assert obj.get_grounding()[1] == curations[4]['before']['subj']['concept']
 
     # Factor polarity: curation 6
-    curator.submit_curation(curations[5])
+    curator.submit_curation(curations[6])
     assembled_stmts = curator.run_assembly(corp_id, proj_id)
     stmt = assembled_stmts[0]
     assert stmt.overall_polarity() == \
-        curations[5]['after']['subj']['polarity'] * \
-        curations[5]['after']['obj']['polarity']
+        curations[6]['after']['subj']['polarity'] * \
+        curations[6]['after']['obj']['polarity']
