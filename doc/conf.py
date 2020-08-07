@@ -28,10 +28,16 @@ author = 'INDRA team'
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx.ext.napoleon',
+    'sphinx.ext.viewcode',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
+source_suffix = '.rst'
+master_doc = 'index'
+pygments_style = 'sphinx'
+numpydoc_show_class_members = False
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
