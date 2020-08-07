@@ -6,18 +6,11 @@
 INDRA World Modelers service
 ============================
 
-.. automodule:: indra.tools.live_curation
-    :members:
+.. toctree::
+   :maxdepth: 3
 
-.. automodule:: indra.tools.live_curation.curator
-    :members:
-
-.. automodule:: indra.tools.live_curation.corpus
-    :members:
-
-.. automodule:: indra.tools.live_curation.util
-    :members:
-
+   service.rst
+   modules.rst
 
 
 Indices and tables
