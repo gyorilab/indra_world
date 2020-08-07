@@ -9,30 +9,28 @@ with open('test_curations.json', 'r') as fh:
     curations = json.load(fh)
 
 
-def _make_curator():
-    stmts = []
-    for cur in curations:
-        subj = Concept(cur['before']['subj']['factor'],
-                       db_refs={'WM': cur['before']['subj']['concept']})
-        obj = Concept(cur['before']['obj']['factor'],
-                      db_refs={'WM': cur['before']['obj']['concept']})
-        subj_delta = QualitativeDelta(polarity=cur['before']['subj']['polarity'])
-        subj_event = Event(subj, delta=subj_delta)
-        obj_delta = QualitativeDelta(polarity=cur['before']['obj']['polarity'])
-        obj_event = Event(obj, delta=obj_delta)
+def _make_curator(curation_idx):
+    cur = curations[curation_idx]
+    subj = Concept(cur['before']['subj']['factor'],
+                   db_refs={'WM': cur['before']['subj']['concept']})
+    obj = Concept(cur['before']['obj']['factor'],
+                  db_refs={'WM': cur['before']['obj']['concept']})
+    subj_delta = QualitativeDelta(polarity=cur['before']['subj']['polarity'])
+    subj_event = Event(subj, delta=subj_delta)
+    obj_delta = QualitativeDelta(polarity=cur['before']['obj']['polarity'])
+    obj_event = Event(obj, delta=obj_delta)
 
-        evidence = [
-            Evidence(source_api=reader)
-            for reader in cur['before']['wm']['readers']
-        ]
-        stmt = Influence(subj_event, obj_event, evidence=evidence)
-        stmt.uuid = cur['statement_id']
-        stmts.append(stmt)
+    evidence = [
+        Evidence(source_api=reader)
+        for reader in cur['before']['wm']['readers']
+    ]
+    stmt = Influence(subj_event, obj_event, evidence=evidence)
+    stmt.uuid = cur['statement_id']
 
-    assembled_stmts = ac.run_preassembly(stmts)
+    assembled_stmts = ac.run_preassembly([stmt])
 
     corpus = Corpus('dart-20200313-interventions-grounding',
-                    statements=assembled_stmts, raw_statements=stmts)
+                    statements=assembled_stmts, raw_statements=[stmt])
 
     curator = LiveCurator(
         corpora={'dart-20200313-interventions-grounding': corpus},
@@ -41,14 +39,12 @@ def _make_curator():
     return curator
 
 
-def test_curation_assembly():
-    proj_id = 'project-0c970384-9f57-4ded-a535-96b613811a89'
-    corp_id = 'dart-20200313-interventions-grounding'
-    curator = _make_curator()
-    corpus = curator.corpora[corp_id]
-    init_evidence_count = len(corpus.statements[0].evidence)
-    curator.submit_curation(curations[0])
+proj_id = 'project-0c970384-9f57-4ded-a535-96b613811a89'
+corp_id = 'dart-20200313-interventions-grounding'
 
+
+def test_factor_grounding():
+    curator = _make_curator(0)
     # test factor_grounding
     assembled_stmts = curator.run_assembly(corp_id)
     subj, obj = assembled_stmts[0].agent_list()
@@ -58,17 +54,26 @@ def test_curation_assembly():
     subj, obj = assembled_stmts[0].agent_list()
     assert subj.get_grounding()[1] == curations[0]['after']['subj']['concept']
 
+
+def test_vet_statement():
+    curator = _make_curator(1)
     # Test vet statement: curation 1
     curator.submit_curation(curations[1])
     assembled_stmts = curator.run_assembly(corp_id, proj_id)
     stmt = assembled_stmts[0]
     assert stmt.belief == 1
 
+
+def test_discard_statement():
+    curator = _make_curator(2)
     # test discard statement: curation 2
     curator.submit_curation(curations[2])
     assembled_stmts = curator.run_assembly(corp_id, proj_id)
     assert len(assembled_stmts[0].evidence) == init_evidence_count-1
 
+
+def test_reverse_relation():
+    curator = _make_curator(4)
     # Test reverse relation: curation 4
     curator.submit_curation(curations[4])
     assembled_stmts = curator.run_assembly(corp_id, proj_id)
@@ -76,6 +81,9 @@ def test_curation_assembly():
     assert subj.get_grounding()[1] == curations[4]['before']['obj']['concept']
     assert obj.get_grounding()[1] == curations[4]['before']['subj']['concept']
 
+
+def test_factor_polarity():
+    curator = _make_curator(7)
     # Factor polarity: curation 6
     curator.submit_curation(curations[6])
     assembled_stmts = curator.run_assembly(corp_id, proj_id)
