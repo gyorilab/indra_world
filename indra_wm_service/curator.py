@@ -281,11 +281,8 @@ class LiveCurator(object):
         # STAGE 1: remove any discarded statements
         discard_curations = self.get_project_curations(corpus_id, project_id,
                                                        'discard_statement')
-        discard_stmt_raw_ids = set()
-        for cur in discard_curations:
-            discard_stmt_raw_ids |= set(
-                corpus.statements[
-                    cur['statement_id']].evidence[0].annotations['prior_uuids'])
+        discard_stmt_raw_ids = \
+            self.get_raw_stmt_ids_for_curations(corpus_id, discard_curations)
 
         raw_stmts = [s for s in corpus.raw_statements
                      if s.uuid not in discard_stmt_raw_ids]
@@ -318,20 +315,18 @@ class LiveCurator(object):
                     concept.db_refs['WM'] = groundings[idx]
                     idx += 1
 
-        # Stage 3: run normalization
+        # STAGE 3: run normalization
         pa = Preassembler(ontology=self.ont_manager, stmts=raw_stmts)
         pa.normalize_equivalences('WM')
         pa.normalize_opposites('WM')
         stmts = pa.stmts
 
-        # Stage 4: apply polarity curations
+        # STAGE 4: apply polarity curations
         polarity_curations = self.get_project_curations(corpus_id, project_id,
                                                         'factor_polarity')
         for cur in polarity_curations:
-            polarity_stmt_raw_ids = set(
-                corpus.statements[
-                    cur['statement_id']].evidence[0].annotations[
-                    'prior_uuids'])
+            polarity_stmt_raw_ids = \
+                self.get_raw_stmt_ids_for_curations(corpus_id, [cur])
             role, new_polarity = parse_factor_polarity_curation(cur)
             for stmt in stmts:
                 if stmt.uuid in polarity_stmt_raw_ids:
@@ -340,14 +335,11 @@ class LiveCurator(object):
                     elif role == 'obj':
                         stmt.obj.delta.polarity = new_polarity
 
-        # Stage 5: apply reverse relation curations
+        # STAGE 5: apply reverse relation curations
         reverse_curations = self.get_project_curations(corpus_id, project_id,
                                                        'reverse_relation')
-        reverse_stmt_raw_ids = set()
-        for cur in reverse_curations:
-            reverse_stmt_raw_ids |= set(
-                corpus.statements[
-                    cur['statement_id']].evidence[0].annotations['prior_uuids'])
+        reverse_stmt_raw_ids = \
+            self.get_raw_stmt_ids_for_curations(corpus_id, reverse_curations)
         for stmt in stmts:
             if stmt.uuid in reverse_stmt_raw_ids:
                 tmp = stmt.subj
@@ -355,7 +347,7 @@ class LiveCurator(object):
                 stmt.obj = tmp
                 # TODO: update any necessary annotations
 
-        # Stage 6: run preassembly
+        # STAGE 6: run preassembly
         stmts = ac.run_preassembly(stmts,
                                    belief_scorer=self.scorer,
                                    return_toplevel=False,
@@ -366,7 +358,7 @@ class LiveCurator(object):
         stmts = ac.merge_deltas(stmts)
         stmts = ac.standardize_names_groundings(stmts)
 
-        # Stage 7: persist results either as an S3 dump or by
+        # STAGE 7: persist results either as an S3 dump or by
         # rewriting the corpus
         stmt_dict = {s.uuid: s for s in stmts}
         if project_id:
@@ -394,6 +386,14 @@ class LiveCurator(object):
         return [cur for cur in corpus.curations
                 if cur['project_id'] == project_id
                 and not curation_type or cur['update_type'] == curation_type]
+
+    def get_raw_stmt_ids_for_curations(self, corpus_id, curations):
+        corpus = self.get_corpus(corpus_id)
+        stmt_raw_ids = set()
+        for cur in curations:
+            for ev in corpus.statements[cur['statement_id']].evidence:
+                stmt_raw_ids |= set(ev.annotations['prior_uuids'])
+        return stmt_raw_ids
 
 
 def parse_factor_grounding_curation(cur):
