@@ -111,7 +111,7 @@ otherwise all curations and their corresponding statements are returned.
 
 .. code-block:: sh
 
-    URL: http://SERVICE_HOST:8001/download_curation
+    URL: http://SERVICE_HOST:8001/download_curations
     Method: POST with JSON content header
     Input parameters: {"corpus_id": "<corpus id>",
                        "reader": "<reader name>"}
