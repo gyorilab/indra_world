@@ -178,6 +178,8 @@ for each corpus are as follows
 - `metadata.json`: a JSON file containing key-value pairs that describe the
   corpus. The standard keys in this file are as follows:
 
+  - `corpus_id`: the ID of the corpus (redundant with the corresponding entry
+    in the index).
   - `description`: a human-readable description of how the corpus was obtained.
   - `display_name`: a human-readable display name for the corpus.
   - `readers`: a list of the names of the reading systems from which
