@@ -389,6 +389,39 @@ class LiveGroundingTestCase(unittest.TestCase):
         assert dr['WM'][0][0] == 'wm/animal/dog', dr
 
 
+def test_get_curations():
+    curations = [{'corpus_id': '1',
+                  'statement_id': '4',
+                  'update_type': 'discard_statement'}]
+    corpus = _make_corpus()
+    curator = LiveCurator(corpora={'1': corpus})
+    curator.submit_curations(curations=curations)
+
+    curs = curator.get_curations('1')
+    assert 'curations' in curs
+    assert 'statements' in curs
+    assert curs['curations'][0] == curations[0]
+    assert isinstance(curs['statements'], dict)
+    assert '4' in curs['statements']
+    stmtj = curs['statements']['4']
+    assert stmtj['subj']['concept']['name'] == 'x'
+
+    curs = curator.get_curations('1', reader='sofia')
+    assert 'curations' in curs
+    assert 'statements' in curs
+    assert curs['curations'][0] == curations[0]
+    assert isinstance(curs['statements'], dict)
+    assert '4' in curs['statements']
+    stmtj = curs['statements']['4']
+    assert stmtj['subj']['concept']['name'] == 'x'
+
+    curs = curator.get_curations('1', reader='cwms')
+    assert 'curations' in curs
+    assert 'statements' in curs
+    assert not curs['curations']
+    assert not curs['statements']
+
+
 def close_enough(probs, ref):
     for k, v in probs.items():
         if abs(ref[k] - probs[k]) > 0.0001:

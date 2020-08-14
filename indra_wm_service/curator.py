@@ -80,7 +80,7 @@ class LiveCurator(object):
 
         return corpus
 
-    def get_curations(self, corpus_id, reader):
+    def get_curations(self, corpus_id, reader=None):
         """Download curations for corpus id filtered to reader
 
         Parameters
@@ -101,20 +101,29 @@ class LiveCurator(object):
         corpus_curations = corpus.get_curations(look_in_cache=True)
         # Get all statements that have curations
         curated_stmts = {}
+        curations_by_stmt = {}
         for curation in corpus_curations:
             uuid = curation['statement_id']
+            # FIXME: isn't it a problem that the corpus may have been reassembled
+            # and so here we canm either (1) get a key error because the UUID
+            # has changed or (2) return a statement which is different from
+            # what was originally curated?
+            if uuid not in corpus.statements:
+                continue
             curated_stmts[uuid] = corpus.statements[uuid]
+            # FIXME: do we need to account for multiple curations / statement?
+            curations_by_stmt[uuid] = curation
         if reader and reader != 'all':
             # Filter out statements and curations that don't contain material
             # from provided reader (in source api of statement)
-            filtered_curations = {}
+            filtered_curations = []
             filtered_stmts = {}
             for uuid, stmt in curated_stmts.items():
                 # Check if any of the evidences are from the provided reader
                 for ev in stmt.evidence:
                     if ev.source_api == reader.lower():
                         filtered_stmts[uuid] = stmt
-                        filtered_curations[uuid] = corpus_curations[uuid]
+                        filtered_curations.append(curations_by_stmt[uuid])
                         break
             data = {'curations': filtered_curations,
                     'statements': {uuid: st.to_json() for uuid, st in
