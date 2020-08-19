@@ -9,6 +9,7 @@ from wtforms import SubmitField, validators, SelectMultipleField, DateField, \
 from flask_bootstrap import Bootstrap
 
 from indra.pipeline import AssemblyPipeline
+from indra_wm_service.assembly.operations import *
 from indra_wm_service.assembly.dart import process_reader_outputs
 from indra_wm_service.live_curation import Corpus
 
@@ -62,9 +63,14 @@ def run_assembly():
     logger.info('Fetching reader output for readers %s and dates %s' %
                 (str(readers), str(timestamp)))
     reader_outputs = dart_client.get_reader_outputs(readers, timestamp=timestamp)
+    if not reader_outputs:
+        return jsonify({})
     logger.info('Processing reader output...')
     stmts = process_reader_outputs(reader_outputs)
     logger.info('Got a total of %s statements' % len(stmts))
+
+    if not stmts:
+        return jsonify({})
 
     pipeline = AssemblyPipeline.from_json_file(DEFAULT_ASSEMBLY_JSON)
     assembled_stmts = pipeline.run(stmts)
@@ -94,7 +100,6 @@ def run_assembly():
                     meta_data=meta_data)
     corpus.s3_put()
     return 'Assembly complete'
-
 
 
 if __name__ == '__main__':

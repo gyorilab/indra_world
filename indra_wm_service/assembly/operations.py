@@ -1,13 +1,18 @@
+import os
 import yaml
 import copy
 import logging
 import requests
+from datetime import datetime
 from collections import defaultdict
 import indra.tools.assemble_corpus as ac
 from indra.pipeline import register_pipeline
 from indra.statements import Influence, Association
 
 logger = logging.getLogger(__name__)
+
+
+register_pipeline(datetime)
 
 
 @register_pipeline
@@ -155,7 +160,10 @@ def filter_context_date(stmts, from_date=None, to_date=None):
 
 @register_pipeline
 def filter_groundings(stmts):
-    with open('groundings_to_exclude.txt', 'r') as f:
+    excl_file = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                             os.pardir, 'resources',
+                             'groundings_to_exclude.txt')
+    with open(excl_file, 'r') as f:
         groundings_to_exclude = [l.strip() for l in f.readlines()]
     stmts = ac.filter_by_db_refs(
         stmts, 'WM', groundings_to_exclude, 'all', invert=True)
