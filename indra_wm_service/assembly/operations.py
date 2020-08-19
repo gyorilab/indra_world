@@ -64,8 +64,14 @@ def check_event_context(events):
 
 
 @register_pipeline
-def reground_stmts(stmts, ont_manager, namespace, eidos_reader=None,
-                   overwrite=True, port=6666):
+def reground_stmts(stmts, ont_manager, namespace, eidos_service=None,
+                   overwrite=True, sources=None):
+    if sources is None:
+        sources = {'sofia', 'cwms'}
+    if eidos_service is None:
+        eidos_service = 'http://localhost:9000/'
+    if not eidos_service.endswith('/'):
+        eidos_service += '/'
     logger.info(f'Regrounding {len(stmts)} statements')
     # Send the latest ontology and list of concept texts to Eidos
     yaml_str = yaml.dump(ont_manager.yaml_root)
@@ -75,17 +81,16 @@ def reground_stmts(stmts, ont_manager, namespace, eidos_reader=None,
             #concept_txt = concept.db_refs.get('TEXT')
             concept_txt = concept.name
             concepts.append(concept_txt)
-    # Either use an EidosReader instance or a local web service
-    if eidos_reader:
-        groundings = eidos_reader.reground_texts(concepts, yaml_str)
-    else:
-        res = requests.post(f'http://localhost:{port}/reground_text',
-                            json={'text': concepts, 'ont_yml': yaml_str})
-        groundings = res.json()
+    res = requests.post(f'{eidos_service}reground_text',
+                        json={'text': concepts, 'ont_yml': yaml_str})
+    groundings = res.json()
     # Update the corpus with new groundings
     idx = 0
     logger.info(f'Setting new grounding for {len(stmts)} statements')
     for stmt in stmts:
+        # Skip statements from sources that shouldn't be regrounded
+        if not any(ev.source_api in sources for ev in stmt.evidence):
+            continue
         for concept in stmt.agent_list():
             if overwrite:
                 if groundings[idx]:
