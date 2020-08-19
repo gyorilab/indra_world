@@ -1,11 +1,9 @@
 [
   {
     "function": "filter_by_type",
-    "args": [
-      {
-        "stmt_type": "Influence"
-      }
-    ]
+    "kwargs": {
+      "stmt_type": "Influence"
+    }
   },
   {
     "function": "remove_namespaces",
@@ -15,15 +13,6 @@
         "MITRE12",
         "UN"
       ]
-    ]
-  },
-  {
-    "function": "reground_stmts",
-    "args": [
-      {
-        "function": "load_world_ontology"
-      },
-      "WM"
     ]
   },
   {
@@ -63,6 +52,14 @@
       "belief_scorer": {
         "function": "get_eidos_scorer"
       },
+      "matches_fun": {
+        "function": "location_matches",
+        "no_run": true
+      },
+      "refinement_fun": {
+        "function": "location_refinement",
+        "no_run": true
+      },
       "normalize_equivalences": true,
       "normalize_opposites": true,
       "normalize_ns": "WM",
@@ -70,7 +67,7 @@
         "function": "load_world_ontology"
       },
       "return_toplevel": false,
-      "poolsize": 8
+      "poolsize": null
     }
   },
   {

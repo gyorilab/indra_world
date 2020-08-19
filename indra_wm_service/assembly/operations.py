@@ -16,16 +16,6 @@ register_pipeline(datetime)
 
 
 @register_pipeline
-def fix_provenance(stmts, doc_id):
-    """Move the document identifiers in evidences."""
-    for stmt in stmts:
-        for ev in stmt.evidence:
-            prov = ev.annotations['provenance'][0]['document']
-            prov['@id'] = doc_id
-    return stmts
-
-
-@register_pipeline
 def remove_namespaces(stmts, namespaces):
     """Remove unnecessary namespaces from Concept grounding."""
     logger.info('Removing unnecessary namespaces')
@@ -74,7 +64,7 @@ def reground_stmts(stmts, ont_manager, namespace, eidos_service=None,
         eidos_service += '/'
     logger.info(f'Regrounding {len(stmts)} statements')
     # Send the latest ontology and list of concept texts to Eidos
-    yaml_str = yaml.dump(ont_manager.yaml_root)
+    yaml_str = yaml.dump(ont_manager.yml)
     concepts = []
     for stmt in stmts:
         for concept in stmt.agent_list():
