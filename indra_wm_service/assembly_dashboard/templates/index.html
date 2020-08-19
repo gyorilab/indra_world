@@ -1,0 +1,81 @@
+{% extends "bootstrap/base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% import "bootstrap/fixes.html" as fixes %}
+{% import "bootstrap/utils.html" as util %}
+
+{% block content %}
+{{util.flashed_messages(dismissible=True)}}
+<div class="container">
+    <div class="jumbotron">
+        <h1>INDRA World Modelers assembly dashboard</h1>
+        <p>
+            This website allows searching for machine reader output, and
+            running INDRA assembly.
+        </p>
+
+    </div>
+</div>
+
+
+<div class="container">
+    <style>
+        .form-control {
+            width: 90%;
+        }
+        .btn {
+            margin: 5px;
+        }
+    </style>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+
+    <!-- Choices multiselect library: https://github.com/jshjohnson/Choices -->
+    <!-- Include Choices CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
+    <!-- Include Choices JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            // see https://github.com/jshjohnson/Choices
+            const readerSelect = new Choices('#reader-select');
+        })
+    </script>
+    <div class="row">
+        <div class="col-md-2"></div>
+        <div class="col-md-8" align="left">
+            <div id="assembly-panel" class="panel panel-default" style="padding:2%">
+                <h2>
+                    Find machine reader outputs and run assembly.
+                </h2>
+                <form class="form" method="post" action='run_assembly' role="form">
+                    {{ wtf.form_field(run_assembly_form.readers, class_="form-control") }}
+                    {{ wtf.form_field(run_assembly_form.before_date, class_="form-control") }}
+                    {{ wtf.form_field(run_assembly_form.after_date, class_="form-control") }}
+                    {{ wtf.form_field(run_assembly_form.corpus_id, class_="form-control") }}
+                    {{ wtf.form_field(run_assembly_form.submit_button, class="btn btn-primary") }}
+                </form>
+            </div>
+        </div>
+        <div class="col-md-2"></div>
+    </div>
+</div>
+<div class="container">
+    <div class="well">
+        <p class="lead">
+            The development of this system was funded under the DARPA World Modelers program
+            (W911NF-18-1-0014) by the <a href="http://indralab.github.io">INDRA team</a>
+            in the <a href="http://hits.harvard.edu">Laboratory of Systems Pharmacology</a>
+            at Harvard Medical School.
+        </p>
+        <p class="lead">
+            Point of contact: Benjamin M. Gyori (benjamin_gyori [AT] hms.harvard.edu)
+        </p>
+    </div>
+</div>
+{% endblock %}
+
+{% block head %}
+{{super()}}
+{{fixes.ie8()}}
+{% endblock %}
