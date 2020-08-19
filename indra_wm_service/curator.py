@@ -80,7 +80,7 @@ class LiveCurator(object):
 
         return corpus
 
-    def get_curations(self, corpus_id, reader):
+    def get_curations(self, corpus_id, reader=None):
         """Download curations for corpus id filtered to reader
 
         Parameters
@@ -101,20 +101,29 @@ class LiveCurator(object):
         corpus_curations = corpus.get_curations(look_in_cache=True)
         # Get all statements that have curations
         curated_stmts = {}
+        curations_by_stmt = {}
         for curation in corpus_curations:
             uuid = curation['statement_id']
+            # FIXME: isn't it a problem that the corpus may have been reassembled
+            # and so here we canm either (1) get a key error because the UUID
+            # has changed or (2) return a statement which is different from
+            # what was originally curated?
+            if uuid not in corpus.statements:
+                continue
             curated_stmts[uuid] = corpus.statements[uuid]
+            # FIXME: do we need to account for multiple curations / statement?
+            curations_by_stmt[uuid] = curation
         if reader and reader != 'all':
             # Filter out statements and curations that don't contain material
             # from provided reader (in source api of statement)
-            filtered_curations = {}
+            filtered_curations = []
             filtered_stmts = {}
             for uuid, stmt in curated_stmts.items():
                 # Check if any of the evidences are from the provided reader
                 for ev in stmt.evidence:
                     if ev.source_api == reader.lower():
                         filtered_stmts[uuid] = stmt
-                        filtered_curations[uuid] = corpus_curations[uuid]
+                        filtered_curations.append(curations_by_stmt[uuid])
                         break
             data = {'curations': filtered_curations,
                     'statements': {uuid: st.to_json() for uuid, st in
@@ -236,7 +245,7 @@ class LiveCurator(object):
                                                file_defaults['meta'])
             corpus._save_to_cache(meta=meta_file_key)
 
-    def update_beliefs(self, corpus_id):
+    def update_beliefs(self, corpus_id, project_id=None):
         """Return updated belief scores for a given corpus.
 
         Parameters
@@ -258,6 +267,8 @@ class LiveCurator(object):
         be.set_prior_probs(stmts)
         # Here we set beliefs based on actual curation
         for curation in corpus.curations:
+            if project_id and curation['project_id'] != project_id:
+                continue
             stmt = corpus.statements.get(curation['statement_id'])
             if stmt is None:
                 logger.warning('%s is not in the corpus.' %
@@ -273,48 +284,166 @@ class LiveCurator(object):
         belief_dict = {st.uuid: st.belief for st in stmts}
         return belief_dict
 
-    def update_groundings(self, corpus_id):
-        # TODO check which options are appropriate for get_corpus
-        logger.info('Updating groundings for corpus "%s"' % corpus_id)
+    def run_assembly(self, corpus_id, project_id=None):
+        from indra.preassembler import Preassembler
+
         corpus = self.get_corpus(corpus_id)
 
-        # Send the latest ontology and list of concept texts to Eidos
-        yaml_str = yaml.dump(self.ont_manager.yml)
-        concepts = []
-        for stmt in corpus.raw_statements:
-            for concept in stmt.agent_list():
-                concept_txt = concept.db_refs.get('TEXT')
-                concepts.append(concept_txt)
-        groundings = reground_texts(concepts, yaml_str,
-                                    webservice=self.eidos_url)
-        # Update the corpus with new groundings
-        idx = 0
-        for stmt in corpus.raw_statements:
-            for concept in stmt.agent_list():
-                concept.db_refs['WM'] = groundings[idx]
-                idx += 1
-        assembled_statements = default_assembly(corpus.raw_statements)
-        corpus.statements = {s.uuid: s for s in assembled_statements}
-        return assembled_statements
+        # STAGE 1: remove any discarded statements
+        discard_curations = self.get_project_curations(corpus_id, project_id,
+                                                       'discard_statement')
+        discard_stmt_raw_ids = \
+            self.get_raw_stmt_ids_for_curations(corpus_id, discard_curations)
+
+        raw_stmts = [s for s in corpus.raw_statements
+                     if s.uuid not in discard_stmt_raw_ids]
+
+        # STAGE 2: grounding
+        grounding_curations = self.get_project_curations(corpus_id, project_id,
+                                                         'factor_grounding')
+        # Since this is an expensive step, we only do it if there are actual
+        # grounding changes
+        if grounding_curations:
+            # Modify the ontology here according to any grounding
+            # updates
+            for cur in grounding_curations:
+                txt, grounding = parse_factor_grounding_curation(cur)
+                self.ont_manager.add_entry(grounding, [txt])
+
+            # Send the latest ontology and list of concept texts to Eidos
+            yaml_str = yaml.dump(self.ont_manager.yml)
+            concepts = []
+            for stmt in raw_stmts:
+                for concept in stmt.agent_list():
+                    concept_txt = concept.db_refs.get('TEXT')
+                    concepts.append(concept_txt)
+            groundings = reground_texts(concepts, yaml_str,
+                                        webservice=self.eidos_url)
+            # Update the corpus with new groundings
+            idx = 0
+            for stmt in raw_stmts:
+                for concept in stmt.agent_list():
+                    concept.db_refs['WM'] = groundings[idx]
+                    idx += 1
+
+        # STAGE 3: run normalization
+        pa = Preassembler(ontology=self.ont_manager, stmts=raw_stmts)
+        pa.normalize_equivalences('WM')
+        pa.normalize_opposites('WM')
+        stmts = pa.stmts
+
+        # STAGE 4: apply polarity curations
+        polarity_curations = self.get_project_curations(corpus_id, project_id,
+                                                        'factor_polarity')
+        for cur in polarity_curations:
+            polarity_stmt_raw_ids = \
+                self.get_raw_stmt_ids_for_curations(corpus_id, [cur])
+            role, new_polarity = parse_factor_polarity_curation(cur)
+            for stmt in stmts:
+                if stmt.uuid in polarity_stmt_raw_ids:
+                    if role == 'subj':
+                        stmt.subj.delta.polarity = new_polarity
+                    elif role == 'obj':
+                        stmt.obj.delta.polarity = new_polarity
+
+        # STAGE 5: apply reverse relation curations
+        reverse_curations = self.get_project_curations(corpus_id, project_id,
+                                                       'reverse_relation')
+        reverse_stmt_raw_ids = \
+            self.get_raw_stmt_ids_for_curations(corpus_id, reverse_curations)
+        for stmt in stmts:
+            if stmt.uuid in reverse_stmt_raw_ids:
+                tmp = stmt.subj
+                stmt.subj = stmt.obj
+                stmt.obj = tmp
+                # TODO: update any necessary annotations
+
+        # STAGE 6: run preassembly
+        stmts = ac.run_preassembly(stmts,
+                                   belief_scorer=self.scorer,
+                                   return_toplevel=False,
+                                   poolsize=4,
+                                   ontology=self.ont_manager)
+        # TODO: do these need to be done before polarity curation?
+        stmts = ac.merge_groundings(stmts)
+        stmts = ac.merge_deltas(stmts)
+        stmts = ac.standardize_names_groundings(stmts)
+
+        # STAGE 7: set beliefs of vetted statements
+        vetted_curations = self.get_project_curations(corpus_id, project_id,
+                                                      'vet_statement')
+        for cur in vetted_curations:
+            prior_uuids = self.get_raw_stmt_ids_for_curations(corpus_id, [cur])
+            for stmt in stmts:
+                for ev in stmt.evidence:
+                    if prior_uuids & set(ev.annotations['prior_uuids']):
+                        stmt.belief = 1
+                        break
+
+        # STAGE 8: persist results either as an S3 dump or by
+        # rewriting the corpus
+        stmt_dict = {s.uuid: s for s in stmts}
+        if project_id:
+            self.dump_project(corpus_id, project_id, stmt_dict)
+        else:
+            # TODO: shouldn't we do an S3 dump here?
+            corpus.statements = stmt_dict
+        return stmts
+
+    def dump_project(self, corpus_id, project_id, stmts):
+        import json
+        from indra.statements import stmts_to_json
+        from . import default_bucket, default_profile, default_key_base
+        # Structure and upload assembled statements
+        stmts_json = '\n'.join(json.dumps(jo) for jo in
+                               stmts_to_json(list(stmts.values())))
+        Corpus._s3_put_file(
+            Corpus._make_s3_client(default_profile),
+            f'{default_key_base}/{corpus_id}/{project_id}/statements.json',
+            stmts_json, default_bucket)
+
+    def get_project_curations(self, corpus_id, project_id,
+                              curation_type=None):
+        corpus = self.get_corpus(corpus_id)
+        return [cur for cur in corpus.curations
+                if cur['project_id'] == project_id
+                and not curation_type or cur['update_type'] == curation_type]
+
+    def get_raw_stmt_ids_for_curations(self, corpus_id, curations):
+        corpus = self.get_corpus(corpus_id)
+        stmt_raw_ids = set()
+        for cur in curations:
+            for ev in corpus.statements[cur['statement_id']].evidence:
+                stmt_raw_ids |= set(ev.annotations['prior_uuids'])
+        return stmt_raw_ids
 
 
-def default_assembly(stmts):
-    from indra.belief.wm_scorer import get_eidos_scorer
-    from indra.ontology.world import world_ontology
-    scorer = get_eidos_scorer()
-    stmts = ac.run_preassembly(stmts, belief_scorer=scorer,
-                               return_toplevel=True,
-                               flatten_evidence=True,
-                               normalize_equivalences=True,
-                               normalize_opposites=True,
-                               normalize_ns='WM',
-                               flatten_evidence_collect_from='supported_by',
-                               poolsize=4,
-                               ontology=world_ontology)
-    stmts = ac.merge_groundings(stmts)
-    stmts = ac.merge_deltas(stmts)
-    stmts = ac.standardize_names_groundings(stmts)
-    return stmts
+def parse_factor_grounding_curation(cur):
+    bef_subj = cur['before']['subj']
+    bef_obj = cur['before']['obj']
+    aft_subj = cur['after']['subj']
+    aft_obj = cur['after']['obj']
+
+    if bef_subj['concept'] != aft_subj['concept']:
+        return aft_subj['factor'], aft_subj['concept']
+    elif bef_obj['concept'] != aft_obj['concept']:
+        return aft_obj['factor'], aft_obj['concept']
+    else:
+        return None, None
+
+
+def parse_factor_polarity_curation(cur):
+    bef_subj = cur['before']['subj']
+    bef_obj = cur['before']['obj']
+    aft_subj = cur['after']['subj']
+    aft_obj = cur['after']['obj']
+
+    if bef_subj['polarity'] != aft_subj['polarity']:
+        return 'subj', aft_subj['polarity']
+    elif bef_obj['polarity'] != aft_obj['polarity']:
+        return 'obj', aft_obj['polarity']
+    else:
+        return None, None
 
 
 correct_flags = {'vet_statement'}

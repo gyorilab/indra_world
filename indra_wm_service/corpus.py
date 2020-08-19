@@ -55,18 +55,22 @@ class Corpus(object):
 
     def _get_s3_client(self):
         if self._s3 is None:
-            if environ.get('AWS_ACCESS_KEY_ID') and \
-                    environ.get('AWS_SECRET_ACCESS_KEY'):
-                logger.info('Got credentials in environment for client')
-                self._s3 = boto3.session.Session(
-                    aws_access_key_id=environ.get('AWS_ACCESS_KEY_ID'),
-                    aws_secret_access_key=environ.get('AWS_SECRET_ACCESS_KEY')
-                ).client('s3')
-            else:
-                logger.info('Using stored AWS profile for client')
-                self._s3 = boto3.session.Session(
-                    profile_name=self.aws_name).client('s3')
+            self._s3 = self._make_s3_client(self.aws_name)
         return self._s3
+
+    @staticmethod
+    def _make_s3_client(profile_name=None):
+        if environ.get('AWS_ACCESS_KEY_ID') and \
+                environ.get('AWS_SECRET_ACCESS_KEY'):
+            logger.info('Got credentials in environment for client')
+            return boto3.session.Session(
+                aws_access_key_id=environ.get('AWS_ACCESS_KEY_ID'),
+                aws_secret_access_key=environ.get('AWS_SECRET_ACCESS_KEY')
+            ).client('s3')
+        else:
+            logger.info('Using stored AWS profile for client')
+            return boto3.session.Session(
+                profile_name=profile_name).client('s3')
 
     def __str__(self):
         return ('Corpus(%s, %d statements, %d curations)' %

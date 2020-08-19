@@ -1,0 +1,340 @@
+[
+  {
+    "modified_at": 1594852169356,
+    "corpus_id": "dart-20200313-interventions-grounding",
+    "project_id": "project-0c970384-9f57-4ded-a535-96b613811a89",
+    "batch_id": "dab0eed4-865b-42f7-a495-84d5ea0a0112",
+    "statement_id": "83f5aec2-978b-4e01-a2c9-e231f90bfabd",
+    "update_type": "factor_grounding",
+    "before": {
+      "wm": {
+        "state": 1,
+        "readers": [
+          "cwms",
+          "hume"
+        ]
+      },
+      "subj": {
+        "factor": "flooding",
+        "concept": "wm/concept/causal_factor/crisis_and_disaster/environmental_disasters/natural_disaster/flooding",
+        "polarity": 1,
+        "concept_score": 0.88475215
+      },
+      "obj": {
+        "factor": "rains",
+        "concept": "wm/concept/causal_factor/environmental/meteorologic/precipitation/rainfall",
+        "polarity": 1,
+        "concept_score": 0.91073143
+      }
+    },
+    "after": {
+      "wm": {
+        "state": 1,
+        "readers": [
+          "cwms",
+          "hume"
+        ]
+      },
+      "subj": {
+        "factor": "flooding",
+        "concept": "wm/concept/causal_factor/crisis_and_disaster/environmental_disasters/natural_disaster",
+        "polarity": 1,
+        "concept_score": 1
+      },
+      "obj": {
+        "factor": "rains",
+        "concept": "wm/concept/causal_factor/environmental/meteorologic/precipitation/rainfall",
+        "polarity": 1,
+        "concept_score": 0.91073143
+      }
+    }
+  },
+  {
+    "modified_at": 1594852172332,
+    "corpus_id": "dart-20200313-interventions-grounding",
+    "project_id": "project-0c970384-9f57-4ded-a535-96b613811a89",
+    "batch_id": "490b602b-cc47-4d12-bacb-8caec06f3cf2",
+    "statement_id": "1065ba19-6d2b-4bcb-a71c-8e99eade1817",
+    "update_type": "vet_statement",
+    "before": {
+      "wm": {
+        "state": 1,
+        "readers": [
+          "eidos"
+        ]
+      },
+      "subj": {
+        "factor": "flood",
+        "concept": "wm/concept/causal_factor/crisis_and_disaster/environmental_disasters/natural_disaster/flooding",
+        "polarity": 1,
+        "concept_score": 0.9666712284088135
+      },
+      "obj": {
+        "factor": "rainfall",
+        "concept": "wm/concept/causal_factor/environmental/meteorologic/precipitation/rainfall",
+        "polarity": 1,
+        "concept_score": 0.8852216005325317
+      }
+    },
+    "after": {
+      "wm": {
+        "state": 2,
+        "readers": [
+          "eidos"
+        ]
+      },
+      "subj": {
+        "factor": "flood",
+        "concept": "wm/concept/causal_factor/crisis_and_disaster/environmental_disasters/natural_disaster/flooding",
+        "polarity": 1,
+        "concept_score": 0.9666712284088135
+      },
+      "obj": {
+        "factor": "rainfall",
+        "concept": "wm/concept/causal_factor/environmental/meteorologic/precipitation/rainfall",
+        "polarity": 1,
+        "concept_score": 0.8852216005325317
+      }
+    }
+  },
+  {
+    "modified_at": 1594852174317,
+    "corpus_id": "dart-20200313-interventions-grounding",
+    "project_id": "project-0c970384-9f57-4ded-a535-96b613811a89",
+    "batch_id": "f8e3af26-d193-4bd5-838e-bc72478892ef",
+    "statement_id": "cb38edf4-82a2-4f54-ab60-67c1f13b3132",
+    "update_type": "discard_statement",
+    "before": {
+      "wm": {
+        "state": 1,
+        "readers": [
+          "eidos"
+        ]
+      },
+      "subj": {
+        "factor": "flood",
+        "concept": "wm/concept/causal_factor/crisis_and_disaster/environmental_disasters/natural_disaster/flooding",
+        "polarity": 1,
+        "concept_score": 0.9666712284088135
+      },
+      "obj": {
+        "factor": "rain",
+        "concept": "wm/concept/causal_factor/environmental/meteorologic/precipitation/rainfall",
+        "polarity": 1,
+        "concept_score": 0.9107314348220825
+      }
+    },
+    "after": {
+      "wm": {
+        "state": 3,
+        "readers": [
+          "eidos"
+        ]
+      },
+      "subj": {
+        "factor": "flood",
+        "concept": "wm/concept/causal_factor/crisis_and_disaster/environmental_disasters/natural_disaster/flooding",
+        "polarity": 1,
+        "concept_score": 0.9666712284088135
+      },
+      "obj": {
+        "factor": "rain",
+        "concept": "wm/concept/causal_factor/environmental/meteorologic/precipitation/rainfall",
+        "polarity": 1,
+        "concept_score": 0.9107314348220825
+      }
+    }
+  },
+  {
+    "modified_at": 1594852178322,
+    "corpus_id": "dart-20200313-interventions-grounding",
+    "project_id": "project-0c970384-9f57-4ded-a535-96b613811a89",
+    "batch_id": "bf6f2baf-ca0d-4541-b950-a867259f7478",
+    "statement_id": "a0ca3cd4-d8bf-44ab-805e-1e3c3346594c",
+    "update_type": "reverse_relation",
+    "before": {
+      "wm": {
+        "state": 1,
+        "readers": [
+          "sofia"
+        ]
+      },
+      "subj": {
+        "factor": "flooding",
+        "concept": "wm/concept/causal_factor/crisis_and_disaster/environmental_disasters/natural_disaster/flooding",
+        "polarity": 1,
+        "concept_score": 0.88475215
+      },
+      "obj": {
+        "factor": "rainfalls",
+        "concept": "wm/concept/causal_factor/environmental/meteorologic/precipitation/rainfall",
+        "polarity": 1,
+        "concept_score": 0.8852216
+      }
+    },
+    "after": {
+      "wm": {
+        "state": 1,
+        "readers": [
+          "sofia"
+        ]
+      },
+      "subj": {
+        "factor": "rainfalls",
+        "concept": "wm/concept/causal_factor/environmental/meteorologic/precipitation/rainfall",
+        "polarity": 1,
+        "concept_score": 0.8852216
+      },
+      "obj": {
+        "factor": "flooding",
+        "concept": "wm/concept/causal_factor/crisis_and_disaster/environmental_disasters/natural_disaster/flooding",
+        "polarity": 1,
+        "concept_score": 0.88475215
+      }
+    }
+  },
+  {
+    "modified_at": 1594852178323,
+    "corpus_id": "dart-20200313-interventions-grounding",
+    "project_id": "project-0c970384-9f57-4ded-a535-96b613811a89",
+    "batch_id": "bf6f2baf-ca0d-4541-b950-a867259f7478",
+    "statement_id": "656cda68-70e3-4229-ae60-c058047b40d4",
+    "update_type": "reverse_relation",
+    "before": {
+      "wm": {
+        "state": 1,
+        "readers": [
+          "sofia"
+        ]
+      },
+      "subj": {
+        "factor": "flooding",
+        "concept": "wm/concept/causal_factor/crisis_and_disaster/environmental_disasters/natural_disaster/flooding",
+        "polarity": 1,
+        "concept_score": 0.88475215
+      },
+      "obj": {
+        "factor": "rainfalls",
+        "concept": "wm/concept/causal_factor/environmental/meteorologic/precipitation/rainfall",
+        "polarity": 1,
+        "concept_score": 0.8852216
+      }
+    },
+    "after": {
+      "wm": {
+        "state": 1,
+        "readers": [
+          "sofia"
+        ]
+      },
+      "subj": {
+        "factor": "rainfalls",
+        "concept": "wm/concept/causal_factor/environmental/meteorologic/precipitation/rainfall",
+        "polarity": 1,
+        "concept_score": 0.8852216
+      },
+      "obj": {
+        "factor": "flooding",
+        "concept": "wm/concept/causal_factor/crisis_and_disaster/environmental_disasters/natural_disaster/flooding",
+        "polarity": 1,
+        "concept_score": 0.88475215
+      }
+    }
+  },
+  {
+    "modified_at": 1594852190809,
+    "corpus_id": "dart-20200313-interventions-grounding",
+    "project_id": "project-0c970384-9f57-4ded-a535-96b613811a89",
+    "batch_id": "e50d5500-b89e-4fb7-80e5-ca5ffffd98ab",
+    "statement_id": "27feb3f0-70ac-48d4-bf0e-53be5ab37ca7",
+    "update_type": "factor_grounding",
+    "before": {
+      "wm": {
+        "state": 1,
+        "readers": [
+          "hume"
+        ]
+      },
+      "subj": {
+        "factor": "landslides",
+        "concept": "wm/concept/causal_factor/crisis_and_disaster/environmental_disasters/natural_disaster/flooding",
+        "polarity": 1,
+        "concept_score": 0.86397424307873
+      },
+      "obj": {
+        "factor": "heavy rains",
+        "concept": "wm/concept/causal_factor/environmental/meteorologic/precipitation/rainfall",
+        "polarity": 1,
+        "concept_score": 0.8954810993992028
+      }
+    },
+    "after": {
+      "wm": {
+        "state": 1,
+        "readers": [
+          "hume"
+        ]
+      },
+      "subj": {
+        "factor": "landslides",
+        "concept": "wm/concept/causal_factor/crisis_and_disaster/environmental_disasters/natural_disaster",
+        "polarity": 1,
+        "concept_score": 1
+      },
+      "obj": {
+        "factor": "heavy rains",
+        "concept": "wm/concept/causal_factor/environmental/meteorologic/precipitation/rainfall",
+        "polarity": 1,
+        "concept_score": 0.8954810993992028
+      }
+    }
+  },
+  {
+    "modified_at": 1594852199275,
+    "corpus_id": "dart-20200313-interventions-grounding",
+    "project_id": "project-0c970384-9f57-4ded-a535-96b613811a89",
+    "batch_id": "5fadce48-79da-4fe5-88c1-9318197f21d0",
+    "statement_id": "1065ba19-6d2b-4bcb-a71c-8e99eade1817",
+    "update_type": "factor_polarity",
+    "before": {
+      "wm": {
+        "state": 2,
+        "readers": [
+          "eidos"
+        ]
+      },
+      "subj": {
+        "factor": "flood",
+        "concept": "wm/concept/causal_factor/crisis_and_disaster/environmental_disasters/natural_disaster/flooding",
+        "polarity": 1,
+        "concept_score": 0.9666712284088135
+      },
+      "obj": {
+        "factor": "rainfall",
+        "concept": "wm/concept/causal_factor/environmental/meteorologic/precipitation/rainfall",
+        "polarity": 1,
+        "concept_score": 0.8852216005325317
+      }
+    },
+    "after": {
+      "wm": {
+        "state": 2,
+        "readers": [
+          "eidos"
+        ]
+      },
+      "subj": {
+        "factor": "flood",
+        "concept": "wm/concept/causal_factor/crisis_and_disaster/environmental_disasters/natural_disaster/flooding",
+        "polarity": 1,
+        "concept_score": 0.9666712284088135
+      },
+      "obj": {
+        "factor": "rainfall",
+        "concept": "wm/concept/causal_factor/environmental/meteorologic/precipitation/rainfall",
+        "polarity": -1,
+        "concept_score": 0.8852216005325317
+      }
+    }
+  }
+]
