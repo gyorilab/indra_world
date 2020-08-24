@@ -67,10 +67,13 @@ def reground_stmts(stmts, ont_manager, namespace, eidos_service=None,
     yaml_str = yaml.dump(ont_manager.yml)
     concepts = []
     for stmt in stmts:
+        # Skip statements from sources that shouldn't be regrounded
+        if not any(ev.source_api in sources for ev in stmt.evidence):
+            continue
         for concept in stmt.agent_list():
-            #concept_txt = concept.db_refs.get('TEXT')
-            concept_txt = concept.name
+            concept_txt = concept.db_refs.get('TEXT')
             concepts.append(concept_txt)
+    logger.info(f'Finding grounding for {len(concepts)} texts')
     groundings = reground_texts(concepts, yaml_str,
                                 webservice=eidos_service)
     # Update the corpus with new groundings

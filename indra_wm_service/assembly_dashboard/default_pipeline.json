@@ -16,6 +16,15 @@
     ]
   },
   {
+    "function": "reground_stmts",
+    "args": [
+      {
+        "function": "load_world_ontology"
+      },
+      "WM"
+    ]
+  },
+  {
     "function": "filter_grounded_only",
     "kwargs": {
       "score_threshold": 0.7
