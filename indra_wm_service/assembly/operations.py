@@ -6,6 +6,7 @@ import requests
 from datetime import datetime
 from collections import defaultdict
 import indra.tools.assemble_corpus as ac
+from indra.sources.eidos.client import reground_texts
 from indra.pipeline import register_pipeline
 from indra.statements import Influence, Association
 
@@ -56,12 +57,11 @@ def check_event_context(events):
 @register_pipeline
 def reground_stmts(stmts, ont_manager, namespace, eidos_service=None,
                    overwrite=True, sources=None):
+    ont_manager.initialize()
     if sources is None:
         sources = {'sofia', 'cwms'}
     if eidos_service is None:
-        eidos_service = 'http://localhost:9000/'
-    if not eidos_service.endswith('/'):
-        eidos_service += '/'
+        eidos_service = 'http://localhost:9000'
     logger.info(f'Regrounding {len(stmts)} statements')
     # Send the latest ontology and list of concept texts to Eidos
     yaml_str = yaml.dump(ont_manager.yml)
@@ -71,9 +71,8 @@ def reground_stmts(stmts, ont_manager, namespace, eidos_service=None,
             #concept_txt = concept.db_refs.get('TEXT')
             concept_txt = concept.name
             concepts.append(concept_txt)
-    res = requests.post(f'{eidos_service}reground_text',
-                        json={'text': concepts, 'ont_yml': yaml_str})
-    groundings = res.json()
+    groundings = reground_texts(concepts, yaml_str,
+                                webservice=eidos_service)
     # Update the corpus with new groundings
     idx = 0
     logger.info(f'Setting new grounding for {len(stmts)} statements')
