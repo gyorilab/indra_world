@@ -77,9 +77,27 @@ def run_assembly():
         timestamp['before'] = before_date
     logger.info('Fetching reader output for readers %s and dates %s' %
                 (str(readers), str(timestamp)))
-    reader_outputs = dart_client.get_reader_outputs(readers, timestamp=timestamp)
+
+    # TODO: make this parameterizable
+    reader_priorities = {
+        'cwms': ['20200821', '20200820', '20200819'],
+        'hume': ['r2020_08_19_4', 'r2020_08_19_3'],
+        'sofia': ['1.1'],
+        'eidos': ['0.2.3'],
+    }
+
+    records = dart_client.get_reader_output_records(readers,
+                                                    timestamp=timestamp)
+    if not records:
+        return jsonify({})
+
+    records = dart_client.prioritize_records(records, reader_priorities)
+
+    reader_outputs = dart_client.download_records(records)
+
     if not reader_outputs:
         return jsonify({})
+
     logger.info('Processing reader output...')
     stmts = process_reader_outputs(reader_outputs)
     logger.info('Got a total of %s statements' % len(stmts))
