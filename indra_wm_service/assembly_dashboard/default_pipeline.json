@@ -76,7 +76,8 @@
         "function": "load_world_ontology"
       },
       "return_toplevel": false,
-      "poolsize": null
+      "poolsize": null,
+      "run_refinement": false
     }
   },
   {
