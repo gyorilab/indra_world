@@ -6,6 +6,8 @@ from indra.statements import *
 from indra.tools import assemble_corpus as ac
 from indra.ontology.world.ontology import world_ontology
 
+os.environ['IGNORE_AWS'] = "TRUE"
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 with open(os.path.join(HERE, 'test_curations.json'), 'r') as fh:
