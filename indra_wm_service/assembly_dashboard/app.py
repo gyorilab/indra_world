@@ -79,12 +79,7 @@ def run_assembly():
                 (str(readers), str(timestamp)))
 
     # TODO: make this parameterizable
-    reader_priorities = {
-        'cwms': ['20200821', '20200820', '20200819'],
-        'hume': ['r2020_08_19_4', 'r2020_08_19_3'],
-        'sofia': ['1.1'],
-        'eidos': ['0.2.3'],
-    }
+    reader_priorities = {}
 
     records = dart_client.get_reader_output_records(readers,
                                                     timestamp=timestamp)
