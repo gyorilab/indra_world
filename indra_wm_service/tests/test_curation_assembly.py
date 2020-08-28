@@ -40,10 +40,9 @@ def _make_curator(curation_idx):
     world_ontology.initialize()
     curator = LiveCurator(
         corpora={'dart-20200313-interventions-grounding': corpus},
-        ont_manager=world_ontology
+        ont_manager=world_ontology,
+        eidos_url='http://eidos.cs.arizona.edu:9000'
     )
-
-    curator.eidos_url = 'http://localhost:9000'
 
     return curator
 
