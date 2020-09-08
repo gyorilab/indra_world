@@ -195,6 +195,31 @@ def filter_groundings(stmts):
 
 
 @register_pipeline
+def compositional_grounding_filter(stmts, threshold):
+    for stmt in stmts:
+        for concept in stmt.agent_list():
+            if concept is not None and 'WM' in concept.db_refs:
+                wm_groundings = concept.db_refs['WM']
+                for idx, gr in enumerate(wm_groundings):
+                    for jdx, entry in enumerate(gr):
+                        if entry is not None:
+                            if entry[1] < threshold:
+                                wm_groundings[idx][jdx] = None
+                    # Promote dangling property
+                    if gr[0] is None and gr[1] is not None:
+                        gr[0] = gr[1]
+                        gr[1] = None
+                    # Promote process
+                    if gr[0] is None and gr[2] is not None:
+                        gr[0] = gr[2]
+                        gr[2] = None
+                        if gr[3] is not None:
+                            gr[1] = gr[3]
+                            gr[3] = None
+    return stmts
+
+
+@register_pipeline
 def set_positive_polarities(stmts):
     for stmt in stmts:
         if isinstance(stmt, Influence):
