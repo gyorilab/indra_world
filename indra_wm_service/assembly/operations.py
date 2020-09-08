@@ -8,12 +8,39 @@ from collections import defaultdict
 import indra.tools.assemble_corpus as ac
 from indra.sources.eidos.client import reground_texts
 from indra.pipeline import register_pipeline
-from indra.statements import Influence, Association
+from indra.statements import Influence, Association, Event
 
 logger = logging.getLogger(__name__)
 
 
 register_pipeline(datetime)
+
+
+@register_pipeline
+def get_expanded_events_influences(stmts):
+    """Return a list of all standalone events from a list of statements."""
+    events_influences = []
+    for stmt_orig in stmts:
+        stmt = copy.deepcopy(stmt_orig)
+        if isinstance(stmt, Influence):
+            for member in [stmt.subj, stmt.obj]:
+                member.evidence = stmt.evidence[:]
+                # Remove the context since it may be for the other member
+                for ev in member.evidence:
+                    ev.context = None
+                events_influences.append(member)
+            # We add the Influence too
+            events_influences.append(stmt_orig)
+        elif isinstance(stmt, Association):
+            for member in stmt.members:
+                member.evidence = stmt.evidence[:]
+                # Remove the context since it may be for the other member
+                for ev in member.evidence:
+                    ev.context = None
+                events_influences.append(member)
+        elif isinstance(stmt, Event):
+            events_influences.append(stmt)
+    return events_influences
 
 
 @register_pipeline
