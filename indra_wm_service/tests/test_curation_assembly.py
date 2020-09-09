@@ -57,11 +57,11 @@ def test_factor_grounding():
     curator = _make_curator(0)
     # test factor_grounding
     curator.submit_curation(curations[0])
-    assembled_stmts = curator.run_assembly(corp_id)
+    assembled_stmts = curator.run_assembly(corp_id, use_s3=False)
     subj, obj = assembled_stmts[0].agent_list()
     assert subj.get_grounding()[1] == curations[0]['after']['subj']['concept']
 
-    assembled_stmts = curator.run_assembly(corp_id, proj_id)
+    assembled_stmts = curator.run_assembly(corp_id, proj_id, use_s3=False)
     subj, obj = assembled_stmts[0].agent_list()
     assert subj.get_grounding()[1] == curations[0]['after']['subj']['concept']
 
@@ -70,7 +70,7 @@ def test_vet_statement():
     curator = _make_curator(1)
     # Test vet statement: curation 1
     curator.submit_curation(curations[1])
-    assembled_stmts = curator.run_assembly(corp_id, proj_id)
+    assembled_stmts = curator.run_assembly(corp_id, proj_id, use_s3=False)
     stmt = assembled_stmts[0]
     assert stmt.belief == 1
 
@@ -79,7 +79,7 @@ def test_discard_statement():
     curator = _make_curator(2)
     # test discard statement: curation 2
     curator.submit_curation(curations[2])
-    assembled_stmts = curator.run_assembly(corp_id, proj_id)
+    assembled_stmts = curator.run_assembly(corp_id, proj_id, use_s3=False)
     assert len(assembled_stmts) == 0
 
 
@@ -87,7 +87,7 @@ def test_reverse_relation():
     curator = _make_curator(4)
     # Test reverse relation: curation 4
     curator.submit_curation(curations[4])
-    assembled_stmts = curator.run_assembly(corp_id, proj_id)
+    assembled_stmts = curator.run_assembly(corp_id, proj_id, use_s3=False)
     subj, obj = assembled_stmts[0].agent_list()
     assert subj.get_grounding()[1] == curations[4]['before']['obj']['concept']
     assert obj.get_grounding()[1] == curations[4]['before']['subj']['concept']
@@ -97,7 +97,7 @@ def test_factor_polarity():
     curator = _make_curator(6)
     # Factor polarity: curation 6
     curator.submit_curation(curations[6])
-    assembled_stmts = curator.run_assembly(corp_id, proj_id)
+    assembled_stmts = curator.run_assembly(corp_id, proj_id, use_s3=False)
     stmt = assembled_stmts[0]
     assert stmt.overall_polarity() == \
         curations[6]['after']['subj']['polarity'] * \
