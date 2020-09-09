@@ -195,7 +195,7 @@ def filter_groundings(stmts):
 
 
 @register_pipeline
-def compositional_grounding_filter(stmts, threshold):
+def compositional_grounding_filter(stmts, score_threshold):
     for stmt in stmts:
         for concept in stmt.agent_list():
             if concept is not None and 'WM' in concept.db_refs:
@@ -203,7 +203,7 @@ def compositional_grounding_filter(stmts, threshold):
                 for idx, gr in enumerate(wm_groundings):
                     for jdx, entry in enumerate(gr):
                         if entry is not None:
-                            if entry[1] < threshold:
+                            if entry[1] < score_threshold:
                                 wm_groundings[idx][jdx] = None
                     # Promote dangling property
                     if gr[0] is None and gr[1] is not None:
@@ -216,6 +216,16 @@ def compositional_grounding_filter(stmts, threshold):
                         if gr[3] is not None:
                             gr[1] = gr[3]
                             gr[3] = None
+                concept.db_refs['WM'] = wm_groundings
+                # Get rid of all None tuples
+                concept.db_refs['WM'] = [
+                    gr for gr in concept.db_refs['WM']
+                    if not all(g is None for g in gr)
+                ]
+                # Pop out the WM key if there is no grounding at all
+                if not concept.db_refs['WM']:
+                    concept.db_refs.pop('WM', None)
+
     return stmts
 
 
@@ -235,7 +245,7 @@ def filter_out_long_words(stmts, k=10):
                 f' statements.')
 
     def get_text(ag):
-        return ag.concept.db_refs['TEXT']
+        return ag.db_refs['TEXT']
 
     def text_too_long(txt, k):
         if len(txt.split()) > k:
@@ -244,9 +254,7 @@ def filter_out_long_words(stmts, k=10):
 
     new_stmts = []
     for stmt in stmts:
-        st = get_text(stmt.subj)
-        ot = get_text(stmt.obj)
-        if text_too_long(st, k) or text_too_long(ot, k):
+        if any(text_too_long(get_text(c), k) for c in stmt.agent_list()):
             continue
         new_stmts.append(stmt)
     logger.info(f'{len(new_stmts)} statements after filter.')
