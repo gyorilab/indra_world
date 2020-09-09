@@ -284,7 +284,7 @@ class LiveCurator(object):
         belief_dict = {st.uuid: st.belief for st in stmts}
         return belief_dict
 
-    def run_assembly(self, corpus_id, project_id=None):
+    def run_assembly(self, corpus_id, project_id=None, use_s3=True):
         from indra.preassembler import Preassembler
 
         corpus = self.get_corpus(corpus_id)
@@ -383,7 +383,7 @@ class LiveCurator(object):
         # STAGE 8: persist results either as an S3 dump or by
         # rewriting the corpus
         stmt_dict = {s.uuid: s for s in stmts}
-        if project_id:
+        if project_id and use_s3:
             self.dump_project(corpus_id, project_id, stmt_dict)
         else:
             # TODO: shouldn't we do an S3 dump here?

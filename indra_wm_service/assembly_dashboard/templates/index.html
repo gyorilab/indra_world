@@ -55,6 +55,9 @@
                             {{ wtf.form_field(run_assembly_form.before_date, class_="form-control") }}
                             {{ wtf.form_field(run_assembly_form.after_date, class_="form-control") }}
                             {{ wtf.form_field(run_assembly_form.corpus_id, class_="form-control") }}
+                            {{ wtf.form_field(run_assembly_form.corpus_name, class_="form-control") }}
+                            {{ wtf.form_field(run_assembly_form.corpus_descr, class_="form-control") }}
+                            {{ wtf.form_field(run_assembly_form.assembly_level, class_="form-control") }}
                             {{ wtf.form_field(run_assembly_form.submit_button, class="btn btn-primary") }}
                         </form>
                     </div>
@@ -65,13 +68,17 @@
         </div>
         <div class="well">
             <p class="lead">
+                <small>
                 The development of this system was funded under the DARPA World Modelers program
-                (W911NF-18-1-0014) by the <a href="http://indralab.github.io">INDRA team</a>
+                (W911NF-18-1-0014) and is developed by the <a href="http://indralab.github.io">INDRA team</a>
                 in the <a href="http://hits.harvard.edu">Laboratory of Systems Pharmacology</a>
                 at Harvard Medical School.
+                </small>
             </p>
             <p class="lead">
+                <small>
                 Point of contact: Benjamin M. Gyori (benjamin_gyori [AT] hms.harvard.edu)
+                </small>
             </p>
         </div>
     </div>

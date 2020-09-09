@@ -6,6 +6,8 @@ from indra.statements import *
 from indra.tools import assemble_corpus as ac
 from indra.ontology.world.ontology import world_ontology
 
+os.environ['IGNORE_AWS'] = "TRUE"
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 with open(os.path.join(HERE, 'test_curations.json'), 'r') as fh:
@@ -40,10 +42,9 @@ def _make_curator(curation_idx):
     world_ontology.initialize()
     curator = LiveCurator(
         corpora={'dart-20200313-interventions-grounding': corpus},
-        ont_manager=world_ontology
+        ont_manager=world_ontology,
+        eidos_url='http://eidos.cs.arizona.edu:9000'
     )
-
-    curator.eidos_url = 'http://localhost:9000'
 
     return curator
 
@@ -56,11 +57,11 @@ def test_factor_grounding():
     curator = _make_curator(0)
     # test factor_grounding
     curator.submit_curation(curations[0])
-    assembled_stmts = curator.run_assembly(corp_id)
+    assembled_stmts = curator.run_assembly(corp_id, use_s3=False)
     subj, obj = assembled_stmts[0].agent_list()
     assert subj.get_grounding()[1] == curations[0]['after']['subj']['concept']
 
-    assembled_stmts = curator.run_assembly(corp_id, proj_id)
+    assembled_stmts = curator.run_assembly(corp_id, proj_id, use_s3=False)
     subj, obj = assembled_stmts[0].agent_list()
     assert subj.get_grounding()[1] == curations[0]['after']['subj']['concept']
 
@@ -69,7 +70,7 @@ def test_vet_statement():
     curator = _make_curator(1)
     # Test vet statement: curation 1
     curator.submit_curation(curations[1])
-    assembled_stmts = curator.run_assembly(corp_id, proj_id)
+    assembled_stmts = curator.run_assembly(corp_id, proj_id, use_s3=False)
     stmt = assembled_stmts[0]
     assert stmt.belief == 1
 
@@ -78,7 +79,7 @@ def test_discard_statement():
     curator = _make_curator(2)
     # test discard statement: curation 2
     curator.submit_curation(curations[2])
-    assembled_stmts = curator.run_assembly(corp_id, proj_id)
+    assembled_stmts = curator.run_assembly(corp_id, proj_id, use_s3=False)
     assert len(assembled_stmts) == 0
 
 
@@ -86,7 +87,7 @@ def test_reverse_relation():
     curator = _make_curator(4)
     # Test reverse relation: curation 4
     curator.submit_curation(curations[4])
-    assembled_stmts = curator.run_assembly(corp_id, proj_id)
+    assembled_stmts = curator.run_assembly(corp_id, proj_id, use_s3=False)
     subj, obj = assembled_stmts[0].agent_list()
     assert subj.get_grounding()[1] == curations[4]['before']['obj']['concept']
     assert obj.get_grounding()[1] == curations[4]['before']['subj']['concept']
@@ -96,7 +97,7 @@ def test_factor_polarity():
     curator = _make_curator(6)
     # Factor polarity: curation 6
     curator.submit_curation(curations[6])
-    assembled_stmts = curator.run_assembly(corp_id, proj_id)
+    assembled_stmts = curator.run_assembly(corp_id, proj_id, use_s3=False)
     stmt = assembled_stmts[0]
     assert stmt.overall_polarity() == \
         curations[6]['after']['subj']['polarity'] * \

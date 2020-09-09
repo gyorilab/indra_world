@@ -127,6 +127,8 @@ class Corpus(object):
         """
         # Note that the S3 path to each json file is of the form
         # <bucket>/indra_models/<corpus_id>/<file>.json"
+        if environ.get('IGNORE_AWS'):
+            return None
         s3key = '%s/%s/' % (default_key_base, self.corpus_id)
         raw = s3key + file_defaults['raw'] + '.json'
         sts = s3key + file_defaults['sts'] + '.json'

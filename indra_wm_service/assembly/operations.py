@@ -6,8 +6,9 @@ import requests
 from datetime import datetime
 from collections import defaultdict
 import indra.tools.assemble_corpus as ac
+from indra.sources.eidos.client import reground_texts
 from indra.pipeline import register_pipeline
-from indra.statements import Influence, Association
+from indra.statements import Influence, Association, Event
 
 logger = logging.getLogger(__name__)
 
@@ -16,13 +17,30 @@ register_pipeline(datetime)
 
 
 @register_pipeline
-def fix_provenance(stmts, doc_id):
-    """Move the document identifiers in evidences."""
-    for stmt in stmts:
-        for ev in stmt.evidence:
-            prov = ev.annotations['provenance'][0]['document']
-            prov['@id'] = doc_id
-    return stmts
+def get_expanded_events_influences(stmts):
+    """Return a list of all standalone events from a list of statements."""
+    events_influences = []
+    for stmt_orig in stmts:
+        stmt = copy.deepcopy(stmt_orig)
+        if isinstance(stmt, Influence):
+            for member in [stmt.subj, stmt.obj]:
+                member.evidence = stmt.evidence[:]
+                # Remove the context since it may be for the other member
+                for ev in member.evidence:
+                    ev.context = None
+                events_influences.append(member)
+            # We add the Influence too
+            events_influences.append(stmt_orig)
+        elif isinstance(stmt, Association):
+            for member in stmt.members:
+                member.evidence = stmt.evidence[:]
+                # Remove the context since it may be for the other member
+                for ev in member.evidence:
+                    ev.context = None
+                events_influences.append(member)
+        elif isinstance(stmt, Event):
+            events_influences.append(stmt)
+    return events_influences
 
 
 @register_pipeline
@@ -66,24 +84,25 @@ def check_event_context(events):
 @register_pipeline
 def reground_stmts(stmts, ont_manager, namespace, eidos_service=None,
                    overwrite=True, sources=None):
+    ont_manager.initialize()
     if sources is None:
         sources = {'sofia', 'cwms'}
     if eidos_service is None:
-        eidos_service = 'http://localhost:9000/'
-    if not eidos_service.endswith('/'):
-        eidos_service += '/'
+        eidos_service = 'http://localhost:9000'
     logger.info(f'Regrounding {len(stmts)} statements')
     # Send the latest ontology and list of concept texts to Eidos
-    yaml_str = yaml.dump(ont_manager.yaml_root)
+    yaml_str = yaml.dump(ont_manager.yml)
     concepts = []
     for stmt in stmts:
+        # Skip statements from sources that shouldn't be regrounded
+        if not any(ev.source_api in sources for ev in stmt.evidence):
+            continue
         for concept in stmt.agent_list():
-            #concept_txt = concept.db_refs.get('TEXT')
-            concept_txt = concept.name
+            concept_txt = concept.db_refs.get('TEXT')
             concepts.append(concept_txt)
-    res = requests.post(f'{eidos_service}reground_text',
-                        json={'text': concepts, 'ont_yml': yaml_str})
-    groundings = res.json()
+    logger.info(f'Finding grounding for {len(concepts)} texts')
+    groundings = reground_texts(concepts, yaml_str,
+                                webservice=eidos_service)
     # Update the corpus with new groundings
     idx = 0
     logger.info(f'Setting new grounding for {len(stmts)} statements')
@@ -176,6 +195,41 @@ def filter_groundings(stmts):
 
 
 @register_pipeline
+def compositional_grounding_filter(stmts, score_threshold):
+    for stmt in stmts:
+        for concept in stmt.agent_list():
+            if concept is not None and 'WM' in concept.db_refs:
+                wm_groundings = concept.db_refs['WM']
+                for idx, gr in enumerate(wm_groundings):
+                    for jdx, entry in enumerate(gr):
+                        if entry is not None:
+                            if entry[1] < score_threshold:
+                                wm_groundings[idx][jdx] = None
+                    # Promote dangling property
+                    if gr[0] is None and gr[1] is not None:
+                        gr[0] = gr[1]
+                        gr[1] = None
+                    # Promote process
+                    if gr[0] is None and gr[2] is not None:
+                        gr[0] = gr[2]
+                        gr[2] = None
+                        if gr[3] is not None:
+                            gr[1] = gr[3]
+                            gr[3] = None
+                concept.db_refs['WM'] = wm_groundings
+                # Get rid of all None tuples
+                concept.db_refs['WM'] = [
+                    gr for gr in concept.db_refs['WM']
+                    if not all(g is None for g in gr)
+                ]
+                # Pop out the WM key if there is no grounding at all
+                if not concept.db_refs['WM']:
+                    concept.db_refs.pop('WM', None)
+
+    return stmts
+
+
+@register_pipeline
 def set_positive_polarities(stmts):
     for stmt in stmts:
         if isinstance(stmt, Influence):
@@ -191,7 +245,7 @@ def filter_out_long_words(stmts, k=10):
                 f' statements.')
 
     def get_text(ag):
-        return ag.concept.db_refs['TEXT']
+        return ag.db_refs['TEXT']
 
     def text_too_long(txt, k):
         if len(txt.split()) > k:
@@ -200,9 +254,7 @@ def filter_out_long_words(stmts, k=10):
 
     new_stmts = []
     for stmt in stmts:
-        st = get_text(stmt.subj)
-        ot = get_text(stmt.obj)
-        if text_too_long(st, k) or text_too_long(ot, k):
+        if any(text_too_long(get_text(c), k) for c in stmt.agent_list()):
             continue
         new_stmts.append(stmt)
     logger.info(f'{len(new_stmts)} statements after filter.')
