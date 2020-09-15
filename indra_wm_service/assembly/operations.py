@@ -195,7 +195,10 @@ def filter_groundings(stmts):
 
 
 @register_pipeline
-def compositional_grounding_filter(stmts, score_threshold):
+def compositional_grounding_filter(stmts, score_threshold,
+                                   groundings_to_exclude=None):
+    groundings_to_exclude = groundings_to_exclude \
+        if groundings_to_exclude else []
     for stmt in stmts:
         for concept in stmt.agent_list():
             if concept is not None and 'WM' in concept.db_refs:
@@ -203,8 +206,12 @@ def compositional_grounding_filter(stmts, score_threshold):
                 for idx, gr in enumerate(wm_groundings):
                     for jdx, entry in enumerate(gr):
                         if entry is not None:
-                            if entry[1] < score_threshold:
-                                wm_groundings[idx][jdx] = None
+                            if (entry[0] in groundings_to_exclude or
+                                    entry[1] < score_threshold):
+                                if isinstance(wm_groundings[idx], tuple):
+                                    wm_groundings[idx] = \
+                                        list(wm_groundings[idx])
+                                    wm_groundings[idx][jdx] = None
                     # Promote dangling property
                     if gr[0] is None and gr[1] is not None:
                         gr[0] = gr[1]
@@ -227,6 +234,24 @@ def compositional_grounding_filter(stmts, score_threshold):
                     concept.db_refs.pop('WM', None)
 
     return stmts
+
+
+@register_pipeline
+def standardize_names_compositional(stmts):
+    for stmt in stmts:
+        for concept in stmt.agent_list():
+            comp_grounding = concept.db_refs['WM'][0]
+            disp_name = make_display_name(comp_grounding)
+            concept.name = disp_name
+    return stmts
+
+
+def make_display_name(comp_grounding):
+    entries = tuple(entry[0].split('/')[-1].replace('_', ' ')
+                    if entry else None for entry in comp_grounding)
+    entries_reversed = [entry for entry in entries[::-1] if
+                        entry is not None]
+    return ' of '.join(entries_reversed)
 
 
 @register_pipeline
