@@ -88,6 +88,8 @@ def run_assembly():
 
     records = dart_client.prioritize_records(records, reader_priorities)
 
+    num_docs = len({rec['document_id'] for rec in records})
+
     reader_outputs = dart_client.download_records(records)
 
     if not reader_outputs:
@@ -106,17 +108,14 @@ def run_assembly():
     meta_data = {
         'corpus_id': corpus_id,
         'description': corpus_descr,
-        # TODO: make this an argument
         'display_name': corpus_name,
-        # TODO: fix this
         'readers': readers,
         'assembly': {
             'level': assembly_level,
             'grounding_threshold': 0.7,
         },
         'num_statements': len(assembled_stmts),
-        # TODO: fix this
-        'num_documents': 382
+        'num_documents': num_docs
     }
 
     corpus = Corpus(corpus_id=corpus_id,
