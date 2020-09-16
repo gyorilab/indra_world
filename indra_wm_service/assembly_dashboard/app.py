@@ -16,6 +16,7 @@ from indra_wm_service.live_curation import Corpus
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_ASSEMBLY_JSON = os.path.join(HERE, 'default_pipeline.json')
+DART_STORAGE = os.environ.get('DART_STORAGE')
 
 
 logger = logging.getLogger('indra_wm_service.assembly_dashboard')
@@ -90,7 +91,8 @@ def run_assembly():
 
     num_docs = len({rec['document_id'] for rec in records})
 
-    reader_outputs = dart_client.download_records(records)
+    reader_outputs = dart_client.download_records(records,
+                                                  local_storage=DART_STORAGE)
 
     if not reader_outputs:
         return jsonify({})
