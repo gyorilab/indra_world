@@ -41,7 +41,7 @@ class RunAssemblyForm(FlaskForm):
     readers = SelectMultipleField(label='Readers',
                                   id='reader-select',
                                   choices=reader_names,
-                                  validators=[validators.unicode_literals])
+                                  validators=[validators.input_required()])
     corpus_id = StringField(label='Corpus ID',
                             validators=[validators.input_required()])
     corpus_name = StringField(label='Corpus display name',
