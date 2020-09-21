@@ -137,6 +137,12 @@ def notify():
                     'error_message': 'Bad Request: missing or invalid body'})
 
 
+@app.route('/', methods=['GET'])
+def root():
+    return ('This is the INDRA World Modelers service, see documentation at '
+            'https://indra-wm-service.readthedocs.io/en/latest/service.html')
+
+
 @app.route('/health', methods=['GET', 'POST'])
 def health():
     return jsonify({'state': 'healthy', 'version': '1.0.0'})
