@@ -135,6 +135,10 @@ class Corpus(object):
         cur = s3key + file_defaults['cur'] + '.json'
         meta = s3key + file_defaults['meta'] + '.json'
         try:
+            if cache:
+                logger.info('Saving to local cache')
+                self._save_to_cache(raw, sts, cur, meta)
+            logger.info('Starting uploads')
             s3 = self._get_s3_client()
             # Structure and upload raw statements
             self._s3_put_file(s3,
@@ -170,8 +174,6 @@ class Corpus(object):
             s3.put_object(Bucket=bucket, Key='%s/index.csv' % default_key_base,
                           Body=index_bytes)
 
-            if cache:
-                self._save_to_cache(raw, sts, cur)
             return list((raw, sts, cur))
         except Exception as e:
             logger.exception('Failed to put on S3: %s' % e)
