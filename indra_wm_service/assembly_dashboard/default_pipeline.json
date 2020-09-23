@@ -25,6 +25,12 @@
     ]
   },
   {
+  "function": "dump_statements",
+  "kwargs": {
+     "fname": "regrounded.pkl"
+     }
+  },
+  {
     "function": "filter_grounded_only",
     "kwargs": {
       "score_threshold": 0.7

@@ -98,7 +98,7 @@ def run_assembly():
         return jsonify({})
 
     logger.info('Processing reader output...')
-    stmts = process_reader_outputs(reader_outputs)
+    stmts = process_reader_outputs(reader_outputs, corpus_id)
     logger.info('Got a total of %s statements' % len(stmts))
 
     if not stmts:
