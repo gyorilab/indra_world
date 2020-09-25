@@ -260,6 +260,7 @@ class Corpus(object):
             # Get and process raw statements
             raw_stmt_jsons = []
             if cache:
+                logger.info('Loading raw statements from cache')
                 raw_stmt_jsons = self._load_from_cache(raw) or []
             if not raw_stmt_jsons:
                 raw_stmt_jsons_str = s3.get_object(
@@ -270,6 +271,7 @@ class Corpus(object):
             # Get and process assembled statements from list to dict
             json_stmts = []
             if cache:
+                logger.info('Loading assembled statements from cache')
                 json_stmts = self._load_from_cache(sts) or []
             if not json_stmts:
                 raw_str = s3.get_object(Bucket=bucket, Key=sts)[
@@ -284,6 +286,7 @@ class Corpus(object):
             # Get and process curations if any
             curation_json = []
             if cache:
+                logger.info('Loading curations from cache')
                 curation_json = self._load_from_cache(cur) or []
             if not curation_json:
                 curation_json = json.loads(s3.get_object(
@@ -293,6 +296,7 @@ class Corpus(object):
             meta_json = {}
             try:
                 if cache:
+                    logger.info('Loading metadata from cache')
                     meta_json = self._load_from_cache(meta)
                 if not meta_json:
                     meta_json = json.loads(s3.get_object(
