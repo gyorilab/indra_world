@@ -194,46 +194,64 @@ def filter_groundings(stmts):
     return stmts
 
 
+def compositional_grounding_filter_stmt(stmt, score_threshold,
+                                        groundings_to_exclude):
+    for concept in stmt.agent_list():
+        if concept is not None and 'WM' in concept.db_refs:
+            wm_groundings = concept.db_refs['WM']
+            for idx, gr in enumerate(wm_groundings):
+                for jdx, entry in enumerate(gr):
+                    if entry is not None:
+                        if (entry[0] in groundings_to_exclude or
+                                entry[1] < score_threshold):
+                            if isinstance(wm_groundings[idx], tuple):
+                                wm_groundings[idx] = \
+                                    list(wm_groundings[idx])
+                            wm_groundings[idx][jdx] = None
+                # Promote dangling property
+                if wm_groundings[idx][0] is None and \
+                        wm_groundings[idx][1] is not None:
+                    wm_groundings[idx][0] = wm_groundings[idx][1]
+                    wm_groundings[idx][1] = None
+                # Promote process
+                if wm_groundings[idx][0] is None and \
+                        wm_groundings[idx][2] is not None:
+                    wm_groundings[idx][0] = wm_groundings[idx][2]
+                    wm_groundings[idx][2] = None
+                    if wm_groundings[idx][3] is not None:
+                        wm_groundings[idx][1] = wm_groundings[idx][3]
+                        wm_groundings[idx][3] = None
+                # Remove dangling process property
+                if wm_groundings[idx][3] is not None and \
+                        wm_groundings[idx][2] is None:
+                    wm_groundings[idx][3] = None
+            concept.db_refs['WM'] = wm_groundings
+            # Get rid of all None tuples
+            concept.db_refs['WM'] = [
+                gr for gr in concept.db_refs['WM']
+                if not all(g is None for g in gr)
+            ]
+            # Pop out the WM key if there is no grounding at all
+            if not concept.db_refs['WM']:
+                return None
+        else:
+            return None
+    validate_grounding_format([stmt])
+    return stmt
+
+
 @register_pipeline
 def compositional_grounding_filter(stmts, score_threshold,
                                    groundings_to_exclude=None):
     groundings_to_exclude = groundings_to_exclude \
         if groundings_to_exclude else []
+    stmts_out = []
     for stmt in stmts:
-        for concept in stmt.agent_list():
-            if concept is not None and 'WM' in concept.db_refs:
-                wm_groundings = concept.db_refs['WM']
-                for idx, gr in enumerate(wm_groundings):
-                    for jdx, entry in enumerate(gr):
-                        if entry is not None:
-                            if (entry[0] in groundings_to_exclude or
-                                    entry[1] < score_threshold):
-                                if isinstance(wm_groundings[idx], tuple):
-                                    wm_groundings[idx] = \
-                                        list(wm_groundings[idx])
-                                    wm_groundings[idx][jdx] = None
-                    # Promote dangling property
-                    if gr[0] is None and gr[1] is not None:
-                        gr[0] = gr[1]
-                        gr[1] = None
-                    # Promote process
-                    if gr[0] is None and gr[2] is not None:
-                        gr[0] = gr[2]
-                        gr[2] = None
-                        if gr[3] is not None:
-                            gr[1] = gr[3]
-                            gr[3] = None
-                concept.db_refs['WM'] = wm_groundings
-                # Get rid of all None tuples
-                concept.db_refs['WM'] = [
-                    gr for gr in concept.db_refs['WM']
-                    if not all(g is None for g in gr)
-                ]
-                # Pop out the WM key if there is no grounding at all
-                if not concept.db_refs['WM']:
-                    concept.db_refs.pop('WM', None)
-
-    return stmts
+        stmt_out = compositional_grounding_filter_stmt(stmt, score_threshold,
+                                                       groundings_to_exclude)
+        if stmt_out:
+            stmts_out.append(stmt_out)
+    return stmts_out
 
 
 @register_pipeline
@@ -243,6 +261,35 @@ def standardize_names_compositional(stmts):
             comp_grounding = concept.db_refs['WM'][0]
             disp_name = make_display_name(comp_grounding)
             concept.name = disp_name
+    return stmts
+
+
+@register_pipeline
+def add_flattened_grounding_compositional(stmts):
+    for stmt in stmts:
+        for concept in stmt.agent_list():
+            comp_grounding = concept.db_refs['WM'][0]
+            theme_grounding = comp_grounding[0][0]
+            other_groundings = [entry[0].split('/')[-1]
+                                for entry in comp_grounding[1:] if entry]
+            flat_grounding = '_'.join([theme_grounding] + other_groundings)
+            concept.db_refs['WM_FLAT'] = flat_grounding
+    return stmts
+
+
+@register_pipeline
+def validate_grounding_format(stmts):
+    for stmt in stmts:
+        for concept in stmt.agent_list():
+            if 'WM' not in concept.db_refs:
+                continue
+            wms = concept.db_refs['WM']
+            assert isinstance(wms, list)
+            wm = wms[0]
+            assert len(wm) == 4
+            assert wm[0] is not None
+            if wm[2] is None:
+                assert wm[3] is None
     return stmts
 
 
