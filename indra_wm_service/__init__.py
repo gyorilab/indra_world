@@ -11,7 +11,8 @@ file_defaults = {'raw': 'raw_statements',
 
 default_profile = 'wm'
 HERE = Path(os.path.abspath(__file__)).parent
-CACHE = Path('/dart/_local_cache')
+#CACHE = Path('/dart/_local_cache')
+CACHE = Path('/Users/ben/data/dart')
 CACHE.mkdir(exist_ok=True)
 
 

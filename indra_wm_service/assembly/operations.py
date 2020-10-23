@@ -2,7 +2,7 @@ import os
 import yaml
 import copy
 import logging
-import requests
+import statistics
 from datetime import datetime
 from collections import defaultdict
 import indra.tools.assemble_corpus as ac
@@ -267,13 +267,24 @@ def standardize_names_compositional(stmts):
 @register_pipeline
 def add_flattened_grounding_compositional(stmts):
     for stmt in stmts:
+        wm_flat = []
         for concept in stmt.agent_list():
-            comp_grounding = concept.db_refs['WM'][0]
-            theme_grounding = comp_grounding[0][0]
-            other_groundings = [entry[0].split('/')[-1]
-                                for entry in comp_grounding[1:] if entry]
-            flat_grounding = '_'.join([theme_grounding] + other_groundings)
-            concept.db_refs['WM_FLAT'] = flat_grounding
+            for comp_grounding in concept.db_refs['WM']:
+                theme_grounding = comp_grounding[0][0]
+                other_groundings = [entry[0].split('/')[-1]
+                                    for entry in comp_grounding[1:] if entry]
+                flat_grounding = '_'.join([theme_grounding] + other_groundings)
+                standard_name = make_display_name(comp_grounding)
+                score = statistics.mean([entry[1] for entry in comp_grounding
+                                         if entry is not None])
+                wm_flat.append(
+                    {
+                        'grounding': flat_grounding,
+                        'name': standard_name,
+                        'score': score
+                    }
+                )
+            concept.db_refs['WM_FLAT'] = wm_flat
     return stmts
 
 
