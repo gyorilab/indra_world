@@ -267,8 +267,8 @@ def standardize_names_compositional(stmts):
 @register_pipeline
 def add_flattened_grounding_compositional(stmts):
     for stmt in stmts:
-        wm_flat = []
         for concept in stmt.agent_list():
+            wm_flat = []
             for comp_grounding in concept.db_refs['WM']:
                 theme_grounding = comp_grounding[0][0]
                 other_groundings = [entry[0].split('/')[-1]
