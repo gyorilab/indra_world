@@ -35,7 +35,7 @@ def load_reader_outputs(reader_versions):
     for reader, version in reader_versions.items():
         reader_outputs[reader] = {}
         reader_folder = os.path.join(DART_STORAGE, reader, version)
-        fnames = glob.glob(reader_folder)
+        fnames = glob.glob('%s/*' % reader_folder)
         for fname in fnames:
             doc_id = os.path.basename(fname)
             with open(fname, 'r') as fh:
