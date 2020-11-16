@@ -9,7 +9,8 @@ import indra.tools.assemble_corpus as ac
 from indra.sources.eidos.client import reground_texts
 from indra.pipeline import register_pipeline
 from indra.statements import Influence, Association, Event
-from indra.preassembler.custom_preassembly import event_location_refinement
+from indra.preassembler.custom_preassembly import event_location_refinement, \
+    get_location
 
 logger = logging.getLogger(__name__)
 
@@ -371,6 +372,23 @@ def matches_compositional(stmt):
     return str(key)
 
 
+@register_pipeline
+def location_matches_compositional(stmt):
+    """Return a matches_key which takes geo-location into account."""
+    if isinstance(stmt, Event):
+        context_key = get_location(stmt)
+        matches_key = str((matches_compositional(stmt), context_key))
+    elif isinstance(stmt, Influence):
+        subj_context_key = get_location(stmt.subj)
+        obj_context_key = get_location(stmt.obj)
+        matches_key = str((matches_compositional(stmt), subj_context_key,
+                           obj_context_key))
+    else:
+        matches_key = matches_compositional(stmt)
+    return matches_key
+
+
+@register_pipeline
 def event_compositional_refinement(st1, st2, ontology, entities_refined):
     gr1 = concept_matches_compositional(st1.concept)
     gr2 = concept_matches_compositional(st2.concept)
