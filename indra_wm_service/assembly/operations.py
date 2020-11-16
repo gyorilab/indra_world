@@ -9,6 +9,7 @@ import indra.tools.assemble_corpus as ac
 from indra.sources.eidos.client import reground_texts
 from indra.pipeline import register_pipeline
 from indra.statements import Influence, Association, Event
+from indra.preassembler.custom_preassembly import event_location_refinement
 
 logger = logging.getLogger(__name__)
 
@@ -366,6 +367,75 @@ def matches_compositional(stmt):
         key = (stmt.__class__.__name__,
                concept_matches_compositional(stmt.concept),
                stmt.delta.polarity)
+    # TODO: handle Associations?
     return str(key)
 
 
+def event_compositional_refinement(st1, st2, ontology, entities_refined):
+    gr1 = concept_matches_compositional(st1.concept)
+    gr2 = concept_matches_compositional(st2.concept)
+    refinement = True
+    # If they are both just string names, we require equality
+    if not isinstance(gr1, tuple) and not isinstance(gr2, tuple):
+        return gr1 == gr2
+    # Otherwise we compare the tuples
+    for entry1, entry2 in zip(gr1, gr2):
+        # If the potentially refined value is None, it is
+        # always potentially refined.
+        if entry2 is None:
+            continue
+        # A None can never be the refinement of a not-None
+        # value so we can break out here with no refinement
+        elif entry1 is None:
+            refinement = False
+            break
+        # Otherwise the values can still be equal which we allow
+        # for refinement purposes
+        elif entry1 == entry2:
+            continue
+        # Finally, the only way there is a refinement is if entry1
+        # isa entry2
+        else:
+            if not ontology.isa(entry1, entry2):
+                refinement = False
+                break
+    return refinement
+
+
+def compositional_refinement(st1, st2, ontology, entities_refined):
+    if type(st1) != type(st2):
+        return False
+    if isinstance(st1, Event):
+        return event_compositional_refinement(st1, st2, ontology,
+                                              entities_refined)
+    elif isinstance(st1, Influence):
+        subj_ref = event_compositional_refinement(st1.subj, st2.subj,
+                                                  ontology, entities_refined)
+        if not subj_ref:
+            return False
+        obj_ref = event_compositional_refinement(st1.subj, st2.subj,
+                                                 ontology, entities_refined)
+        if not obj_ref:
+            return False
+        return True
+    # TODO: handle Associations?
+    return False
+
+
+@register_pipeline
+def location_refinement_compositional(st1, st2, ontology, entities_refined):
+    """Return True if there is a location-aware refinement between stmts."""
+    if type(st1) != type(st2):
+        return False
+    if isinstance(st1, Event):
+        event_ref = event_location_refinement(st1, st2, ontology,
+                                              entities_refined)
+        return event_ref
+    elif isinstance(st1, Influence):
+        subj_ref = event_location_refinement(st1.subj, st2.subj,
+                                             ontology, entities_refined)
+        obj_ref = event_location_refinement(st1.obj, st2.obj,
+                                            ontology, entities_refined)
+        return subj_ref and obj_ref
+    else:
+        compositional_refinement(st1, st2, ontology, entities_refined)
