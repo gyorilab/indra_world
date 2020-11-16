@@ -342,3 +342,30 @@ def filter_out_long_words(stmts, k=10):
         new_stmts.append(stmt)
     logger.info(f'{len(new_stmts)} statements after filter.')
     return new_stmts
+
+
+@register_pipeline
+def concept_matches_compositional(concept):
+    wm = concept.db_refs.get('WM')
+    if not wm:
+        return concept.name
+    wm_top = tuple(entry[0] if entry else None for entry in wm[0])
+    return wm_top
+
+
+@register_pipeline
+def matches_compositional(stmt):
+    if isinstance(stmt, Influence):
+        key = (stmt.__class__.__name__,
+               concept_matches_compositional(stmt.subj.concept),
+               concept_matches_compositional(stmt.obj.concept),
+               stmt.polarity_count(),
+               stmt.overall_polarity()
+               )
+    elif isinstance(stmt, Event):
+        key = (stmt.__class__.__name__,
+               concept_matches_compositional(stmt.concept),
+               stmt.delta.polarity)
+    return str(key)
+
+
