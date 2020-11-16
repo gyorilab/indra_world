@@ -1,6 +1,7 @@
 import os
 import sys
 import glob
+import tqdm
 import logging
 from indra_wm_service.corpus import Corpus
 from indra_wm_service.assembly.operations import *
@@ -31,12 +32,15 @@ DART_STORAGE = '/dart'
 
 
 def load_reader_outputs(reader_versions):
+    logger.info('Loading outputs based on %s' % str(reader_versions))
     reader_outputs = {}
     for reader, version in reader_versions.items():
+        logger.info('Loading %s/%s' % (reader, version))
         reader_outputs[reader] = {}
         reader_folder = os.path.join(DART_STORAGE, reader, version)
         fnames = glob.glob('%s/*' % reader_folder)
-        for fname in fnames:
+        logger.info('Found %d files' % len(fnames))
+        for fname in tqdm.tqdm(fnames):
             doc_id = os.path.basename(fname)
             with open(fname, 'r') as fh:
                 doc_str = fh.read()
