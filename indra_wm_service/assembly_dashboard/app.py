@@ -15,7 +15,7 @@ from indra_wm_service.assembly.dart import process_reader_outputs
 from indra_wm_service.live_curation import Corpus
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-DEFAULT_ASSEMBLY_JSON = os.path.join(HERE, 'default_pipeline.json')
+DEFAULT_ASSEMBLY_JSON = 'default_pipeline'
 DART_STORAGE = os.environ.get('DART_STORAGE')
 
 
@@ -46,6 +46,7 @@ class RunAssemblyForm(FlaskForm):
                             validators=[validators.input_required()])
     corpus_name = StringField(label='Corpus display name',
                               validators=[validators.input_required()])
+    assembly_config_name = StringField(label='Assembly configuration name')
     corpus_descr = TextAreaField(label='Corpus description',
                                  validators=[validators.input_required()])
     assembly_level = SelectField(label='Level of assembly',
@@ -70,6 +71,7 @@ def run_assembly():
     corpus_name = request.form.get('corpus_name')
     corpus_descr = request.form.get('corpus_descr')
     assembly_level = request.form.get('assembly_level')
+    assembly_config_name = request.form.get('assembly_config_name')
     from indra.literature import dart_client
     timestamp = None if (not before_date and not after_date) else {}
     if after_date:
@@ -104,7 +106,11 @@ def run_assembly():
     if not stmts:
         return jsonify({})
 
-    pipeline = AssemblyPipeline.from_json_file(DEFAULT_ASSEMBLY_JSON)
+    assembly_config = assembly_config_name if assembly_config_name else \
+        DEFAULT_ASSEMBLY_JSON
+    assembly_config_file = os.path.join(HERE, os.pardir, 'resources',
+                                        '%s.json' % assembly_config)
+    pipeline = AssemblyPipeline.from_json_file(assembly_config_file)
     assembled_stmts = pipeline.run(stmts)
 
     meta_data = {
