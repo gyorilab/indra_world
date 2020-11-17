@@ -292,7 +292,7 @@ def add_flattened_grounding_compositional(stmts):
 
 @register_pipeline
 def validate_grounding_format(stmts):
-    for stmt in stmts:
+    for idx, stmt in enumerate(stmts):
         for concept in stmt.agent_list():
             if 'WM' not in concept.db_refs:
                 continue
@@ -302,7 +302,8 @@ def validate_grounding_format(stmts):
             assert len(wm) == 4
             assert wm[0] is not None
             if wm[2] is None:
-                assert wm[3] is None
+                assert wm[3] is None, (idx, stmt, stmt.evidence[0].source_api,
+                                       stmt.evidence[0].annotations, wm)
     return stmts
 
 

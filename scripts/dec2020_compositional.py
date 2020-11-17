@@ -2,6 +2,7 @@ import os
 import sys
 import glob
 import tqdm
+import pickle
 import logging
 from indra_wm_service.corpus import Corpus
 from indra_wm_service.assembly.operations import *
@@ -49,10 +50,18 @@ def load_reader_outputs(reader_versions):
 
 
 if __name__ == '__main__':
+    corpus_id = 'compositional_dec2020'
     logger.info('Processing reader output...')
     reader_outputs = load_reader_outputs(reader_versions['compositional'])
-    corpus_id = 'compositional_dec2020'
     stmts = process_reader_outputs(reader_outputs, corpus_id)
+    '''
+    stmts = []
+    for reader in reader_versions['compositional']:
+        logger.info('Loading %s' % reader)
+        if os.path.exists('compositional_dec2020_%s_raw.pkl' % reader):
+            with open('compositional_dec2020_%s_raw.pkl' % reader, 'rb') as fh:
+                stmts += pickle.load(fh)
+    '''
     logger.info('Got a total of %s statements' % len(stmts))
     assembly_config_file = os.path.join(
         HERE, os.pardir, 'indra_wm_service', 'resources',
