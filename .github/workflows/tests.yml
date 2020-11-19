@@ -25,4 +25,5 @@ jobs:
     - name: Run unit tests
       run: |
         export NOSEATTR="!notravis"
+        export INDRA_WM_CACHE="."
         nosetests indra_wm_service -a $NOSEATTR -v --with-coverage --cover-inclusive --cover-package=indra_wm_service
