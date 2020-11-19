@@ -1,0 +1,28 @@
+name: Tests
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/cache@v2
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/setup.py') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    - name: Set up Python 3.6
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.6
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install nose coverage flask pyyaml boto3 openpyxl
+        pip install git+https://github.com/sorgerlab/indra.git
+    - name: Run unit tests
+      run: |
+        export NOSEATTR="!notravis"
+        nosetests indra_wm_service -a $NOSEATTR -v --with-coverage --cover-inclusive --cover-package=indra_wm_service
