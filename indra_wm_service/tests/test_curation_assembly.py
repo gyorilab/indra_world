@@ -1,5 +1,6 @@
 import os
 import json
+import copy
 from indra_wm_service.corpus import Corpus
 from indra_wm_service.curator import LiveCurator
 from indra.statements import *
@@ -54,16 +55,23 @@ corp_id = 'dart-20200313-interventions-grounding'
 
 
 def test_factor_grounding():
-    curator = _make_curator(0)
-    # test factor_grounding
-    curator.submit_curation(curations[0])
+    curator = _make_curator(-2)
+    # Here we modify the curation a bit because the issue is that
+    # the grounding curation points to an intermediate node which cannot
+    # get examples, see https://github.com/WorldModelers/Ontologies/issues/46.
+    # So we add an arbitrary leaf to the end of the grounding.
+    cur = copy.deepcopy(curations[-2])
+    cur['after']['subj']['concept'] += '/land'
+    curator.submit_curation(cur)
     assembled_stmts = curator.run_assembly(corp_id, use_s3=False)
     subj, obj = assembled_stmts[0].agent_list()
-    assert subj.get_grounding()[1] == curations[0]['after']['subj']['concept']
+    assert subj.get_grounding()[1] == \
+        cur['after']['subj']['concept'], \
+        (subj.get_grounding(), cur['after']['subj']['concept'])
 
     assembled_stmts = curator.run_assembly(corp_id, proj_id, use_s3=False)
     subj, obj = assembled_stmts[0].agent_list()
-    assert subj.get_grounding()[1] == curations[0]['after']['subj']['concept']
+    assert subj.get_grounding()[1] == cur['after']['subj']['concept']
 
 
 def test_vet_statement():

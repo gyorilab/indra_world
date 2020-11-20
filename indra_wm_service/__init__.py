@@ -1,5 +1,5 @@
-import os
 from pathlib import Path
+from indra.config import get_config
 
 default_bucket = 'world-modelers'
 default_key_base = 'indra_models'
@@ -10,9 +10,7 @@ file_defaults = {'raw': 'raw_statements',
 
 
 default_profile = 'wm'
-HERE = Path(os.path.abspath(__file__)).parent
-#CACHE = Path('/dart/_local_cache')
-CACHE = Path('/Users/ben/data/dart')
+CACHE = Path(get_config('INDRA_WM_CACHE', failure_ok=False))
 CACHE.mkdir(exist_ok=True)
 
 
