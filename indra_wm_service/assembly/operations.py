@@ -624,6 +624,8 @@ def get_agent_key(agent, comp_idx):
     # Case 2: There is a WM compositional grounding in which case we return
     # the specific entry in the compositional tuple if available, or None if
     # not.
+    if isinstance(agent, Event):
+        agent = agent.concept
     gr = agent.get_grounding(ns_order=['WM'])
     if gr[0] is None:
         if comp_idx == 0:
