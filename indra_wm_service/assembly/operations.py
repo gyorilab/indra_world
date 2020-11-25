@@ -428,7 +428,7 @@ def event_compositional_refinement(st1, st2, ontology, entities_refined):
         # Finally, the only way there is a refinement is if entry1
         # isa entry2
         else:
-            if not ontology.isa(entry1, entry2):
+            if not ontology.isa('WM', entry1, 'WM', entry2):
                 refinement = False
                 break
     return refinement
@@ -475,7 +475,7 @@ def location_refinement_compositional(st1, st2, ontology, entities_refined):
 
 def default_refinement_filter_compositional(stmts_by_hash, stmts_to_compare):
     return full_refinement_filter_compositional(
-        stmts_by_hash, stmts_to_compare, ontology=comp_ontology, nproc=1)
+        stmts_by_hash, stmts_to_compare, ontology=comp_ontology, nproc=None)
 
 
 def full_refinement_filter_compositional(stmts_by_hash, stmts_to_compare,
@@ -512,6 +512,7 @@ def full_refinement_filter_compositional(stmts_by_hash, stmts_to_compare,
         hash_to_agent_key[role] = {}
         for comp_idx in comp_idxes:
             agent_key_to_hash[role][comp_idx] = collections.defaultdict(set)
+            hash_to_agent_key[role][comp_idx] = collections.defaultdict(set)
 
     # Step 2. Fill up the initial data structures in preparation
     # for identifying potential refinements
@@ -584,7 +585,7 @@ def get_relevants_for_stmt(sh, all_keys_by_role, agent_key_to_hash,
             for agent_key in hash_to_agent_key_for_role[sh]:
                 relevant_keys = get_relevant_keys(
                     agent_key,
-                    all_keys_by_role[role],
+                    all_keys_by_role[role][comp_idx],
                     ontology)
                 # We now get the actual statement hashes that these other
                 # potentially refined agent keys appear in in the given role
