@@ -1,5 +1,6 @@
 import logging
 from collections import defaultdict
+from indra.statements import Influence
 from indra.pipeline import register_pipeline
 
 logger = logging.getLogger(__name__)
@@ -13,7 +14,7 @@ def print_statistics(stmts):
 
 
 @register_pipeline
-def print_grounding_statistics(stmts, limit=None):
+def print_grounding_counts(stmts, limit=None):
     groundings = defaultdict(int)
     for stmt in stmts:
         for ag in stmt.agent_list():
@@ -29,6 +30,33 @@ def print_grounding_statistics(stmts, limit=None):
 
 
 @register_pipeline
+def print_grounding_stats(statements):
+    logger.info('-----------------------------------------')
+    logger.info('Number of Influences: %s' % len([s for s in statements if
+                                                  isinstance(s, Influence)]))
+    grs = []
+    gr_combos = []
+    evidences = 0
+    evidence_by_reader = defaultdict(int)
+    for stmt in statements:
+        if isinstance(stmt, Influence):
+            for concept in [stmt.subj.concept, stmt.obj.concept]:
+                grs.append(concept.get_grounding())
+            gr_combos.append((stmt.subj.concept.get_grounding(),
+                              stmt.obj.concept.get_grounding()))
+            evidences += len(stmt.evidence)
+            for ev in stmt.evidence:
+                evidence_by_reader[ev.source_api] += 1
+    logger.info('Unique groundings: %d' % len(set(grs)))
+    logger.info('Unique combinations: %d' % len(set(gr_combos)))
+    logger.info('Number of evidences: %d' % evidences)
+    logger.info('Number of evidences by reader: %s' %
+                str(dict(evidence_by_reader)))
+    logger.info('-----------------------------------------')
+    return statements
+
+
+@register_pipeline
 def print_document_statistics(stmts):
     doc_ids = set()
     for stmt in stmts:
@@ -37,4 +65,3 @@ def print_document_statistics(stmts):
         doc_ids.add(doc_id)
     logger.info(
         f'Extracted {len(stmts)} statements from {len(doc_ids)} documents')
-
