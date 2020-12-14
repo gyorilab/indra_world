@@ -211,6 +211,7 @@ def filter_groundings(stmts):
 
 def compositional_grounding_filter_stmt(stmt, score_threshold,
                                         groundings_to_exclude):
+    stmt = copy.deepcopy(stmt)
     for concept in stmt.agent_list():
         if concept is not None and 'WM' in concept.db_refs:
             wm_groundings = concept.db_refs['WM']

@@ -3,7 +3,7 @@ from indra.tools import assemble_corpus as ac
 from indra_wm_service.assembly.operations import *
 
 
-def test_compositional_grounding_filder():
+def test_compositional_grounding_filter():
     wm = [[('x', 0.5), ('y', 0.8), None, None]]
     concept = Concept('x', db_refs={'WM': wm})
     stmt = Event(concept)
