@@ -573,6 +573,7 @@ class CompositionalRefinementFilter(RefinementFilter):
                                    hash_to_agent_key=hash_to_agent_key,
                                    ontology=self.ontology,
                                    direction=direction)
+        assert all(isinstance(r, int) for r in relevants)
 
         return relevants
 
@@ -610,7 +611,7 @@ def get_relevants_for_stmt(sh, all_keys_by_role, agent_key_to_hash,
                 # the relevant sets per role
                 else:
                     relevants &= role_relevant_stmt_hashes
-    return sh, relevants
+    return relevants
 
 
 @register_pipeline
