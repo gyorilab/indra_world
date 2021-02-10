@@ -96,9 +96,10 @@ def test_compositional_refinements():
                                     entities_refined=False)
 
     # Check refinements over events
+    filters = [CompositionalRefinementFilter(ontology=comp_ontology)]
     assembled_stmts = \
         ac.run_preassembly(events,
-                           filters=[default_refinement_filter_compositional],
+                           filters=filters,
                            ontology=comp_ontology,
                            refinement_fun=compositional_refinement,
                            matches_fun=matches_compositional,
@@ -127,9 +128,10 @@ def test_compositional_refinements():
         Influence(events[3], events[1]),
         Influence(events[3], events[2]),
     ]
+    filters = [CompositionalRefinementFilter(ontology=comp_ontology)]
     assembled_stmts = \
         ac.run_preassembly(influences,
-                           filters=[default_refinement_filter_compositional],
+                           filters=filters,
                            ontology=comp_ontology,
                            refinement_fun=compositional_refinement,
                            matches_fun=matches_compositional,
