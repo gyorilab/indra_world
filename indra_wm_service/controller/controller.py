@@ -8,7 +8,7 @@ class ServiceController:
         self.db = DbManager(db_url)
         self.assemblers = {}
 
-    def new_project(self, project_id, name, doc_ids):
+    def load_project(self, project_id, name, doc_ids):
         # 1. Add project to DB
         self.db.add_project(project_id, name)
         # 2. Add project documents to table
@@ -28,3 +28,6 @@ class ServiceController:
         # 5. Initiate an assembler
         assembler = IncrementalAssembler(prepared_stmts)
         self.assemblers[project_id] = assembler
+
+    def remove_project(self, project_id):
+        self.assemblers.pop(project_id, None)
