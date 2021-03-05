@@ -22,7 +22,7 @@ def fix_provenance(stmts, doc_id):
     return stmts
 
 
-def process_reader_outputs(outputs, corpus_id):
+def process_reader_outputs(outputs, corpus_id, grounding_mode='compositional'):
     all_stmts = []
     for reader, reader_outputs in outputs.items():
         fname = '%s_%s_raw.pkl' % (corpus_id, reader)
@@ -36,16 +36,18 @@ def process_reader_outputs(outputs, corpus_id):
                     (len(reader_outputs), reader))
         for doc_id, reader_output_str in tqdm.tqdm(reader_outputs.items()):
             if reader == 'eidos':
-                pr = eidos.process_json_str(reader_output_str)
+                pr = eidos.process_json_str(reader_output_str,
+                                            grounding_mode=grounding_mode)
             elif reader == 'hume':
                 jld = json.loads(reader_output_str)
-                pr = hume.process_jsonld(jld)
+                pr = hume.process_jsonld(jld, grounding_mode=grounding_mode)
             elif reader == 'sofia':
                 # FIXME: is this the right way to process Sofia output?
                 jd = json.loads(reader_output_str)
-                pr = sofia.process_json(jd)
+                pr = sofia.process_json(jd, grounding_mode=grounding_mode)
             elif reader == 'cwms':
-                pr = cwms.process_ekb(reader_output_str)
+                pr = cwms.process_ekb(reader_output_str,
+                                      grounding_mode=grounding_mode)
             else:
                 continue
             if pr is not None:
