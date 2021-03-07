@@ -1,0 +1,115 @@
+[
+  {
+    "function": "filter_by_type",
+    "kwargs": {
+      "stmt_type": "Influence"
+    }
+  },
+  {
+    "function": "validate_grounding_format"
+  },
+  {
+    "function": "remove_namespaces",
+    "args": [
+      [
+        "WHO",
+        "MITRE12",
+        "UN"
+      ]
+    ]
+  },
+  {
+    "function": "compositional_grounding_filter",
+    "kwargs": {
+      "score_threshold": 0.6,
+      "groundings_to_exclude": [
+        "wm_compositional",
+        "wm_compositional/concept",
+        "wm_compositional/process",
+        "wm_compositional/property",
+        "wm_compositional/entity",
+        "wm_compositional/entity/artifact",
+        "wm_compositional/entity/community",
+        "wm_compositional/entity/geo-location",
+        "wm_compositional/entity/government_entity",
+        "wm_compositional/entity/geo-political_entity",
+        "wm_compositional/entity/household",
+        "wm_compositional/entity/organization",
+        "wm_compositional/entity/person_or_group",
+        "wm_compositional/time",
+        "wm_compositional/time/season"
+      ]
+    }
+  },
+  {
+    "function": "validate_grounding_format"
+  },
+  {
+    "function": "filter_out_long_words",
+    "args": [
+      10
+    ]
+  },
+  {
+    "function": "filter_groundings"
+  },
+  {
+    "function": "filter_context_date",
+    "kwargs": {
+      "from_date": {
+        "function": "datetime",
+        "args": [
+          1900,
+          1,
+          1
+        ]
+      }
+    }
+  },
+  {
+    "function": "set_positive_polarities"
+  },
+  {
+    "function": "sort_compositional_groundings"
+  },
+  {
+    "function": "run_preassembly",
+    "kwargs": {
+      "filters": {
+        "function": "listify",
+        "kwargs": {
+          "obj": {
+            "function": "default_refinement_filter_compositional",
+            "no_run": true
+          }
+        }
+      },
+      "belief_scorer": {
+        "function": "get_eidos_scorer"
+      },
+      "matches_fun": {
+        "function": "location_matches_compositional",
+        "no_run": true
+      },
+      "refinement_fun": {
+        "function": "location_refinement_compositional",
+        "no_run": true
+      },
+      "ontology": {
+        "function": "load_world_ontology",
+        "kwargs": {
+          "url": "https://raw.githubusercontent.com/WorldModelers/Ontologies/master/CompositionalOntology_v2.1_metadata.yml"
+        }
+      },
+      "return_toplevel": false,
+      "poolsize": null,
+      "run_refinement": true
+    }
+  },
+  {
+    "function": "standardize_names_compositional"
+  },
+  {
+    "function": "add_flattened_grounding_compositional"
+  }
+]
