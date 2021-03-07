@@ -474,11 +474,13 @@ def location_refinement_compositional(st1, st2, ontology, entities_refined):
         compositional_refinement(st1, st2, ontology, entities_refined)
 
 
+@register_pipeline
 def default_refinement_filter_compositional(stmts_by_hash, stmts_to_compare):
     return full_refinement_filter_compositional(
         stmts_by_hash, stmts_to_compare, ontology=comp_ontology, nproc=None)
 
 
+@register_pipeline
 def full_refinement_filter_compositional(stmts_by_hash, stmts_to_compare,
                                          ontology, nproc=None):
     """Return possible refinement relationships based on an ontology.
@@ -597,6 +599,10 @@ def get_relevants_for_stmt(sh, all_keys_by_role, agent_key_to_hash,
                 # relevant statement hashes
                 if relevants is None:
                     relevants = role_relevant_stmt_hashes
+                # If not none but an empty set then we can stop
+                # here
+                elif not relevants:
+                    break
                 # In subsequent iterations, we take the intersection of
                 # the relevant sets per role
                 else:
@@ -637,3 +643,11 @@ def get_agent_key(agent, comp_idx):
         comp_gr = gr[1][comp_idx]
         agent_key = ('WM', comp_gr) if comp_gr else None
     return agent_key
+
+
+@register_pipeline
+def listify(obj):
+    if not isinstance(obj, list):
+        return [obj]
+    else:
+        return obj
