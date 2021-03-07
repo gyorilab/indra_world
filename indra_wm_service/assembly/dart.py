@@ -22,7 +22,10 @@ def fix_provenance(stmts, doc_id):
     return stmts
 
 
-def process_reader_outputs(outputs, corpus_id, grounding_mode='compositional'):
+def process_reader_outputs(outputs, corpus_id, grounding_mode='compositional',
+                           extract_filter=None):
+    if not extract_filter:
+        extract_filter = ['influence']
     all_stmts = []
     for reader, reader_outputs in outputs.items():
         fname = '%s_%s_raw.pkl' % (corpus_id, reader)
@@ -37,17 +40,21 @@ def process_reader_outputs(outputs, corpus_id, grounding_mode='compositional'):
         for doc_id, reader_output_str in tqdm.tqdm(reader_outputs.items()):
             if reader == 'eidos':
                 pr = eidos.process_json_str(reader_output_str,
-                                            grounding_mode=grounding_mode)
+                                            grounding_mode=grounding_mode,
+                                            extract_filter=extract_filter)
             elif reader == 'hume':
                 jld = json.loads(reader_output_str)
-                pr = hume.process_jsonld(jld, grounding_mode=grounding_mode)
+                pr = hume.process_jsonld(jld, grounding_mode=grounding_mode,
+                                         extract_filter=extract_filter)
             elif reader == 'sofia':
                 # FIXME: is this the right way to process Sofia output?
                 jd = json.loads(reader_output_str)
-                pr = sofia.process_json(jd, grounding_mode=grounding_mode)
+                pr = sofia.process_json(jd, grounding_mode=grounding_mode,
+                                        extract_filter=extract_filter)
             elif reader == 'cwms':
                 pr = cwms.process_ekb(reader_output_str,
-                                      grounding_mode=grounding_mode)
+                                      grounding_mode=grounding_mode,
+                                      extract_filter=extract_filter)
             else:
                 continue
             if pr is not None:
