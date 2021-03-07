@@ -16,6 +16,7 @@ from indra.sources.eidos.client import reground_texts
 from indra.pipeline import register_pipeline
 from indra.statements import Influence, Association, Event
 from indra.preassembler import get_agent_key, get_relevant_keys
+from indra.statements.concept import get_sorted_compositional_groundings
 from indra.preassembler.custom_preassembly import event_location_refinement, \
     get_location
 from indra.ontology.world.ontology import WorldOntology
@@ -609,6 +610,16 @@ def get_relevants_for_stmt(sh, all_keys_by_role, agent_key_to_hash,
                     relevants &= role_relevant_stmt_hashes
 
     return sh, relevants
+
+
+@register_pipeline
+def sort_compositional_groundings(statements):
+    for stmt in statements:
+        for concept in stmt.agent_list():
+            if 'WM' in concept.db_refs:
+                concept.db_refs['WM'] = \
+                    get_sorted_compositional_groundings(concept.db_refs['WM'])
+    return statements
 
 
 def get_agent_key(agent, comp_idx):
