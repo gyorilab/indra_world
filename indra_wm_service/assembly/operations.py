@@ -549,7 +549,6 @@ class CompositionalRefinementFilter(RefinementFilter):
                     for agent_key in agent_keys:
                         agent_key_to_hash[role][comp_idx][agent_key].add(sh)
                         hash_to_agent_key[role][comp_idx][sh].add(agent_key)
-
         for role in roles:
             all_keys_by_role[role] = {}
             for comp_idx in comp_idxes:
