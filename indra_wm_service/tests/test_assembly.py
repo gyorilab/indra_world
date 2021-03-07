@@ -20,6 +20,19 @@ def test_get_top_compositional_grounding():
     assert get_top_compositional_grounding([gr4, gr3]) == gr3
 
 
+def test_get_top_compositional_grounding():
+    gr1 = [('x', 0.7), None, None, None]
+    assert get_top_compositional_grounding([gr1]) == gr1
+    gr2 = [('y', 0.6), None, None, None]
+    assert get_top_compositional_grounding([gr1, gr2]) == gr1
+    assert get_top_compositional_grounding([gr2, gr1]) == gr1
+    gr3 = [('z', 0.6), None, ('a', 0.5)]
+    assert get_top_compositional_grounding([gr1, gr3]) == gr1
+    assert get_top_compositional_grounding([gr2, gr3]) == gr3
+    gr4 = [('z', 0.6), None, ('a', 0.4)]
+    assert get_top_compositional_grounding([gr4, gr3]) == gr3
+
+
 def test_compositional_grounding_filter():
     # Test property filtered out based on score
     wm = [[('x', 0.5), ('y', 0.8), None, None]]
