@@ -79,8 +79,7 @@
         "function": "listify",
         "kwargs": {
           "obj": {
-            "function": "default_refinement_filter_compositional",
-            "no_run": true
+            "function": "make_default_compositional_refinement_filer"
           }
         }
       },

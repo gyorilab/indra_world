@@ -508,9 +508,13 @@ def location_refinement_compositional(st1, st2, ontology,
 
 
 @register_pipeline
-def default_refinement_filter_compositional(stmts_by_hash, stmts_to_compare):
-    return full_refinement_filter_compositional(
-        stmts_by_hash, stmts_to_compare, ontology=comp_ontology, nproc=None)
+def make_compositional_refinement_filter(ontology, nproc=None):
+    return CompositionalRefinementFilter(ontology, nproc=nproc)
+
+
+@register_pipeline
+def make_default_compositional_refinement_filer():
+    return CompositionalRefinementFilter(comp_ontology, nproc=None)
 
 
 class CompositionalRefinementFilter(RefinementFilter):
