@@ -1,0 +1,532 @@
+[
+ {
+  "type": "Influence",
+  "subj": {
+   "type": "Event",
+   "concept": {
+    "name": "Agriculture",
+    "db_refs": {
+     "TEXT": "Agriculture",
+     "WM": [
+      [
+       [
+        "wm_compositional/concept/agriculture",
+        1.000000238418579
+       ],
+       null,
+       null,
+       null
+      ]
+     ]
+    }
+   },
+   "delta": {
+    "type": "qualitative",
+    "polarity": 1
+   },
+   "context": {
+    "type": "world",
+    "time": {
+     "text": "2016-02-15",
+     "start": "2016-02-15T00:00",
+     "end": "2016-02-16T00:00",
+     "duration": 86400
+    },
+    "geo_location": null
+   },
+   "belief": 1,
+   "id": "b437d790-f628-4d25-8039-fb9ee29173a6",
+   "matches_hash": "-12098895713942074"
+  },
+  "obj": {
+   "type": "Event",
+   "concept": {
+    "name": "help livelihoods",
+    "db_refs": {
+     "TEXT": "help livelihoods",
+     "WM": [
+      [
+       [
+        "wm_compositional/concept/economy/livelihoods",
+        1.0000001192092896
+       ],
+       null,
+       [
+        "wm_compositional/process/provide",
+        0.6926509141921997
+       ],
+       null
+      ],
+      [
+       [
+        "wm_compositional/concept/economy/livelihoods",
+        1.0000001192092896
+       ],
+       null,
+       null,
+       null
+      ]
+     ]
+    }
+   },
+   "delta": {
+    "type": "qualitative",
+    "polarity": 1
+   },
+   "context": {
+    "type": "world",
+    "time": {
+     "text": "2016-02-15",
+     "start": "2016-02-15T00:00",
+     "end": "2016-02-16T00:00",
+     "duration": 86400
+    },
+    "geo_location": null
+   },
+   "belief": 1,
+   "id": "40a99f40-a197-45ef-9990-1598facbe0a2",
+   "matches_hash": "-14672878722088288"
+  },
+  "belief": 0.89012191,
+  "evidence": [
+   {
+    "source_api": "eidos",
+    "text": "Agriculture and aquaculture can produce additional food and help livelihoods after one growing cycle , although lasting growth may require supporting infrastructure such as roads and irrigation systems ( Chapter 4 ) .",
+    "annotations": {
+     "found_by": "ported_syntax_1_verb-Causal",
+     "provenance": [
+      {
+       "@type": "Provenance",
+       "document": {
+        "@id": "1d418f6eccfb849b63b979caaf303bbd.jsonld"
+       },
+       "documentCharPositions": [
+        {
+         "@type": "Interval",
+         "start": 174695,
+         "end": 174770
+        }
+       ],
+       "sentence": {
+        "@id": "_:Sentence_1245"
+       },
+       "sentenceWordPositions": [
+        {
+         "@type": "Interval",
+         "start": 1,
+         "end": 10
+        }
+       ]
+      }
+     ],
+     "document_creation_time": {
+      "text": "2016-02-15",
+      "start": "2016-02-15T00:00",
+      "end": "2016-02-16T00:00",
+      "duration": 86400
+     },
+     "subj_polarity": null,
+     "obj_polarity": null,
+     "subj_adjectives": [],
+     "obj_adjectives": [],
+     "subj_context": {
+      "type": "world",
+      "time": {
+       "text": "2016-02-15",
+       "start": "2016-02-15T00:00",
+       "end": "2016-02-16T00:00",
+       "duration": 86400
+      },
+      "geo_location": null
+     },
+     "obj_context": {
+      "type": "world",
+      "time": {
+       "text": "2016-02-15",
+       "start": "2016-02-15T00:00",
+       "end": "2016-02-16T00:00",
+       "duration": 86400
+      },
+      "geo_location": null
+     },
+     "agents": {
+      "raw_text": [
+       "Agriculture",
+       "help livelihoods"
+      ],
+      "raw_grounding": [
+       {
+        "TEXT": "Agriculture",
+        "WM": [
+         [
+          [
+           "wm_compositional/concept/agriculture",
+           1.000000238418579
+          ],
+          null,
+          null,
+          null
+         ]
+        ]
+       },
+       {
+        "TEXT": "help livelihoods",
+        "WM": [
+         [
+          [
+           "wm_compositional/concept/economy/livelihoods",
+           1.0000001192092896
+          ],
+          null,
+          [
+           "wm_compositional/process/provide",
+           0.6926509141921997
+          ],
+          null
+         ],
+         [
+          [
+           "wm_compositional/concept/economy/livelihoods",
+           1.0000001192092896
+          ],
+          null,
+          null,
+          null
+         ]
+        ]
+       }
+      ]
+     },
+     "prior_uuids": [
+      "db69002e-4e92-41ca-bc2a-8758afdea6b4"
+     ]
+    },
+    "epistemics": {
+     "hedgings": [
+      "can",
+      "may"
+     ]
+    },
+    "source_hash": 6586406290187370194
+   },
+   {
+    "source_api": "eidos",
+    "text": "Agriculture and aquaculture can produce additional food and help livelihoods after one growing cycle , although lasting growth may require supporting infrastructure such as roads and irrigation systems ( Chapter 4 ) .",
+    "annotations": {
+     "found_by": "ported_syntax_1_verb-Causal",
+     "provenance": [
+      {
+       "@type": "Provenance",
+       "document": {
+        "@id": "1d418f6eccfb849b63b979caaf303bbd.jsonld"
+       },
+       "documentCharPositions": [
+        {
+         "@type": "Interval",
+         "start": 174711,
+         "end": 174770
+        }
+       ],
+       "sentence": {
+        "@id": "_:Sentence_1245"
+       },
+       "sentenceWordPositions": [
+        {
+         "@type": "Interval",
+         "start": 3,
+         "end": 10
+        }
+       ]
+      }
+     ],
+     "document_creation_time": {
+      "text": "2016-02-15",
+      "start": "2016-02-15T00:00",
+      "end": "2016-02-16T00:00",
+      "duration": 86400
+     },
+     "subj_polarity": null,
+     "obj_polarity": null,
+     "subj_adjectives": [],
+     "obj_adjectives": [],
+     "subj_context": {
+      "type": "world",
+      "time": {
+       "text": "2016-02-15",
+       "start": "2016-02-15T00:00",
+       "end": "2016-02-16T00:00",
+       "duration": 86400
+      },
+      "geo_location": null
+     },
+     "obj_context": {
+      "type": "world",
+      "time": {
+       "text": "2016-02-15",
+       "start": "2016-02-15T00:00",
+       "end": "2016-02-16T00:00",
+       "duration": 86400
+      },
+      "geo_location": null
+     },
+     "agents": {
+      "raw_text": [
+       "aquaculture",
+       "help livelihoods"
+      ],
+      "raw_grounding": [
+       {
+        "TEXT": "aquaculture",
+        "WM": [
+         [
+          [
+           "wm_compositional/concept/agriculture",
+           0.6157811880111694
+          ],
+          null,
+          null,
+          null
+         ]
+        ]
+       },
+       {
+        "TEXT": "help livelihoods",
+        "WM": [
+         [
+          [
+           "wm_compositional/concept/economy/livelihoods",
+           1.0000001192092896
+          ],
+          null,
+          [
+           "wm_compositional/process/provide",
+           0.6926509141921997
+          ],
+          null
+         ],
+         [
+          [
+           "wm_compositional/concept/economy/livelihoods",
+           1.0000001192092896
+          ],
+          null,
+          null,
+          null
+         ]
+        ]
+       }
+      ]
+     },
+     "prior_uuids": [
+      "04bcc36c-9332-4ded-b6dc-aae09bf2de46"
+     ]
+    },
+    "epistemics": {
+     "hedgings": [
+      "can",
+      "may"
+     ]
+    },
+    "source_hash": 6586406290187370194
+   }
+  ],
+  "id": "92d3706e-023e-4e4d-b0a9-e305e27b361c",
+  "matches_hash": "-8221493767578319",
+  "supports": [
+   "df0367cb-c63c-4cca-8f95-4893f800f3a0"
+  ],
+  "supported_by": [
+   "df0367cb-c63c-4cca-8f95-4893f800f3a0"
+  ]
+ },
+ {
+  "type": "Influence",
+  "subj": {
+   "type": "Event",
+   "concept": {
+    "name": "aquaculture",
+    "db_refs": {
+     "TEXT": "aquaculture",
+     "WM": [
+      [
+       [
+        "wm_compositional/concept/agriculture",
+        0.6157811880111694
+       ],
+       null,
+       null,
+       null
+      ]
+     ]
+    }
+   },
+   "delta": {
+    "type": "qualitative",
+    "polarity": 1
+   },
+   "context": {
+    "type": "world",
+    "time": {
+     "text": "2016-02-15",
+     "start": "2016-02-15T00:00",
+     "end": "2016-02-16T00:00",
+     "duration": 86400
+    },
+    "geo_location": null
+   },
+   "belief": 1,
+   "id": "b7b5e8fd-9ab1-4d11-b277-c688edc9bdc7",
+   "matches_hash": "-12098895713942074"
+  },
+  "obj": {
+   "type": "Event",
+   "concept": {
+    "name": "livelihoods",
+    "db_refs": {
+     "TEXT": "livelihoods",
+     "WM": [
+      [
+       [
+        "wm_compositional/concept/economy/livelihoods",
+        1.0000001192092896
+       ],
+       null,
+       null,
+       null
+      ]
+     ]
+    }
+   },
+   "delta": {
+    "type": "qualitative",
+    "polarity": 1
+   },
+   "context": {
+    "type": "world",
+    "time": {
+     "text": "2016-02-15",
+     "start": "2016-02-15T00:00",
+     "end": "2016-02-16T00:00",
+     "duration": 86400
+    },
+    "geo_location": null
+   },
+   "belief": 1,
+   "id": "6c501f79-d781-4afc-a7f8-210b901f9b02",
+   "matches_hash": "-14672878722088288"
+  },
+  "belief": 0.7261968750000001,
+  "evidence": [
+   {
+    "source_api": "eidos",
+    "text": "To complement the improvement of the habitat for wild fish , PRODAP is also working to improve livelihoods and reduce demand for wild fish by promoting aquaculture and reducing post-catch loss .",
+    "annotations": {
+     "found_by": "advcl_by_verb-Causal",
+     "provenance": [
+      {
+       "@type": "Provenance",
+       "document": {
+        "@id": "1d418f6eccfb849b63b979caaf303bbd.jsonld"
+       },
+       "documentCharPositions": [
+        {
+         "@type": "Interval",
+         "start": 188045,
+         "end": 188120
+        }
+       ],
+       "sentence": {
+        "@id": "_:Sentence_1327"
+       },
+       "sentenceWordPositions": [
+        {
+         "@type": "Interval",
+         "start": 17,
+         "end": 27
+        }
+       ]
+      }
+     ],
+     "document_creation_time": {
+      "text": "2016-02-15",
+      "start": "2016-02-15T00:00",
+      "end": "2016-02-16T00:00",
+      "duration": 86400
+     },
+     "subj_polarity": 1,
+     "obj_polarity": null,
+     "subj_adjectives": [],
+     "obj_adjectives": [],
+     "subj_context": {
+      "type": "world",
+      "time": {
+       "text": "2016-02-15",
+       "start": "2016-02-15T00:00",
+       "end": "2016-02-16T00:00",
+       "duration": 86400
+      },
+      "geo_location": null
+     },
+     "obj_context": {
+      "type": "world",
+      "time": {
+       "text": "2016-02-15",
+       "start": "2016-02-15T00:00",
+       "end": "2016-02-16T00:00",
+       "duration": 86400
+      },
+      "geo_location": null
+     },
+     "agents": {
+      "raw_text": [
+       "aquaculture",
+       "livelihoods"
+      ],
+      "raw_grounding": [
+       {
+        "TEXT": "aquaculture",
+        "WM": [
+         [
+          [
+           "wm_compositional/concept/agriculture",
+           0.6157811880111694
+          ],
+          null,
+          null,
+          null
+         ]
+        ]
+       },
+       {
+        "TEXT": "livelihoods",
+        "WM": [
+         [
+          [
+           "wm_compositional/concept/economy/livelihoods",
+           1.0000001192092896
+          ],
+          null,
+          null,
+          null
+         ]
+        ]
+       }
+      ]
+     },
+     "prior_uuids": [
+      "df0367cb-c63c-4cca-8f95-4893f800f3a0"
+     ]
+    },
+    "source_hash": -1170103669400098009
+   }
+  ],
+  "id": "df0367cb-c63c-4cca-8f95-4893f800f3a0",
+  "matches_hash": "-8221493767578319",
+  "supports": [
+   "92d3706e-023e-4e4d-b0a9-e305e27b361c"
+  ],
+  "supported_by": [
+   "92d3706e-023e-4e4d-b0a9-e305e27b361c"
+  ]
+ }
+]

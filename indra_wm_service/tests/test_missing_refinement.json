@@ -1,0 +1,546 @@
+[
+ {
+  "type": "Influence",
+  "subj": {
+   "type": "Event",
+   "concept": {
+    "name": "humanitarian assistance of food",
+    "db_refs": {
+     "TEXT": "food assistance",
+     "WM": [
+      [
+       [
+        "wm_compositional/concept/goods/food",
+        1.0
+       ],
+       null,
+       [
+        "wm_compositional/concept/humanitarian_assistance",
+        0.8646373152732849
+       ],
+       null
+      ]
+     ],
+     "WM_FLAT": [
+      {
+       "grounding": "wm_compositional/concept/goods/food_humanitarian_assistance",
+       "name": "humanitarian assistance of food",
+       "score": 0.9323186576366425
+      }
+     ]
+    }
+   },
+   "delta": {
+    "type": "qualitative",
+    "polarity": 1
+   },
+   "context": {
+    "type": "world",
+    "time": {
+     "text": "2011-07-22",
+     "start": "2011-07-22T00:00",
+     "end": "2011-07-23T00:00",
+     "duration": 86400
+    },
+    "geo_location": null
+   },
+   "belief": 1,
+   "id": "60691f12-d800-4646-aa6c-9a311aaedc2e",
+   "matches_hash": "-20372732127064371"
+  },
+  "obj": {
+   "type": "Event",
+   "concept": {
+    "name": "conflict",
+    "db_refs": {
+     "TEXT": "conflict",
+     "WM": [
+      [
+       [
+        "wm_compositional/concept/crisis_or_disaster/conflict",
+        1.0000001192092896
+       ],
+       null,
+       null,
+       null
+      ]
+     ],
+     "WM_FLAT": [
+      {
+       "grounding": "wm_compositional/concept/crisis_or_disaster/conflict",
+       "name": "conflict",
+       "score": 1.0000001192092896
+      }
+     ]
+    }
+   },
+   "delta": {
+    "type": "qualitative",
+    "polarity": 1
+   },
+   "context": {
+    "type": "world",
+    "time": {
+     "text": "2011-07-22",
+     "start": "2011-07-22T00:00",
+     "end": "2011-07-23T00:00",
+     "duration": 86400
+    },
+    "geo_location": null
+   },
+   "belief": 1,
+   "id": "5e5f9a70-d4a3-404f-ab4d-38a262a6b9ad",
+   "matches_hash": "21955971090843676"
+  },
+  "belief": 0.8571,
+  "evidence": [
+   {
+    "source_api": "eidos",
+    "text": "Improving food security can reduce tensions and contribute to more stable environments , but food assistance can also become a source of conflict ( Anderson , 1998 ; Berdal and Malone , 2000 ; Deng and Minear , 1992 ) and can undermine investment in local food production and the development of local capacity .",
+    "annotations": {
+     "found_by": "ported_copula_1-Causal",
+     "provenance": [
+      {
+       "@type": "Provenance",
+       "document": {
+        "@id": "065dce33a8b88addd609394fd78bcee4.jsonld",
+        "title": "Layout 1"
+       },
+       "documentCharPositions": [
+        {
+         "@type": "Interval",
+         "start": 48113,
+         "end": 48164
+        }
+       ],
+       "sentence": {
+        "@id": "_:Sentence_969"
+       },
+       "sentenceWordPositions": [
+        {
+         "@type": "Interval",
+         "start": 15,
+         "end": 23
+        }
+       ]
+      }
+     ],
+     "document_creation_time": {
+      "text": "2011-07-22",
+      "start": "2011-07-22T00:00",
+      "end": "2011-07-23T00:00",
+      "duration": 86400
+     },
+     "subj_polarity": null,
+     "obj_polarity": null,
+     "subj_adjectives": [],
+     "obj_adjectives": [],
+     "subj_context": {
+      "type": "world",
+      "time": {
+       "text": "2011-07-22",
+       "start": "2011-07-22T00:00",
+       "end": "2011-07-23T00:00",
+       "duration": 86400
+      },
+      "geo_location": null
+     },
+     "obj_context": {
+      "type": "world",
+      "time": {
+       "text": "2011-07-22",
+       "start": "2011-07-22T00:00",
+       "end": "2011-07-23T00:00",
+       "duration": 86400
+      },
+      "geo_location": null
+     },
+     "agents": {
+      "raw_text": [
+       "food assistance",
+       "conflict"
+      ],
+      "raw_grounding": [
+       {
+        "TEXT": "food assistance",
+        "WM": [
+         [
+          [
+           "wm_compositional/concept/goods/food",
+           1.0
+          ],
+          null,
+          [
+           "wm_compositional/concept/humanitarian_assistance",
+           0.8646373152732849
+          ],
+          null
+         ]
+        ],
+        "WM_FLAT": [
+         {
+          "grounding": "wm_compositional/concept/goods/food_humanitarian_assistance",
+          "name": "humanitarian assistance of food",
+          "score": 0.9323186576366425
+         }
+        ]
+       },
+       {
+        "TEXT": "conflict",
+        "WM": [
+         [
+          [
+           "wm_compositional/concept/crisis_or_disaster/conflict",
+           1.0000001192092896
+          ],
+          null,
+          null,
+          null
+         ]
+        ],
+        "WM_FLAT": [
+         {
+          "grounding": "wm_compositional/concept/crisis_or_disaster/conflict",
+          "name": "conflict",
+          "score": 1.0000001192092896
+         }
+        ]
+       }
+      ]
+     },
+     "prior_uuids": [
+      "26bbf2aa-e79c-4655-b647-33948ec0b870"
+     ]
+    },
+    "epistemics": {
+     "hedgings": [
+      "can"
+     ]
+    },
+    "source_hash": 4632244118923990554
+   }
+  ],
+  "id": "26bbf2aa-e79c-4655-b647-33948ec0b870",
+  "matches_hash": "1923264734510249"
+ },
+ {
+  "type": "Influence",
+  "subj": {
+   "type": "Event",
+   "concept": {
+    "name": "food",
+    "db_refs": {
+     "TEXT": "food and water scarcity",
+     "WM": [
+      [
+       [
+        "wm_compositional/concept/goods/food",
+        1.0
+       ],
+       null,
+       null,
+       null
+      ]
+     ],
+     "WM_FLAT": [
+      {
+       "grounding": "wm_compositional/concept/goods/food",
+       "name": "food",
+       "score": 1.0
+      }
+     ]
+    }
+   },
+   "delta": {
+    "type": "qualitative",
+    "polarity": -1
+   },
+   "context": {
+    "type": "world",
+    "time": {
+     "text": "2020-01-21",
+     "start": "2020-01-21T00:00",
+     "end": "2020-01-22T00:00",
+     "duration": 86400
+    },
+    "geo_location": null
+   },
+   "belief": 1,
+   "id": "25940d69-4aab-4763-bc1e-dda24faa7254",
+   "matches_hash": "-27863442915060970"
+  },
+  "obj": {
+   "type": "Event",
+   "concept": {
+    "name": "conflict",
+    "db_refs": {
+     "TEXT": "less conflict",
+     "WM": [
+      [
+       [
+        "wm_compositional/concept/crisis_or_disaster/conflict",
+        0.8102104663848877
+       ],
+       null,
+       null,
+       null
+      ]
+     ],
+     "WM_FLAT": [
+      {
+       "grounding": "wm_compositional/concept/crisis_or_disaster/conflict",
+       "name": "conflict",
+       "score": 0.8102104663848877
+      }
+     ]
+    }
+   },
+   "delta": {
+    "type": "qualitative",
+    "polarity": -1
+   },
+   "context": {
+    "type": "world",
+    "time": {
+     "text": "2020-01-21",
+     "start": "2020-01-21T00:00",
+     "end": "2020-01-22T00:00",
+     "duration": 86400
+    },
+    "geo_location": null
+   },
+   "belief": 1,
+   "id": "02d0e7d3-a152-4405-9606-08c878fefbae",
+   "matches_hash": "21955971090843676"
+  },
+  "belief": 0.93453238,
+  "evidence": [
+   {
+    "source_api": "eidos",
+    "text": "Mixing theories from hydrology and microeconomics , the authors suggest that in the future , there might come a point where food and water scarcity might actually lead to less conflict .",
+    "annotations": {
+     "found_by": "leadToSyntax1-Causal",
+     "provenance": [
+      {
+       "@type": "Provenance",
+       "document": {
+        "@id": "046928f80d8cd336499552a8073a848d.jsonld",
+        "title": "Researchers Say There's One Way Future Droughts Could Lead to Less Conflict"
+       },
+       "documentCharPositions": [
+        {
+         "@type": "Interval",
+         "start": 893,
+         "end": 952
+        }
+       ],
+       "sentence": {
+        "@id": "_:Sentence_9"
+       },
+       "sentenceWordPositions": [
+        {
+         "@type": "Interval",
+         "start": 22,
+         "end": 31
+        }
+       ]
+      }
+     ],
+     "document_creation_time": {
+      "text": "2020-01-21",
+      "start": "2020-01-21T00:00",
+      "end": "2020-01-22T00:00",
+      "duration": 86400
+     },
+     "subj_polarity": -1,
+     "obj_polarity": -1,
+     "subj_adjectives": [],
+     "obj_adjectives": [],
+     "subj_context": {
+      "type": "world",
+      "time": {
+       "text": "2020-01-21",
+       "start": "2020-01-21T00:00",
+       "end": "2020-01-22T00:00",
+       "duration": 86400
+      },
+      "geo_location": null
+     },
+     "obj_context": {
+      "type": "world",
+      "time": {
+       "text": "2020-01-21",
+       "start": "2020-01-21T00:00",
+       "end": "2020-01-22T00:00",
+       "duration": 86400
+      },
+      "geo_location": null
+     },
+     "agents": {
+      "raw_text": [
+       "food and water scarcity",
+       "less conflict"
+      ],
+      "raw_grounding": [
+       {
+        "TEXT": "food and water scarcity",
+        "WM": [
+         [
+          [
+           "wm_compositional/concept/goods/food",
+           1.0
+          ],
+          null,
+          null,
+          null
+         ]
+        ],
+        "WM_FLAT": [
+         {
+          "grounding": "wm_compositional/concept/goods/food",
+          "name": "food",
+          "score": 1.0
+         }
+        ]
+       },
+       {
+        "TEXT": "less conflict",
+        "WM": [
+         [
+          [
+           "wm_compositional/concept/crisis_or_disaster/conflict",
+           0.8102104663848877
+          ],
+          null,
+          null,
+          null
+         ]
+        ],
+        "WM_FLAT": [
+         {
+          "grounding": "wm_compositional/concept/crisis_or_disaster/conflict",
+          "name": "conflict",
+          "score": 0.8102104663848877
+         }
+        ]
+       }
+      ]
+     },
+     "prior_uuids": [
+      "7d747a6f-6a48-45e1-8a70-e58536f4ea5b"
+     ]
+    },
+    "epistemics": {
+     "hedgings": [
+      "might"
+     ]
+    },
+    "source_hash": 8230407080558492905
+   },
+   {
+    "source_api": "eidos",
+    "text": "For example , in the Chari-Logone subbasin ( the Central African Republic , Chad , and Cameroon ) , uncontrolled development of large-scale irrigation and changes in precipitation could trigger the shrinking of Lake Chard and lead to increased vulnerability of pastoralists to droughts and exacerbate conflict due to food and water insecurity ( Vivekananda and others 2019 ) .",
+    "annotations": {
+     "found_by": "dueToSyntax2-Causal",
+     "provenance": [
+      {
+       "@type": "Provenance",
+       "document": {
+        "@id": "180d801bacbd0961792a49ef4c59eb37.jsonld"
+       },
+       "documentCharPositions": [
+        {
+         "@type": "Interval",
+         "start": 176126,
+         "end": 176145
+        }
+       ],
+       "sentence": {
+        "@id": "_:Sentence_5224"
+       },
+       "sentenceWordPositions": [
+        {
+         "@type": "Interval",
+         "start": 47,
+         "end": 50
+        }
+       ]
+      }
+     ],
+     "document_creation_time": {
+      "text": "2020-10-13",
+      "start": "2020-10-13T00:00",
+      "end": "2020-10-14T00:00",
+      "duration": 86400
+     },
+     "subj_polarity": null,
+     "obj_polarity": null,
+     "subj_adjectives": [],
+     "obj_adjectives": [],
+     "subj_context": {
+      "type": "world",
+      "time": {
+       "text": "2020-10-13",
+       "start": "2020-10-13T00:00",
+       "end": "2020-10-14T00:00",
+       "duration": 86400
+      },
+      "geo_location": null
+     },
+     "obj_context": {
+      "type": "world",
+      "time": {
+       "text": "2020-10-13",
+       "start": "2020-10-13T00:00",
+       "end": "2020-10-14T00:00",
+       "duration": 86400
+      },
+      "geo_location": null
+     },
+     "agents": {
+      "raw_text": [
+       "food",
+       "conflict"
+      ],
+      "raw_grounding": [
+       {
+        "TEXT": "food",
+        "WM": [
+         [
+          [
+           "wm_compositional/concept/goods/food",
+           1.0
+          ],
+          null,
+          null,
+          null
+         ]
+        ]
+       },
+       {
+        "TEXT": "conflict",
+        "WM": [
+         [
+          [
+           "wm_compositional/concept/crisis_or_disaster/conflict",
+           1.0000001192092896
+          ],
+          null,
+          null,
+          null
+         ]
+        ]
+       }
+      ]
+     },
+     "prior_uuids": [
+      "610b766c-4321-4d37-917f-ec2b3ca5aa59"
+     ]
+    },
+    "source_hash": 2453841801862977564
+   }
+  ],
+  "id": "d632bb22-5fea-4e18-b7c0-c5f4e139dc3f",
+  "matches_hash": "13662095999301093"
+ }
+]

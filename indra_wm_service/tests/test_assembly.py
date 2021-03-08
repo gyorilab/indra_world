@@ -197,7 +197,7 @@ def test_assembly_cycle():
     assembled_stmts = pipeline.run(stmts)
 
 
-def test_compositional_refinement():
+def test_compositional_refinement_polarity_bug():
     stmts = stmts_from_json_file(
         os.path.join(HERE, 'test_missing_refinement.json'))
     stmts_by_hash = {s.get_hash(matches_fun=location_matches_compositional): s
