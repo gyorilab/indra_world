@@ -481,10 +481,13 @@ def location_refinement_compositional(st1, st2, ontology,
         return event_ref
     elif isinstance(st1, Influence):
         subj_ref = event_location_refinement(st1.subj, st2.subj,
-                                             ontology, entities_refined)
+                                             ontology, entities_refined,
+                                             ignore_polarity=True)
         obj_ref = event_location_refinement(st1.obj, st2.obj,
-                                            ontology, entities_refined)
-        return subj_ref and obj_ref
+                                            ontology, entities_refined,
+                                            ignore_polarity=True)
+        delta_refinement = st1.delta_refinement_of(st2)
+        return delta_refinement and subj_ref and obj_ref
     else:
         compositional_refinement(st1, st2, ontology, entities_refined)
 
