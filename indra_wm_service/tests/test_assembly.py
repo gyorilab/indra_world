@@ -182,13 +182,12 @@ comp_assembly_json = [{
     "function": "run_preassembly",
     "kwargs": {
       "filters": {
-        "function": "listify",
-        "kwargs": {
-          "obj": {
-            "function": "default_refinement_filter_compositional",
-            "no_run": True
-          }
-        }
+         "function": "listify",
+         "kwargs": {
+             "obj": {
+                 "function": "make_default_compositional_refinement_filer"
+             }
+         }
       },
       "belief_scorer": {
         "function": "get_eidos_scorer"
@@ -226,12 +225,6 @@ def test_assembly_cycle():
 def test_compositional_refinement_polarity_bug():
     stmts = stmts_from_json_file(
         os.path.join(HERE, 'test_missing_refinement.json'))
-    stmts_by_hash = {s.get_hash(matches_fun=location_matches_compositional): s
-                     for s in stmts}
-    refs = default_refinement_filter_compositional(stmts_by_hash, None)
-    assert refs[1923264734510249] == {13662095999301093}
-    assert not refs[13662095999301093]
-
     pipeline = AssemblyPipeline(comp_assembly_json)
     assembled_stmts = pipeline.run(stmts)
     assert assembled_stmts[0].supported_by == [assembled_stmts[1]]
