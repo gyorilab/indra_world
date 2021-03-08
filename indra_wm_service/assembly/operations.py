@@ -1,15 +1,11 @@
 import os
-import time
-import tqdm
 import yaml
 import copy
 import logging
-import functools
 import itertools
 import statistics
 import collections
 from datetime import datetime
-from multiprocessing import Pool
 from collections import defaultdict
 import indra.tools.assemble_corpus as ac
 from indra.sources.eidos.client import reground_texts
@@ -19,6 +15,7 @@ from indra.preassembler import get_agent_key, get_relevant_keys
 from indra.statements.concept import get_sorted_compositional_groundings
 from indra.preassembler.custom_preassembly import event_location_refinement, \
     get_location
+from indra.preassembler.refinement import RefinementFilter
 from indra.ontology.world.ontology import WorldOntology
 
 logger = logging.getLogger(__name__)
@@ -508,108 +505,81 @@ def location_refinement_compositional(st1, st2, ontology,
 
 
 @register_pipeline
-def default_refinement_filter_compositional(stmts_by_hash, stmts_to_compare):
-    return full_refinement_filter_compositional(
-        stmts_by_hash, stmts_to_compare, ontology=comp_ontology, nproc=None)
+def make_compositional_refinement_filter(ontology, nproc=None):
+    return CompositionalRefinementFilter(ontology, nproc=nproc)
 
 
 @register_pipeline
-def full_refinement_filter_compositional(stmts_by_hash, stmts_to_compare,
-                                         ontology, nproc=None):
-    """Return possible refinement relationships based on an ontology.
+def make_default_compositional_refinement_filer():
+    return CompositionalRefinementFilter(comp_ontology, nproc=None)
 
-    Parameters
-    ----------
-    stmts_by_hash : dict
-        A dict whose keys are statement hashes that point to the
-        (deduplicated) statement with that hash as a value.
-    ontology : indra.ontology.IndraOntology
-        An IndraOntology instance iwth respect to which this
-        filter is applied.
 
-    Returns
-    -------
-    list of tuple
-        A list of tuples where the first element of each tuple is the
-        hash of a statement which refines that statement whose hash
-        is the second element of the tuple.
-    """
-    stmt = stmts_by_hash[next(iter(stmts_by_hash))]
-    roles = stmt._agent_order
-    # Mapping agent keys to statement hashes
-    agent_key_to_hash = {}
-    # Mapping statement hashes to agent keys
-    hash_to_agent_key = {}
-    # All agent keys for a given agent role
-    all_keys_by_role = {}
-    comp_idxes = list(range(4))
-    for role in roles:
-        agent_key_to_hash[role] = {}
-        hash_to_agent_key[role] = {}
-        for comp_idx in comp_idxes:
-            agent_key_to_hash[role][comp_idx] = collections.defaultdict(set)
-            hash_to_agent_key[role][comp_idx] = collections.defaultdict(set)
+class CompositionalRefinementFilter(RefinementFilter):
+    def __init__(self, ontology, nproc=None):
+        super().__init__()
+        self.ontology = ontology
+        self.nproc = nproc
 
-    # Step 2. Fill up the initial data structures in preparation
-    # for identifying potential refinements
-    for sh, stmt in stmts_by_hash.items():
+    def initialize(self, stmts_by_hash):
+        super().initialize(stmts_by_hash)
+        # Take one statement to get the relevant roles
+        roles = stmts_by_hash[next(iter(stmts_by_hash))]._agent_order
+        # Mapping agent keys to statement hashes
+        agent_key_to_hash = {}
+        # Mapping statement hashes to agent keys
+        hash_to_agent_key = {}
+        # All agent keys for a given agent role
+        all_keys_by_role = {}
+        comp_idxes = list(range(4))
         for role in roles:
-            agents = getattr(stmt, role)
+            agent_key_to_hash[role] = {}
+            hash_to_agent_key[role] = {}
             for comp_idx in comp_idxes:
-                agent_keys = {get_agent_key(agent, comp_idx) for agent in
-                              (agents if isinstance(agents, list)
-                               else [agents])}
-                for agent_key in agent_keys:
-                    agent_key_to_hash[role][comp_idx][agent_key].add(sh)
-                    hash_to_agent_key[role][comp_idx][sh].add(agent_key)
+                agent_key_to_hash[role][comp_idx] = \
+                    collections.defaultdict(set)
+                hash_to_agent_key[role][comp_idx] = \
+                    collections.defaultdict(set)
 
-    for role in roles:
-        all_keys_by_role[role] = {}
-        for comp_idx in comp_idxes:
-            all_keys_by_role[role][comp_idx] = \
-                set(agent_key_to_hash[role][comp_idx].keys())
+        for sh, stmt in stmts_by_hash.items():
+            for role in roles:
+                agents = getattr(stmt, role)
+                for comp_idx in comp_idxes:
+                    agent_keys = {get_agent_key(agent, comp_idx) for agent in
+                                  (agents if isinstance(agents, list)
+                                   else [agents])}
+                    for agent_key in agent_keys:
+                        agent_key_to_hash[role][comp_idx][agent_key].add(sh)
+                        hash_to_agent_key[role][comp_idx][sh].add(agent_key)
+        for role in roles:
+            all_keys_by_role[role] = {}
+            for comp_idx in comp_idxes:
+                all_keys_by_role[role][comp_idx] = \
+                    set(agent_key_to_hash[role][comp_idx].keys())
+        self.shared_data['agent_key_to_hash'] = agent_key_to_hash
+        self.shared_data['hash_to_agent_key'] = hash_to_agent_key
+        self.shared_data['all_keys_by_role'] = all_keys_by_role
+        self.shared_data['roles'] = roles
 
-    # Step 3. Identify all the pairs of statements which can be in a
-    # refinement relationship
-    # We iterate over each statement and find all other statements that it
-    # can potentially refine
-    stmts_to_compare = {}
-    if nproc is None:
-        for sh, stmt in tqdm.tqdm(stmts_by_hash.items()):
-            _, relevants = \
-                get_relevants_for_stmt(sh, all_keys_by_role,
-                                       agent_key_to_hash, hash_to_agent_key,
-                                       ontology)
-            stmts_to_compare[sh] = relevants
-    else:
-        pool = Pool(nproc)
-        chunk_size = 1000
-        process_fun = functools.partial(get_relevants_for_stmt,
-                                        roles=roles,
-                                        all_keys_by_role=all_keys_by_role,
-                                        agent_key_to_hash=agent_key_to_hash,
-                                        hash_to_agent_key=hash_to_agent_key,
-                                        ontology=ontology
-                                        )
-        start = time.time()
-        for sh, relevants in \
-                tqdm.tqdm(pool.imap_unordered(process_fun, stmts_by_hash.keys(),
-                                              chunksize=chunk_size),
-                          total=len(stmts_by_hash)):
-            stmts_to_compare[sh] = relevants
-        end = time.time()
-        logger.debug('Closing pool...')
-        pool.close()
-        logger.debug('Joining pool...')
-        pool.join()
-        logger.info('Pool closed and joined.')
-        logger.info('Finished in %.2fs' % (end - start))
+    def get_related(self, stmt, possibly_related=None,
+                    direction='less_specific'):
+        sh = stmt.get_hash()
+        all_keys_by_role = self.shared_data['all_keys_by_role']
+        agent_key_to_hash = self.shared_data['agent_key_to_hash']
+        hash_to_agent_key = self.shared_data['hash_to_agent_key']
+        relevants = \
+            get_relevants_for_stmt(sh,
+                                   all_keys_by_role=all_keys_by_role,
+                                   agent_key_to_hash=agent_key_to_hash,
+                                   hash_to_agent_key=hash_to_agent_key,
+                                   ontology=self.ontology,
+                                   direction=direction)
+        assert all(isinstance(r, int) for r in relevants)
 
-    return stmts_to_compare
+        return relevants
 
 
 def get_relevants_for_stmt(sh, all_keys_by_role, agent_key_to_hash,
-                           hash_to_agent_key, ontology):
+                           hash_to_agent_key, ontology, direction):
     relevants = None
     # We now iterate over all the agent roles in the given statement
     # type
@@ -622,7 +592,8 @@ def get_relevants_for_stmt(sh, all_keys_by_role, agent_key_to_hash,
                 relevant_keys = get_relevant_keys(
                     agent_key,
                     all_keys_by_role[role][comp_idx],
-                    ontology)
+                    ontology=ontology,
+                    direction=direction)
                 # We now get the actual statement hashes that these other
                 # potentially refined agent keys appear in in the given role
                 role_relevant_stmt_hashes = set.union(
@@ -640,8 +611,7 @@ def get_relevants_for_stmt(sh, all_keys_by_role, agent_key_to_hash,
                 # the relevant sets per role
                 else:
                     relevants &= role_relevant_stmt_hashes
-
-    return sh, relevants
+    return relevants
 
 
 @register_pipeline

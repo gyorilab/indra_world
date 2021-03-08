@@ -20,6 +20,19 @@ def test_get_top_compositional_grounding():
     assert get_top_compositional_grounding([gr4, gr3]) == gr3
 
 
+def test_get_top_compositional_grounding():
+    gr1 = [('x', 0.7), None, None, None]
+    assert get_top_compositional_grounding([gr1]) == gr1
+    gr2 = [('y', 0.6), None, None, None]
+    assert get_top_compositional_grounding([gr1, gr2]) == gr1
+    assert get_top_compositional_grounding([gr2, gr1]) == gr1
+    gr3 = [('z', 0.6), None, ('a', 0.5)]
+    assert get_top_compositional_grounding([gr1, gr3]) == gr1
+    assert get_top_compositional_grounding([gr2, gr3]) == gr3
+    gr4 = [('z', 0.6), None, ('a', 0.4)]
+    assert get_top_compositional_grounding([gr4, gr3]) == gr3
+
+
 def test_compositional_grounding_filter():
     # Test property filtered out based on score
     wm = [[('x', 0.5), ('y', 0.8), None, None]]
@@ -96,9 +109,10 @@ def test_compositional_refinements():
                                     entities_refined=False)
 
     # Check refinements over events
+    filters = [CompositionalRefinementFilter(ontology=comp_ontology)]
     assembled_stmts = \
         ac.run_preassembly(events,
-                           filters=[default_refinement_filter_compositional],
+                           filters=filters,
                            ontology=comp_ontology,
                            refinement_fun=compositional_refinement,
                            matches_fun=matches_compositional,
@@ -127,9 +141,10 @@ def test_compositional_refinements():
         Influence(events[3], events[1]),
         Influence(events[3], events[2]),
     ]
+    filters = [CompositionalRefinementFilter(ontology=comp_ontology)]
     assembled_stmts = \
         ac.run_preassembly(influences,
-                           filters=[default_refinement_filter_compositional],
+                           filters=filters,
                            ontology=comp_ontology,
                            refinement_fun=compositional_refinement,
                            matches_fun=matches_compositional,
@@ -167,13 +182,12 @@ comp_assembly_json = [{
     "function": "run_preassembly",
     "kwargs": {
       "filters": {
-        "function": "listify",
-        "kwargs": {
-          "obj": {
-            "function": "default_refinement_filter_compositional",
-            "no_run": True
-          }
-        }
+         "function": "listify",
+         "kwargs": {
+             "obj": {
+                 "function": "make_default_compositional_refinement_filer"
+             }
+         }
       },
       "belief_scorer": {
         "function": "get_eidos_scorer"
@@ -211,12 +225,6 @@ def test_assembly_cycle():
 def test_compositional_refinement_polarity_bug():
     stmts = stmts_from_json_file(
         os.path.join(HERE, 'test_missing_refinement.json'))
-    stmts_by_hash = {s.get_hash(matches_fun=location_matches_compositional): s
-                     for s in stmts}
-    refs = default_refinement_filter_compositional(stmts_by_hash, None)
-    assert refs[1923264734510249] == {13662095999301093}
-    assert not refs[13662095999301093]
-
     pipeline = AssemblyPipeline(comp_assembly_json)
     assembled_stmts = pipeline.run(stmts)
     assert assembled_stmts[0].supported_by == [assembled_stmts[1]]
