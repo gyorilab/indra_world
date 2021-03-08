@@ -1,14 +1,11 @@
 import os
-import time
-import tqdm
 import yaml
 import copy
 import logging
-import functools
+import itertools
 import statistics
 import collections
 from datetime import datetime
-from multiprocessing import Pool
 from collections import defaultdict
 import indra.tools.assemble_corpus as ac
 from indra.sources.eidos.client import reground_texts
