@@ -21,7 +21,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install nose coverage flask flask_wtf flask_bootstrap pyyaml boto3 openpyxl
-        pip install git+https://github.com/bgyori/indra.git@preassembly_per_statement
+        pip install git+https://github.com/sorgerlab/indra.git
     - name: Run unit tests
       run: |
         export NOSEATTR="!notravis"
