@@ -98,7 +98,7 @@
       "ontology": {
         "function": "load_world_ontology",
         "kwargs": {
-          "url": "https://raw.githubusercontent.com/WorldModelers/Ontologies/master/CompositionalOntology_v2.1_metadata.yml"
+          "url": "https://raw.githubusercontent.com/WorldModelers/Ontologies/4531c084d3b902f04605c11396a25db4fff16573/CompositionalOntology_v2.1_metadata.yml"
         }
       },
       "return_toplevel": false,

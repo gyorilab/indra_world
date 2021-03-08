@@ -87,6 +87,14 @@ def test_compositional_refinements():
     events = [make_event(comp_grounding)
               for comp_grounding in [wm1, wm2, wm3, wm4]]
 
+    assert compositional_refinement(events[0], events[1],
+                                    ontology=comp_ontology,
+                                    entities_refined=False)
+
+    assert compositional_refinement(events[3], events[1],
+                                    ontology=comp_ontology,
+                                    entities_refined=False)
+
     # Check refinements over events
     assembled_stmts = \
         ac.run_preassembly(events,
@@ -181,7 +189,7 @@ comp_assembly_json = [{
       "ontology": {
         "function": "load_world_ontology",
         "kwargs": {
-          "url": "https://raw.githubusercontent.com/WorldModelers/Ontologies/master/CompositionalOntology_v2.1_metadata.yml"
+          "url": "https://raw.githubusercontent.com/WorldModelers/Ontologies/4531c084d3b902f04605c11396a25db4fff16573/CompositionalOntology_v2.1_metadata.yml"
         }
       },
       "return_toplevel": False,

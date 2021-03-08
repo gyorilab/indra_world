@@ -26,9 +26,10 @@ logger = logging.getLogger(__name__)
 
 register_pipeline(datetime)
 
-
+comp_onto_branch = '4531c084d3b902f04605c11396a25db4fff16573'
 comp_ontology_url = 'https://raw.githubusercontent.com/WorldModelers/'\
-                    'Ontologies/master/CompositionalOntology_v2.1_metadata.yml'
+                    'Ontologies/%s/CompositionalOntology_v2.1_metadata.yml' % \
+    comp_onto_branch
 comp_ontology = WorldOntology(comp_ontology_url)
 
 
@@ -418,7 +419,8 @@ def location_matches_compositional(stmt):
 
 
 @register_pipeline
-def event_compositional_refinement(st1, st2, ontology, entities_refined):
+def event_compositional_refinement(st1, st2, ontology, entities_refined,
+                                   ignore_polarity=False):
     gr1 = concept_matches_compositional(st1.concept)
     gr2 = concept_matches_compositional(st2.concept)
     refinement = True
@@ -446,7 +448,14 @@ def event_compositional_refinement(st1, st2, ontology, entities_refined):
             if not ontology.isa('WM', entry1, 'WM', entry2):
                 refinement = False
                 break
-    return refinement
+    if not refinement:
+        return False
+
+    if ignore_polarity:
+        return True
+    pol_ref = (st1.delta.polarity and not st2.delta.polarity) or \
+        st1.delta.polarity == st2.delta.polarity
+    return pol_ref
 
 
 def compositional_refinement(st1, st2, ontology, entities_refined):
@@ -457,14 +466,20 @@ def compositional_refinement(st1, st2, ontology, entities_refined):
                                               entities_refined)
     elif isinstance(st1, Influence):
         subj_ref = event_compositional_refinement(st1.subj, st2.subj,
-                                                  ontology, entities_refined)
+                                                  ontology, entities_refined,
+                                                  ignore_polarity=True)
         if not subj_ref:
             return False
         obj_ref = event_compositional_refinement(st1.subj, st2.subj,
-                                                 ontology, entities_refined)
+                                                 ontology, entities_refined,
+                                                 ignore_polarity=True)
         if not obj_ref:
             return False
-        return True
+        delta_refinement = st1.delta_refinement_of(st2)
+        if delta_refinement:
+            return True
+        else:
+            return False
     # TODO: handle Associations?
     return False
 
