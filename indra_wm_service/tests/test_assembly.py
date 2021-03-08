@@ -4,6 +4,8 @@ from indra_wm_service.assembly.operations import *
 from indra.pipeline import AssemblyPipeline
 from indra.statements import stmts_from_json_file
 
+HERE = os.path.dirname(os.path.abspath(__file__))
+
 
 def test_get_top_compositional_grounding():
     gr1 = [('x', 0.7), None, None, None]
@@ -154,8 +156,6 @@ def test_compositional_refinements():
 
 
 def test_assembly_cycle():
-    HERE = os.path.dirname(os.path.abspath(__file__))
-
     stmts = stmts_from_json_file(
         os.path.join(HERE, 'compositional_refinement_cycle_test.json'))
     # 874 is a refinement of -534
@@ -192,6 +192,54 @@ def test_assembly_cycle():
           "poolsize": None,
           "run_refinement": True
         }
-      },
+      }
     pipeline = AssemblyPipeline(assembly_json)
     assembled_stmts = pipeline.run(stmts)
+
+
+def test_compositional_refinement():
+    stmts = stmts_from_json_file(
+        os.path.join(HERE, 'test_missing_refinement.json'))
+    stmts_by_hash = {s.get_hash(matches_fun=location_matches_compositional): s
+                     for s in stmts}
+    refs = default_refinement_filter_compositional(stmts_by_hash, None)
+    assert refs[1923264734510249] == {13662095999301093}
+    assert not refs[13662095999301093]
+
+    assembly_json = [{
+        "function": "run_preassembly",
+        "kwargs": {
+            "filters": {
+                "function": "listify",
+                "kwargs": {
+                    "obj": {
+                        "function": "default_refinement_filter_compositional",
+                        "no_run": True
+                    }
+                }
+            },
+            "belief_scorer": {
+                "function": "get_eidos_scorer"
+            },
+            "matches_fun": {
+                "function": "location_matches_compositional",
+                "no_run": True
+            },
+            "refinement_fun": {
+                "function": "location_refinement_compositional",
+                "no_run": True
+            },
+            "ontology": {
+                "function": "load_world_ontology",
+                "kwargs": {
+                    "url": "https://raw.githubusercontent.com/WorldModelers/Ontologies/master/CompositionalOntology_v2.1_metadata.yml"
+                }
+            },
+            "return_toplevel": False,
+            "poolsize": None,
+            "run_refinement": True
+        }
+    }]
+    pipeline = AssemblyPipeline(assembly_json)
+    assembled_stmts = pipeline.run(stmts)
+    assert True

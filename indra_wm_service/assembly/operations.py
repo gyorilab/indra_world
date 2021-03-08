@@ -470,7 +470,8 @@ def compositional_refinement(st1, st2, ontology, entities_refined):
 
 
 @register_pipeline
-def location_refinement_compositional(st1, st2, ontology, entities_refined):
+def location_refinement_compositional(st1, st2, ontology,
+                                      entities_refined=True):
     """Return True if there is a location-aware refinement between stmts."""
     if type(st1) != type(st2):
         return False
