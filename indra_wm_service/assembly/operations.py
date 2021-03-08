@@ -16,6 +16,7 @@ from indra.sources.eidos.client import reground_texts
 from indra.pipeline import register_pipeline
 from indra.statements import Influence, Association, Event
 from indra.preassembler import get_agent_key, get_relevant_keys
+from indra.statements.concept import get_sorted_compositional_groundings
 from indra.preassembler.custom_preassembly import event_location_refinement, \
     get_location
 from indra.ontology.world.ontology import WorldOntology
@@ -25,9 +26,10 @@ logger = logging.getLogger(__name__)
 
 register_pipeline(datetime)
 
-
+comp_onto_branch = '4531c084d3b902f04605c11396a25db4fff16573'
 comp_ontology_url = 'https://raw.githubusercontent.com/WorldModelers/'\
-                    'Ontologies/master/CompositionalOntology_v2.1_metadata.yml'
+                    'Ontologies/%s/CompositionalOntology_v2.1_metadata.yml' % \
+    comp_onto_branch
 comp_ontology = WorldOntology(comp_ontology_url)
 
 
@@ -209,12 +211,22 @@ def filter_groundings(stmts):
     return stmts
 
 
+def deduplicate_groundings(groundings):
+    groundings = get_sorted_compositional_groundings(groundings)
+    # TODO: sometimes we have duplication which is not exact, rather,
+    # the same grounding (after filtering) is present but with a different
+    # score. We could eliminate these by retaining only the one with the
+    # highest ranking.
+    return list(gr for gr, _ in itertools.groupby(groundings))
+
+
 def compositional_grounding_filter_stmt(stmt, score_threshold,
                                         groundings_to_exclude):
     stmt = copy.deepcopy(stmt)
     for concept in stmt.agent_list():
         if concept is not None and 'WM' in concept.db_refs:
-            wm_groundings = concept.db_refs['WM']
+            wm_groundings = copy.copy(concept.db_refs['WM'])
+            new_groundings = []
             for idx, gr in enumerate(wm_groundings):
                 for jdx, entry in enumerate(gr):
                     if entry is not None:
@@ -241,7 +253,10 @@ def compositional_grounding_filter_stmt(stmt, score_threshold,
                 if wm_groundings[idx][3] is not None and \
                         wm_groundings[idx][2] is None:
                     wm_groundings[idx][3] = None
-            concept.db_refs['WM'] = wm_groundings
+                if not all(entry is None for entry in wm_groundings[idx]):
+                    new_groundings.append(wm_groundings[idx])
+            new_groundings = deduplicate_groundings(new_groundings)
+            concept.db_refs['WM'] = new_groundings
             # Get rid of all None tuples
             concept.db_refs['WM'] = [
                 gr for gr in concept.db_refs['WM']
@@ -404,7 +419,8 @@ def location_matches_compositional(stmt):
 
 
 @register_pipeline
-def event_compositional_refinement(st1, st2, ontology, entities_refined):
+def event_compositional_refinement(st1, st2, ontology, entities_refined,
+                                   ignore_polarity=False):
     gr1 = concept_matches_compositional(st1.concept)
     gr2 = concept_matches_compositional(st2.concept)
     refinement = True
@@ -432,7 +448,14 @@ def event_compositional_refinement(st1, st2, ontology, entities_refined):
             if not ontology.isa('WM', entry1, 'WM', entry2):
                 refinement = False
                 break
-    return refinement
+    if not refinement:
+        return False
+
+    if ignore_polarity:
+        return True
+    pol_ref = (st1.delta.polarity and not st2.delta.polarity) or \
+        st1.delta.polarity == st2.delta.polarity
+    return pol_ref
 
 
 def compositional_refinement(st1, st2, ontology, entities_refined):
@@ -443,20 +466,27 @@ def compositional_refinement(st1, st2, ontology, entities_refined):
                                               entities_refined)
     elif isinstance(st1, Influence):
         subj_ref = event_compositional_refinement(st1.subj, st2.subj,
-                                                  ontology, entities_refined)
+                                                  ontology, entities_refined,
+                                                  ignore_polarity=True)
         if not subj_ref:
             return False
         obj_ref = event_compositional_refinement(st1.subj, st2.subj,
-                                                 ontology, entities_refined)
+                                                 ontology, entities_refined,
+                                                 ignore_polarity=True)
         if not obj_ref:
             return False
-        return True
+        delta_refinement = st1.delta_refinement_of(st2)
+        if delta_refinement:
+            return True
+        else:
+            return False
     # TODO: handle Associations?
     return False
 
 
 @register_pipeline
-def location_refinement_compositional(st1, st2, ontology, entities_refined):
+def location_refinement_compositional(st1, st2, ontology,
+                                      entities_refined=True):
     """Return True if there is a location-aware refinement between stmts."""
     if type(st1) != type(st2):
         return False
@@ -466,19 +496,24 @@ def location_refinement_compositional(st1, st2, ontology, entities_refined):
         return event_ref
     elif isinstance(st1, Influence):
         subj_ref = event_location_refinement(st1.subj, st2.subj,
-                                             ontology, entities_refined)
+                                             ontology, entities_refined,
+                                             ignore_polarity=True)
         obj_ref = event_location_refinement(st1.obj, st2.obj,
-                                            ontology, entities_refined)
-        return subj_ref and obj_ref
+                                            ontology, entities_refined,
+                                            ignore_polarity=True)
+        delta_refinement = st1.delta_refinement_of(st2)
+        return delta_refinement and subj_ref and obj_ref
     else:
         compositional_refinement(st1, st2, ontology, entities_refined)
 
 
+@register_pipeline
 def default_refinement_filter_compositional(stmts_by_hash, stmts_to_compare):
     return full_refinement_filter_compositional(
         stmts_by_hash, stmts_to_compare, ontology=comp_ontology, nproc=None)
 
 
+@register_pipeline
 def full_refinement_filter_compositional(stmts_by_hash, stmts_to_compare,
                                          ontology, nproc=None):
     """Return possible refinement relationships based on an ontology.
@@ -597,12 +632,26 @@ def get_relevants_for_stmt(sh, all_keys_by_role, agent_key_to_hash,
                 # relevant statement hashes
                 if relevants is None:
                     relevants = role_relevant_stmt_hashes
+                # If not none but an empty set then we can stop
+                # here
+                elif not relevants:
+                    break
                 # In subsequent iterations, we take the intersection of
                 # the relevant sets per role
                 else:
                     relevants &= role_relevant_stmt_hashes
 
     return sh, relevants
+
+
+@register_pipeline
+def sort_compositional_groundings(statements):
+    for stmt in statements:
+        for concept in stmt.agent_list():
+            if 'WM' in concept.db_refs:
+                concept.db_refs['WM'] = \
+                    get_sorted_compositional_groundings(concept.db_refs['WM'])
+    return statements
 
 
 def get_agent_key(agent, comp_idx):
@@ -637,3 +686,11 @@ def get_agent_key(agent, comp_idx):
         comp_gr = gr[1][comp_idx]
         agent_key = ('WM', comp_gr) if comp_gr else None
     return agent_key
+
+
+@register_pipeline
+def listify(obj):
+    if not isinstance(obj, list):
+        return [obj]
+    else:
+        return obj

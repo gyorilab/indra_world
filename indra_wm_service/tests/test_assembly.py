@@ -1,5 +1,23 @@
 from indra.statements import Concept
+from indra.statements.concept import get_top_compositional_grounding
 from indra_wm_service.assembly.operations import *
+from indra.pipeline import AssemblyPipeline
+from indra.statements import stmts_from_json_file
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+
+
+def test_get_top_compositional_grounding():
+    gr1 = [('x', 0.7), None, None, None]
+    assert get_top_compositional_grounding([gr1]) == gr1
+    gr2 = [('y', 0.6), None, None, None]
+    assert get_top_compositional_grounding([gr1, gr2]) == gr1
+    assert get_top_compositional_grounding([gr2, gr1]) == gr1
+    gr3 = [('z', 0.6), None, ('a', 0.5)]
+    assert get_top_compositional_grounding([gr1, gr3]) == gr1
+    assert get_top_compositional_grounding([gr2, gr3]) == gr3
+    gr4 = [('z', 0.6), None, ('a', 0.4)]
+    assert get_top_compositional_grounding([gr4, gr3]) == gr3
 
 
 def test_compositional_grounding_filter():
@@ -69,6 +87,14 @@ def test_compositional_refinements():
     events = [make_event(comp_grounding)
               for comp_grounding in [wm1, wm2, wm3, wm4]]
 
+    assert compositional_refinement(events[0], events[1],
+                                    ontology=comp_ontology,
+                                    entities_refined=False)
+
+    assert compositional_refinement(events[3], events[1],
+                                    ontology=comp_ontology,
+                                    entities_refined=False)
+
     # Check refinements over events
     assembled_stmts = \
         ac.run_preassembly(events,
@@ -92,7 +118,7 @@ def test_compositional_refinements():
             ('agriculture', 'crop'),
             ('agriculture', 'crop_price_or_cost'),
             ('agriculture_price_or_cost', 'crop_price_or_cost'),
-            ('crop', 'crop_price_or_cost')]
+            ('crop', 'crop_price_or_cost')], refinements
 
     # Check refinements over influences
     influences = [
@@ -135,3 +161,62 @@ def test_compositional_refinements():
              'crop_price_or_cost', 'crop'),
             ('crop_price_or_cost', 'agriculture',
              'crop_price_or_cost', 'crop')]
+
+
+comp_assembly_json = [{
+    "function": "run_preassembly",
+    "kwargs": {
+      "filters": {
+        "function": "listify",
+        "kwargs": {
+          "obj": {
+            "function": "default_refinement_filter_compositional",
+            "no_run": True
+          }
+        }
+      },
+      "belief_scorer": {
+        "function": "get_eidos_scorer"
+      },
+      "matches_fun": {
+        "function": "location_matches_compositional",
+        "no_run": True
+      },
+      "refinement_fun": {
+        "function": "location_refinement_compositional",
+        "no_run": True
+      },
+      "ontology": {
+        "function": "load_world_ontology",
+        "kwargs": {
+          "url": "https://raw.githubusercontent.com/WorldModelers/Ontologies/4531c084d3b902f04605c11396a25db4fff16573/CompositionalOntology_v2.1_metadata.yml"
+        }
+      },
+      "return_toplevel": False,
+      "poolsize": None,
+      "run_refinement": True
+    }
+  }]
+
+
+def test_assembly_cycle():
+    stmts = stmts_from_json_file(
+        os.path.join(HERE, 'compositional_refinement_cycle_test.json'))
+    # 874 is a refinement of -534
+    pipeline = AssemblyPipeline(comp_assembly_json)
+    assembled_stmts = pipeline.run(stmts)
+    assert assembled_stmts[0].supported_by == [assembled_stmts[1]]
+
+
+def test_compositional_refinement_polarity_bug():
+    stmts = stmts_from_json_file(
+        os.path.join(HERE, 'test_missing_refinement.json'))
+    stmts_by_hash = {s.get_hash(matches_fun=location_matches_compositional): s
+                     for s in stmts}
+    refs = default_refinement_filter_compositional(stmts_by_hash, None)
+    assert refs[1923264734510249] == {13662095999301093}
+    assert not refs[13662095999301093]
+
+    pipeline = AssemblyPipeline(comp_assembly_json)
+    assembled_stmts = pipeline.run(stmts)
+    assert assembled_stmts[0].supported_by == [assembled_stmts[1]]
