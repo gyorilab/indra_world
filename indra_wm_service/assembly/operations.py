@@ -210,12 +210,22 @@ def filter_groundings(stmts):
     return stmts
 
 
+def deduplicate_groundings(groundings):
+    groundings = get_sorted_compositional_groundings(groundings)
+    # TODO: sometimes we have duplication which is not exact, rather,
+    # the same grounding (after filtering) is present but with a different
+    # score. We could eliminate these by retaining only the one with the
+    # highest ranking.
+    return list(gr for gr, _ in itertools.groupby(groundings))
+
+
 def compositional_grounding_filter_stmt(stmt, score_threshold,
                                         groundings_to_exclude):
     stmt = copy.deepcopy(stmt)
     for concept in stmt.agent_list():
         if concept is not None and 'WM' in concept.db_refs:
-            wm_groundings = concept.db_refs['WM']
+            wm_groundings = copy.copy(concept.db_refs['WM'])
+            new_groundings = []
             for idx, gr in enumerate(wm_groundings):
                 for jdx, entry in enumerate(gr):
                     if entry is not None:
@@ -242,7 +252,10 @@ def compositional_grounding_filter_stmt(stmt, score_threshold,
                 if wm_groundings[idx][3] is not None and \
                         wm_groundings[idx][2] is None:
                     wm_groundings[idx][3] = None
-            concept.db_refs['WM'] = wm_groundings
+                if not all(entry is None for entry in wm_groundings[idx]):
+                    new_groundings.append(wm_groundings[idx])
+            new_groundings = deduplicate_groundings(new_groundings)
+            concept.db_refs['WM'] = new_groundings
             # Get rid of all None tuples
             concept.db_refs['WM'] = [
                 gr for gr in concept.db_refs['WM']
