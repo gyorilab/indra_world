@@ -14,11 +14,10 @@ def fix_provenance(stmts, doc_id):
     """Move the document identifiers in evidences."""
     for stmt in stmts:
         for ev in stmt.evidence:
-            if 'provenance' not in ev.annotations:
-                ev.annotations['provenance'] = [{'document': {'@id': doc_id}}]
-            else:
-                prov = ev.annotations['provenance'][0]['document']
-                prov['@id'] = doc_id
+            ev.text_refs['DART'] = doc_id
+            # Sometime the PMID is set which is not appropriate so
+            # we reset it
+            ev.pmid = None
     return stmts
 
 

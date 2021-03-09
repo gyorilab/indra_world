@@ -29,7 +29,7 @@ def load_reader_outputs(reader_versions):
         fnames = glob.glob('%s/*' % reader_folder)
         logger.info('Found %d files' % len(fnames))
         for fname in tqdm.tqdm(fnames):
-            doc_id = os.path.basename(fname)
+            doc_id = os.path.splitext(os.path.basename(fname))[0]
             with open(fname, 'r') as fh:
                 doc_str = fh.read()
                 reader_outputs[reader][doc_id] = doc_str
@@ -37,10 +37,12 @@ def load_reader_outputs(reader_versions):
 
 
 if __name__ == '__main__':
-    corpus_id = 'phase3_eidos'
+    corpus_id = 'phase3_eidos_v3'
     logger.info('Processing reader output...')
     reader_outputs = load_reader_outputs(reader_versions)
-    stmts = process_reader_outputs(reader_outputs, corpus_id)
+    stmts = process_reader_outputs(reader_outputs, corpus_id,
+                                   grounding_mode='compositional',
+                                   extract_filter=['influence'])
     '''
     stmts = []
     for reader in reader_versions['compositional']:
@@ -52,7 +54,7 @@ if __name__ == '__main__':
     logger.info('Got a total of %s statements' % len(stmts))
     assembly_config_file = os.path.join(
         HERE, os.pardir, 'indra_wm_service', 'resources',
-        'assembly_compositional_december2020.json')
+        'assembly_compositional_phase3.json')
     pipeline = AssemblyPipeline.from_json_file(assembly_config_file)
     assembled_stmts = pipeline.run(stmts)
 
