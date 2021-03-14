@@ -15,7 +15,7 @@ class ServiceController:
         self.db.add_documents_for_project(project_id,
                                           doc_ids)
         # 3. FIXME: we may need to process reader output
-        # from DART and dump pre-processed statements int
+        # from DART and dump pre-processed statements in
         # the DB first.
 
         # 4. Select statements from prepared stmts table

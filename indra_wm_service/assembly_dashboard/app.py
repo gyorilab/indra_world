@@ -27,7 +27,6 @@ Bootstrap(app)
 
 reader_names = [('eidos', 'eidos'),
                 ('hume', 'hume'),
-                ('cwms', 'cwms'),
                 ('sofia', 'sofia')]
 
 assembly_levels = [('grounding', 'grounding'),
