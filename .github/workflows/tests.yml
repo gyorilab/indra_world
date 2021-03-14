@@ -20,7 +20,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install nose coverage flask flask_wtf flask_bootstrap pyyaml boto3 openpyxl
+        pip install nose coverage flask flask_wtf flask_bootstrap pyyaml boto3 openpyxl sqlalchemy
         pip install git+https://github.com/sorgerlab/indra.git
     - name: Run unit tests
       run: |
