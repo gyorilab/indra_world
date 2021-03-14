@@ -531,6 +531,7 @@ class CompositionalRefinementFilter(RefinementFilter):
         # All agent keys for a given agent role
         all_keys_by_role = {}
         comp_idxes = list(range(4))
+        # Initialize agent key data structures
         for role in roles:
             agent_key_to_hash[role] = {}
             hash_to_agent_key[role] = {}
@@ -539,7 +540,19 @@ class CompositionalRefinementFilter(RefinementFilter):
                     collections.defaultdict(set)
                 hash_to_agent_key[role][comp_idx] = \
                     collections.defaultdict(set)
+        # Extend agent key data structures
+        self._extend_maps(roles, stmts_by_hash, agent_key_to_hash,
+                          hash_to_agent_key, all_keys_by_role)
+        self.shared_data['agent_key_to_hash'] = agent_key_to_hash
+        self.shared_data['hash_to_agent_key'] = hash_to_agent_key
+        self.shared_data['all_keys_by_role'] = all_keys_by_role
+        self.shared_data['roles'] = roles
 
+    @staticmethod
+    def _extend_maps(roles, stmts_by_hash, agent_key_to_hash,
+                     hash_to_agent_key, all_keys_by_role):
+        comp_idxes = list(range(4))
+        # Fill up agent key data structures
         for sh, stmt in stmts_by_hash.items():
             for role in roles:
                 agents = getattr(stmt, role)
@@ -555,10 +568,15 @@ class CompositionalRefinementFilter(RefinementFilter):
             for comp_idx in comp_idxes:
                 all_keys_by_role[role][comp_idx] = \
                     set(agent_key_to_hash[role][comp_idx].keys())
-        self.shared_data['agent_key_to_hash'] = agent_key_to_hash
-        self.shared_data['hash_to_agent_key'] = hash_to_agent_key
-        self.shared_data['all_keys_by_role'] = all_keys_by_role
-        self.shared_data['roles'] = roles
+
+    def extend(self, stmts_by_hash):
+        roles = stmts_by_hash[next(iter(stmts_by_hash))]._agent_order
+        self._extend_maps(roles, stmts_by_hash,
+                          self.shared_data['agent_key_to_hash'],
+                          self.shared_data['hash_to_agent_key'],
+                          self.shared_data['all_keys_by_role'])
+        # We can assume that these stmts_by_hash are unique
+        self.shared_data['stmts_by_hash'].update(stmts_by_hash)
 
     def get_related(self, stmt, possibly_related=None,
                     direction='less_specific'):
