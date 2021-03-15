@@ -1,10 +1,14 @@
 import networkx
 from collections import defaultdict
 from indra.belief import extend_refinements_graph, BeliefEngine
+from indra.preassembler.refinement import RefinementConfirmationFilter
+from indra_wm_service.assembly.operations import CompositionalRefinementFilter
+from indra_wm_service.assembly.operations import location_matches_compositional
 
 
 class IncrementalAssembler:
-    def __init__(self, prepared_stmts, refinement_filters, matches_fun):
+    def __init__(self, prepared_stmts,
+                 matches_fun=location_matches_compositional):
         self.matches_fun = matches_fun
         # These are preassembly data structures
         self.stmts_by_hash = {}
@@ -14,7 +18,8 @@ class IncrementalAssembler:
                                          self.refinement_edges)
         self.refinement_edges = set()
         self.prepared_stmts = prepared_stmts
-        self.refinement_filters = refinement_filters
+        self.refinement_filters = [CompositionalRefinementFilter,
+                                   RefinementConfirmationFilter]
         self.belief_engine = \
             BeliefEngine(refinements_graph=self.refinements_graph)
         self.deduplicate()
