@@ -40,3 +40,13 @@ class Ontologies(Base):
     id = Column(Integer, primary_key=True)
     url = Column(String)
     ontology = Column(String)
+
+
+class DartRecords(Base):
+    __tablename__ = 'dart_records'
+    _dummy = Column(Integer, primary_key=True)
+    document_id = Column(String)
+    storage_key = Column(String)
+    reader_version = Column(String)
+    reader = Column(String)
+    date = Column(String)
