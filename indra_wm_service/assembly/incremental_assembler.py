@@ -1,11 +1,20 @@
 import networkx
 from collections import defaultdict
 from indra.belief import extend_refinements_graph, BeliefEngine
-from indra.ontology.world import world_ontology
+from indra.belief.wm_scorer import get_eidos_scorer
+from indra.ontology.world import load_world_ontology
 from indra.preassembler.refinement import RefinementConfirmationFilter
 from indra_wm_service.assembly.operations import CompositionalRefinementFilter
 from indra_wm_service.assembly.operations import \
     location_matches_compositional, location_refinement_compositional
+
+
+comp_onto_url = 'https://raw.githubusercontent.com/WorldModelers/Ontologies/' \
+                'master/CompositionalOntology_v2.1_metadata.yml'
+
+world_ontology = load_world_ontology(comp_onto_url)
+# TODO: should we use the Bayesian scorer?
+eidos_scorer = get_eidos_scorer()
 
 
 class IncrementalAssembler:
@@ -28,7 +37,8 @@ class IncrementalAssembler:
             self.build_refinements_graph(self.stmts_by_hash,
                                          self.refinement_edges)
         self.belief_engine = \
-            BeliefEngine(refinements_graph=self.refinements_graph)
+            BeliefEngine(refinements_graph=self.refinements_graph,
+                         scorer=eidos_scorer)
 
     def deduplicate(self):
         for stmt in self.prepared_stmts:
@@ -44,11 +54,12 @@ class IncrementalAssembler:
     def get_refinements(self):
         for filter in self.refinement_filters:
             filter.initialize(self.stmts_by_hash)
-        for stmt in self.prepared_stmts:
+        for sh, stmt in self.stmts_by_hash.items():
             refinements = None
             for filter in self.refinement_filters:
                 refinements = filter.get_related(stmt, refinements)
-                self.refinement_edges |= set(refinements)
+            refinement_edges = {(sh, ref) for ref in refinements}
+            self.refinement_edges |= refinement_edges
 
     def build_refinements_graph(self, stmts_by_hash, refinement_edges):
         g = networkx.DiGraph()
@@ -79,13 +90,13 @@ class IncrementalAssembler:
             filter.extend(new_stmts)
         new_refinements = set()
         for sh, stmt in new_stmts.values():
-            refs = None
+            refinements = None
             for filter in self.refinement_filters:
-                refs = filter.apply(stmt, refs)
-            new_refs_for_stmt = [(sh, ref) for ref in refs]
+                refinements = filter.get_related(stmt, refinements)
+            new_refs_for_stmt = [(sh, ref) for ref in refinements]
             new_refinements |= set(new_refs_for_stmt)
             extend_refinements_graph(self.belief_engine.refinements_graph,
-                                     stmt, new_refs_for_stmt,
+                                     stmt, list(new_refs_for_stmt),
                                      matches_fun=self.matches_fun)
 
         beliefs = self.belief_engine.get_hierarchy_probs(

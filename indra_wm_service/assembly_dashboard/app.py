@@ -11,7 +11,7 @@ from flask_bootstrap import Bootstrap
 
 from indra.pipeline import AssemblyPipeline
 from indra_wm_service.assembly.operations import *
-from indra_wm_service.assembly.dart import process_reader_outputs
+from indra_wm_service.sources.dart import process_reader_outputs
 from indra_wm_service.live_curation import Corpus
 
 HERE = os.path.dirname(os.path.abspath(__file__))

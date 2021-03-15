@@ -51,9 +51,6 @@
     ]
   },
   {
-    "function": "filter_groundings"
-  },
-  {
     "function": "filter_context_date",
     "kwargs": {
       "from_date": {
