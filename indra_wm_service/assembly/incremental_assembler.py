@@ -65,21 +65,36 @@ class IncrementalAssembler:
         # Next we extend refinements and re-calculate beliefs
         for filter in self.refinement_filters:
             filter.extend(new_stmts)
+        new_refinements = set()
         for sh, stmt in new_stmts.values():
             refs = None
             for filter in self.refinement_filters:
                 refs = filter.apply(stmt, refs)
-            self.refinement_edges |= {(sh, ref) for ref in refs}
+            new_refs_for_stmt = [(sh, ref) for ref in refs]
+            new_refinements |= set(new_refs_for_stmt)
             extend_refinements_graph(self.belief_engine.refinements_graph,
-                                     stmt, refs, matches_fun=self.matches_fun)
+                                     stmt, new_refs_for_stmt,
+                                     matches_fun=self.matches_fun)
 
         beliefs = self.belief_engine.get_hierarchy_probs(
-            stmts_for_hash.values())
-        return AssemblyDelta(new_stmts, new_evidences, beliefs)
+            stmts_by_hash.values())
+        return AssemblyDelta(new_stmts, new_evidences, new_refinements,
+                             beliefs)
 
 
 class AssemblyDelta:
-    def __init__(self, new_stmts, new_evidences, beliefs):
+    def __init__(self, new_stmts, new_evidences, new_refinements, beliefs):
         self.new_stmts = new_stmts
         self.new_evidences = new_evidences
+        self.new_refinements = new_refinements
         self.beliefs = beliefs
+
+    def to_json(self):
+        return {
+            'new_stmts': {sh: stmt.to_json()
+                          for sh, stmt in self.new_stmts.items()},
+            'new_evidence': {sh: ev.to_json()
+                             for sh, ev in self.new_evidences.items()},
+            'new_refinements': list(self.new_refinements),
+            'beliefs': self.beliefs
+        }
