@@ -8,6 +8,7 @@ class Projects(Base):
     __tablename__ = 'projects'
     id = Column(String, primary_key=True)
     name = Column(String)
+    ontology_id = Column(Integer)
 
 
 class ProjectDocuments(Base):
@@ -32,3 +33,10 @@ class Curations(Base):
     _dummy = Column(Integer, primary_key=True)
     project_id = Column(String)
     curation = Column(JSON)
+
+
+class Ontologies(Base):
+    __tablename__ = 'ontologies'
+    id = Column(Integer, primary_key=True)
+    url = Column(String)
+    ontology = Column(String)
