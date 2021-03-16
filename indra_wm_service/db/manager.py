@@ -63,6 +63,13 @@ class DbManager:
         )
         return self.execute(op)
 
+    def get_documents_for_project(self, project_id):
+        qfilter = wms_schema.ProjectDocuments.project_id.like(project_id)
+        sess = self.get_session()
+        q = sess.query(wms_schema.ProjectDocuments.document_id).filter(qfilter)
+        doc_ids = q.all()
+        return doc_ids
+
     def add_statements_for_document(self, document_id, reader_version,
                                     indra_version, stmts):
         """Add a set of prepared statements for a given document."""
