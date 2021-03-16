@@ -40,7 +40,7 @@ def test_incremental_assembler_constructor():
     assert ia.prepared_stmts == [s1, s2]
     assert ia.stmts_by_hash == {s1h: s1, s2h: s2}
     assert ia.evs_by_stmt_hash == {s1h: [ev1], s2h: [ev2]}, ia.evs_by_stmt_hash
-    assert ia.refinement_edges == {(s2h, s1h)}
+    assert ia.refinement_edges == {(s1h, s2h)}
     assert set(ia.refinements_graph.nodes()) == {s1h, s2h}
 
 

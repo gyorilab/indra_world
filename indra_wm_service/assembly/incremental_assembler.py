@@ -1,6 +1,6 @@
 import networkx
 from collections import defaultdict
-from indra.belief import extend_refinements_graph, BeliefEngine
+from indra.belief import extend_refinements_graph
 from indra.belief.wm_scorer import get_eidos_scorer
 from indra.ontology.world import load_world_ontology
 from indra.preassembler.refinement import RefinementConfirmationFilter
@@ -36,9 +36,6 @@ class IncrementalAssembler:
         self.refinements_graph = \
             self.build_refinements_graph(self.stmts_by_hash,
                                          self.refinement_edges)
-        self.belief_engine = \
-            BeliefEngine(refinements_graph=self.refinements_graph,
-                         scorer=eidos_scorer)
         self.belief_scorer = eidos_scorer
 
     def deduplicate(self):
@@ -58,8 +55,10 @@ class IncrementalAssembler:
         for sh, stmt in self.stmts_by_hash.items():
             refinements = None
             for filter in self.refinement_filters:
+                # This gets less specific hashes
                 refinements = filter.get_related(stmt, refinements)
-            refinement_edges = {(sh, ref) for ref in refinements}
+            # Here we need to add less specific first and more specific second
+            refinement_edges = {(ref, sh) for ref in refinements}
             self.refinement_edges |= refinement_edges
 
     def build_refinements_graph(self, stmts_by_hash, refinement_edges):
@@ -83,6 +82,7 @@ class IncrementalAssembler:
             if sh not in self.stmts_by_hash:
                 new_stmts[sh] = stmts_for_hash[0]
                 self.stmts_by_hash[sh] = stmts_for_hash[0]
+                self.evs_by_stmt_hash[sh] = []
             for stmt in stmts_for_hash:
                 for ev in stmt.evidence:
                     new_evidences[sh].append(ev)
@@ -95,15 +95,25 @@ class IncrementalAssembler:
         for sh, stmt in new_stmts.items():
             refinements = None
             for filter in self.refinement_filters:
+                # Note that this gets less specifics
                 refinements = filter.get_related(stmt, refinements)
             new_refinements |= {(sh, ref) for ref in refinements}
-            extend_refinements_graph(self.belief_engine.refinements_graph,
+            # This expects a list of less specific hashes for the statement
+            extend_refinements_graph(self.refinements_graph,
                                      stmt, list(refinements),
                                      matches_fun=self.matches_fun)
-        beliefs = {sh: self.belief_scorer.score_evidence_list(evs)
-                   for sh, evs in self.evs_by_stmt_hash.items()}
+        beliefs = self.get_beliefs()
         return AssemblyDelta(new_stmts, new_evidences, new_refinements,
                              beliefs)
+
+    def get_beliefs(self):
+        beliefs = {}
+        for sh, evs in self.evs_by_stmt_hash.items():
+            all_evs = set(evs)
+            for supp in networkx.descendants(self.refinements_graph, sh):
+                all_evs |= set(self.evs_by_stmt_hash[supp])
+            beliefs[sh] = self.belief_scorer.score_evidence_list(all_evs)
+        return beliefs
 
 
 class AssemblyDelta:
