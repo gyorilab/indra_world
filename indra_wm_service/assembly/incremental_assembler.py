@@ -39,6 +39,7 @@ class IncrementalAssembler:
         self.belief_engine = \
             BeliefEngine(refinements_graph=self.refinements_graph,
                          scorer=eidos_scorer)
+        self.belief_scorer = eidos_scorer
 
     def deduplicate(self):
         for stmt in self.prepared_stmts:
@@ -81,9 +82,11 @@ class IncrementalAssembler:
         for sh, stmts_for_hash in stmts_by_hash.items():
             if sh not in self.stmts_by_hash:
                 new_stmts[sh] = stmts_for_hash[0]
+                self.stmts_by_hash[sh] = stmts_for_hash[0]
             for stmt in stmts_for_hash:
                 for ev in stmt.evidence:
                     new_evidences[sh].append(ev)
+                    self.evs_by_stmt_hash[sh].append(ev)
 
         # Next we extend refinements and re-calculate beliefs
         for filter in self.refinement_filters:
@@ -97,9 +100,8 @@ class IncrementalAssembler:
             extend_refinements_graph(self.belief_engine.refinements_graph,
                                      stmt, list(refinements),
                                      matches_fun=self.matches_fun)
-
-        beliefs = self.belief_engine.get_hierarchy_probs(
-            stmts_by_hash.values())
+        beliefs = {sh: self.belief_scorer.score_evidence_list(evs)
+                   for sh, evs in self.evs_by_stmt_hash.items()}
         return AssemblyDelta(new_stmts, new_evidences, new_refinements,
                              beliefs)
 
