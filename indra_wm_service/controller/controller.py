@@ -1,3 +1,4 @@
+import itertools
 from indra.literature.dart_client import download_records
 from indra_wm_service.db.manager import DbManager
 from indra_wm_service.sources.dart import process_reader_output
@@ -12,33 +13,35 @@ preparation_pipeline = AssemblyPipeline.from_json_file(
     get_resource_file('statement_preparation.json'))
 
 
+expected_readers = {'eidos', 'hume', 'sofia'}
+
+
 class ServiceController:
     def __init__(self, db_url):
         self.db = DbManager(db_url)
         self.assemblers = {}
+        self.assembly_triggers = {}
 
-    def load_project(self, project_id, name, doc_ids):
+    def new_project(self, project_id, name, doc_ids):
         # 1. Add project to DB
         self.db.add_project(project_id, name)
         # 2. Add project documents to table
         self.db.add_documents_for_project(project_id,
                                           doc_ids)
-        # 3. FIXME: we may need to process reader output
-        # from DART and dump pre-processed statements in
-        # the DB first.
 
-        # 4. Select statements from prepared stmts table
-        # TODO: implement a get_statements_for_project function in the
-        # DbManager and use it here
+    def load_project(self, project_id):
+        # 1. Select documents associated with project
+        doc_ids = self.db.get_documents_for_project(project_id)
+        # 2. Select statements from prepared stmts table
         prepared_stmts = []
         for doc_id in doc_ids:
             prepared_stmts += self.db.get_statements_for_document(doc_id)
 
-        # 5. Initiate an assembler
+        # 3. Initiate an assembler
         assembler = IncrementalAssembler(prepared_stmts)
         self.assemblers[project_id] = assembler
 
-    def remove_project(self, project_id):
+    def unload_project(self, project_id):
         self.assemblers.pop(project_id, None)
 
     def get_reader_output(self, record):
@@ -55,6 +58,8 @@ class ServiceController:
         # We need to check here if these statements need to be incrementally
         # assembled into any projects. Do we do that every time or only when
         # all the readings have become available?
+        self.check_assembly_triggers_for_reader(document_id=document_id,
+                                                reader=reader)
 
     def add_curation(self, project_id, curation):
         self.db.add_curation_for_project(project_id, curation)
@@ -64,6 +69,34 @@ class ServiceController:
         # TODO: we need to check here if there are already prepared
         # statements for these documents. If there are then we can
         # run incremental assembly and return an assembly delta.
+        self.assembly_triggers[project_id] = \
+            {(reader, doc_id) for reader, doc_id
+             in itertools.product(expected_readers, doc_ids)}
+        self.check_assembly_triggers_for_project(project_id)
 
     def add_dart_record(self, reader, reader_version, document_id, date):
         self.db.add_dart_record(reader, reader_version, document_id, date)
+
+    def check_assembly_triggers_for_project(self, project_id=None):
+        # Find trigger for project ID if any
+        trigger = self.assembly_triggers.get(project_id)
+        if not trigger:
+            return None
+        # Keep track of documents we need to add
+        docs_with_records = []
+        # Now check if we have records for each reader / document pair
+        for reader, doc_id in trigger:
+            rec = self.db.get_dart_record(reader, doc_id)
+            # If no recotd, we return without doing anything else
+            if not rec:
+                return None
+            docs_with_records.append(doc_id)
+        # If we got this far, then all the requirements for the trigger
+        # ere met so we can get all statements and add them to the project
+        # to generate an assembly delta.
+        all_stmts = []
+        for doc_id in docs_with_records:
+            stmts = self.db.get_statements_for_document(doc_id)
+            all_stmts += stmts
+        delta = self.assemblers[project_id].add_statements(all_stmts)
+        return delta
