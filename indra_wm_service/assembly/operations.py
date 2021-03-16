@@ -570,6 +570,8 @@ class CompositionalRefinementFilter(RefinementFilter):
                     set(agent_key_to_hash[role][comp_idx].keys())
 
     def extend(self, stmts_by_hash):
+        if not stmts_by_hash:
+            return
         roles = stmts_by_hash[next(iter(stmts_by_hash))]._agent_order
         self._extend_maps(roles, stmts_by_hash,
                           self.shared_data['agent_key_to_hash'],

@@ -89,14 +89,13 @@ class IncrementalAssembler:
         for filter in self.refinement_filters:
             filter.extend(new_stmts)
         new_refinements = set()
-        for sh, stmt in new_stmts.values():
+        for sh, stmt in new_stmts.items():
             refinements = None
             for filter in self.refinement_filters:
                 refinements = filter.get_related(stmt, refinements)
-            new_refs_for_stmt = [(sh, ref) for ref in refinements]
-            new_refinements |= set(new_refs_for_stmt)
+            new_refinements |= {(sh, ref) for ref in refinements}
             extend_refinements_graph(self.belief_engine.refinements_graph,
-                                     stmt, list(new_refs_for_stmt),
+                                     stmt, list(refinements),
                                      matches_fun=self.matches_fun)
 
         beliefs = self.belief_engine.get_hierarchy_probs(
