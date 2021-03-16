@@ -58,8 +58,7 @@ class ServiceController:
         # We need to check here if these statements need to be incrementally
         # assembled into any projects. Do we do that every time or only when
         # all the readings have become available?
-        self.check_assembly_triggers_for_reader(document_id=document_id,
-                                                reader=reader)
+        return self.check_assembly_triggers_for_output(document_id, reader)
 
     def add_curation(self, project_id, curation):
         self.db.add_curation_for_project(project_id, curation)
@@ -72,7 +71,7 @@ class ServiceController:
         self.assembly_triggers[project_id] = \
             {(reader, doc_id) for reader, doc_id
              in itertools.product(expected_readers, doc_ids)}
-        self.check_assembly_triggers_for_project(project_id)
+        return self.check_assembly_triggers_for_project(project_id)
 
     def add_dart_record(self, reader, reader_version, document_id, date):
         self.db.add_dart_record(reader, reader_version, document_id, date)
@@ -100,3 +99,12 @@ class ServiceController:
             all_stmts += stmts
         delta = self.assemblers[project_id].add_statements(all_stmts)
         return delta
+
+    def check_assembly_triggers_for_output(self, document_id, reader):
+        deltas = {}
+        for project_id, conditions in self.assembly_triggers.items():
+            if (document_id, reader) in conditions:
+                delta = self.check_assembly_triggers_for_project(project_id)
+                if delta:
+                    deltas[project_id] = delta
+        return deltas
