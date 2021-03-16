@@ -42,6 +42,8 @@ def test_incremental_assembler_constructor():
     assert ia.evs_by_stmt_hash == {s1h: [ev1], s2h: [ev2]}, ia.evs_by_stmt_hash
     assert ia.refinement_edges == {(s1h, s2h)}
     assert set(ia.refinements_graph.nodes()) == {s1h, s2h}
+    assert set(ia.get_all_supporting_evidence(s1h)) == {ev1, ev2}
+    assert set(ia.get_all_supporting_evidence(s2h)) == {ev2}
 
 
 def test_incremental_assembler_add_statement_new():
@@ -49,11 +51,17 @@ def test_incremental_assembler_add_statement_new():
     s3 = Influence(e1, e3, ev3)
     s3h = s3.get_hash(matches_fun=location_matches_compositional)
     ia = IncrementalAssembler([s1, s2])
+    assert ia.evs_by_stmt_hash == {s1h: [ev1], s2h: [ev2]}, ia.evs_by_stmt_hash
     delta = ia.add_statements([s3])
+    assert ia.evs_by_stmt_hash == {s1h: [ev1], s2h: [ev2],
+                                   s3h: [ev3]}, ia.evs_by_stmt_hash
     assert delta.new_stmts == {s3h: s3}, delta.new_stmts
     assert delta.new_evidences == {s3h: [ev3]}, delta.new_evidences
     assert not delta.new_refinements, delta.new_refinements
     # TODO: test beliefs
+    assert set(ia.get_all_supporting_evidence(s1h)) == {ev1, ev2}
+    assert set(ia.get_all_supporting_evidence(s2h)) == {ev2}
+    assert set(ia.get_all_supporting_evidence(s3h)) == {ev3}
 
 
 def test_incremental_assembler_add_statement_duplicate():
@@ -66,16 +74,21 @@ def test_incremental_assembler_add_statement_duplicate():
     assert delta.new_evidences == {s3h: [ev3]}, delta.new_evidences
     assert not delta.new_refinements, delta.new_refinements
     # TODO: test beliefs
+    assert set(ia.get_all_supporting_evidence(s1h)) == {ev1, ev2, ev3}
+    assert set(ia.get_all_supporting_evidence(s2h)) == {ev2}
 
 
 def test_incremental_assembler_add_statement_new_refinement():
     ev4 = Evidence('eidos', text='4')
-    s4 = Influence(e1, e4, ev4)
+    s4 = Influence(e2, e4, ev4)
     s4h = s4.get_hash(matches_fun=location_matches_compositional)
     ia = IncrementalAssembler([s1, s2])
     delta = ia.add_statements([s4])
     assert delta.new_stmts, {s4h: s4}
     assert delta.new_evidences == {s4h: [ev4]}, delta.new_evidences
-    assert delta.new_refinements == {(s4h, s1h), (s4h, s1h)}, \
+    assert delta.new_refinements == {(s1h, s4h), (s2h, s4h)}, \
         delta.new_refinements
     # TODO: test beliefs
+    assert set(ia.get_all_supporting_evidence(s1h)) == {ev1, ev2, ev4}
+    assert set(ia.get_all_supporting_evidence(s2h)) == {ev2, ev4}
+    assert set(ia.get_all_supporting_evidence(s4h)) == {ev4}

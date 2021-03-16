@@ -43,7 +43,11 @@ class IncrementalAssembler:
             stmt_hash = stmt.get_hash(matches_fun=self.matches_fun)
             evs = stmt.evidence
             if stmt_hash not in self.stmts_by_hash:
-                stmt.evidence = []
+                # FIXME: this may be enabled since evidences are kept under
+                # a separate data structure, however, then tests may need to
+                # be updated to work around the fact that statements are
+                # modified.
+                # stmt.evidence = []
                 self.stmts_by_hash[stmt_hash] = stmt
             if stmt_hash not in self.evs_by_stmt_hash:
                 self.evs_by_stmt_hash[stmt_hash] = []
@@ -74,6 +78,7 @@ class IncrementalAssembler:
         stmts_by_hash = defaultdict(list)
         for stmt in stmts:
             stmts_by_hash[stmt.get_hash(self.matches_fun)].append(stmt)
+        stmts_by_hash = dict(stmts_by_hash)
 
         # We next create the new statements and new evidences data structures
         new_stmts = {}
@@ -87,6 +92,7 @@ class IncrementalAssembler:
                 for ev in stmt.evidence:
                     new_evidences[sh].append(ev)
                     self.evs_by_stmt_hash[sh].append(ev)
+        new_evidences = dict(new_evidences)
 
         # Next we extend refinements and re-calculate beliefs
         for filter in self.refinement_filters:
@@ -97,7 +103,8 @@ class IncrementalAssembler:
             for filter in self.refinement_filters:
                 # Note that this gets less specifics
                 refinements = filter.get_related(stmt, refinements)
-            new_refinements |= {(sh, ref) for ref in refinements}
+            # We order hashes by less specific first and more specific second
+            new_refinements |= {(ref, sh) for ref in refinements}
             # This expects a list of less specific hashes for the statement
             extend_refinements_graph(self.refinements_graph,
                                      stmt, list(refinements),
@@ -106,13 +113,17 @@ class IncrementalAssembler:
         return AssemblyDelta(new_stmts, new_evidences, new_refinements,
                              beliefs)
 
+    def get_all_supporting_evidence(self, sh):
+        all_evs = set(self.evs_by_stmt_hash[sh])
+        for supp in networkx.descendants(self.refinements_graph, sh):
+            all_evs |= set(self.evs_by_stmt_hash[supp])
+        return all_evs
+
     def get_beliefs(self):
         beliefs = {}
         for sh, evs in self.evs_by_stmt_hash.items():
-            all_evs = set(evs)
-            for supp in networkx.descendants(self.refinements_graph, sh):
-                all_evs |= set(self.evs_by_stmt_hash[supp])
-            beliefs[sh] = self.belief_scorer.score_evidence_list(all_evs)
+            beliefs[sh] = self.belief_scorer.score_evidence_list(
+                self.get_all_supporting_evidence(sh))
         return beliefs
 
 
