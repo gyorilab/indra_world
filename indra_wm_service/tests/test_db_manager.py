@@ -27,3 +27,10 @@ def test_dart_record():
     assert keys == ['xyz3']
 
 
+def test_statements():
+    db = _get_db()
+    db.add_statements_for_document(document_id='d1',
+                                   reader='eidos',
+                                   reader_version='1.0',
+                                   indra_version='1.0',
+                                   stmts=[s1, s2])

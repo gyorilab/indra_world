@@ -69,16 +69,17 @@ class DbManager:
         doc_ids = [r[0] for r in q.all()]
         return doc_ids
 
-    def add_statements_for_document(self, document_id, reader_version,
+    def add_statements_for_document(self, document_id, reader, reader_version,
                                     indra_version, stmts):
         """Add a set of prepared statements for a given document."""
         op = insert(wms_schema.PreparedStatements).values(
             [
                 {
                     'document_id': document_id,
+                    'reader': reader,
                     'reader_version': reader_version,
                     'indra_version': indra_version,
-                    'stmt': stmt
+                    'stmt': stmt.to_json()
                  }
                 for stmt in stmts
             ]
@@ -91,10 +92,15 @@ class DbManager:
                                                  curation=curation)
         return self.execute(op)
 
-    def get_statements_for_document(self, document_id, reader_version=None,
-                                    indra_version=None):
+    def get_statements_for_document(self, document_id, reader=None,
+                                    reader_version=None, indra_version=None):
         """Return prepared statements for a given document."""
         qfilter = wms_schema.PreparedStatements.document_id.like(document_id)
+        if reader:
+            qfilter = and_(
+                qfilter,
+                wms_schema.PreparedStatements.reader.like(reader)
+            )
         if reader_version:
             qfilter = and_(
                 qfilter,
