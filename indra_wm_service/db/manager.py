@@ -1,7 +1,6 @@
-from sqlalchemy import insert
-from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.engine.url import make_url
+from sqlalchemy import and_, insert, create_engine
 import indra_wm_service.db.schema as wms_schema
 
 
@@ -67,7 +66,7 @@ class DbManager:
         qfilter = wms_schema.ProjectDocuments.project_id.like(project_id)
         sess = self.get_session()
         q = sess.query(wms_schema.ProjectDocuments.document_id).filter(qfilter)
-        doc_ids = q.all()
+        doc_ids = [r[0] for r in q.all()]
         return doc_ids
 
     def add_statements_for_document(self, document_id, reader_version,
@@ -134,10 +133,10 @@ class DbManager:
     def get_dart_record(self, reader, document_id, reader_version=None):
         sess = self.get_session()
         qfilter = wms_schema.DartRecords.document_id.like(document_id)
-        qfilter = qfilter.and_(wms_schema.DartRecords.reader.like(reader))
+        qfilter = and_(qfilter, wms_schema.DartRecords.reader.like(reader))
         if reader_version:
             qfilter = qfilter.and_(wms_schema.DartRecords.
                                    reader_version.like(reader_version))
         q = sess.query(wms_schema.DartRecords.storage_key).filter(qfilter)
-        keys = q.all()
+        keys = [r[0] for r in q.all()]
         return keys
