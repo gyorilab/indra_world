@@ -66,8 +66,7 @@ class DbManager:
 
     def get_documents_for_project(self, project_id):
         qfilter = wms_schema.ProjectDocuments.project_id.like(project_id)
-        sess = self.get_session()
-        q = sess.query(wms_schema.ProjectDocuments.document_id).filter(qfilter)
+        q = self.query(wms_schema.ProjectDocuments.document_id).filter(qfilter)
         doc_ids = [r[0] for r in q.all()]
         return doc_ids
 
@@ -118,17 +117,15 @@ class DbManager:
                 wms_schema.PreparedStatements.indra_version.like(indra_version)
             )
 
-        sess = self.get_session()
-        q = sess.query(wms_schema.PreparedStatements.stmt).filter(qfilter)
+        q = self.query(wms_schema.PreparedStatements.stmt).filter(qfilter)
         stmts = stmts_from_json([r[0] for r in q.all()])
         return stmts
 
     def get_curations_for_project(self, project_id):
         """Return curations for a given project"""
         qfilter = wms_schema.Curations.project_id.like(project_id)
-        sess = self.get_session()
-        q = sess.query(wms_schema.Curations.curation).filter(qfilter)
-        curations = q.all()
+        q = self.query(wms_schema.Curations.curation).filter(qfilter)
+        curations = [res[0] for res in q.all()]
         return curations
 
     def add_dart_record(self, reader, reader_version, document_id, storage_key,
@@ -145,12 +142,11 @@ class DbManager:
         return self.execute(op)
 
     def get_dart_record(self, reader, document_id, reader_version=None):
-        sess = self.get_session()
         qfilter = wms_schema.DartRecords.document_id.like(document_id)
         qfilter = and_(qfilter, wms_schema.DartRecords.reader.like(reader))
         if reader_version:
             qfilter = and_(qfilter, wms_schema.DartRecords.
                            reader_version.like(reader_version))
-        q = sess.query(wms_schema.DartRecords.storage_key).filter(qfilter)
+        q = self.query(wms_schema.DartRecords.storage_key).filter(qfilter)
         keys = [r[0] for r in q.all()]
         return keys

@@ -41,3 +41,11 @@ def test_statements():
     # Hashes are different in the DB due to no matches_fun used in
     # serialization
     assert {s.uuid for s in stmts} == {s1.uuid, s2.uuid}
+
+
+def test_curations():
+    db = _get_db()
+    db.add_curation_for_project(0, {'curation': {'x': 'y'}})
+    curs = db.get_curations_for_project(0)
+    assert len(curs) == 1
+    assert curs[0]['curation'] == {'x': 'y'}
