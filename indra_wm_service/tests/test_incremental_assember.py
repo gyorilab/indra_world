@@ -21,6 +21,7 @@ s1 = Influence(e1, e2, ev1)
 s2 = Influence(e2, e2, ev2)
 s1h = s1.get_hash(matches_fun=location_matches_compositional)
 s2h = s2.get_hash(matches_fun=location_matches_compositional)
+assert s1.get_hash() == s1h
 
 
 def test_assembly_delta_construct_serialize():

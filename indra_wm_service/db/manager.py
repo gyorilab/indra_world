@@ -1,6 +1,8 @@
+from copy import deepcopy
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.engine.url import make_url
 from sqlalchemy import and_, insert, create_engine
+from indra.statements import stmts_from_json, stmts_to_json
 import indra_wm_service.db.schema as wms_schema
 
 
@@ -79,9 +81,13 @@ class DbManager:
                     'reader': reader,
                     'reader_version': reader_version,
                     'indra_version': indra_version,
-                    'stmt': stmt.to_json()
+                    'stmt': stmt
                  }
-                for stmt in stmts
+                # Note: the deepcopy here is done because when dumping
+                # statements into JSON, the hash is overwritten, potentially
+                # with an inadequate one (due to a custom matches_fun not being
+                # given here).
+                for stmt in stmts_to_json(deepcopy(stmts))
             ]
         )
         return self.execute(op)
@@ -114,7 +120,7 @@ class DbManager:
 
         sess = self.get_session()
         q = sess.query(wms_schema.PreparedStatements.stmt).filter(qfilter)
-        stmts = q.all()
+        stmts = stmts_from_json([r[0] for r in q.all()])
         return stmts
 
     def get_curations_for_project(self, project_id):

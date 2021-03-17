@@ -34,3 +34,10 @@ def test_statements():
                                    reader_version='1.0',
                                    indra_version='1.0',
                                    stmts=[s1, s2])
+    stmts = db.get_statements_for_document(document_id='d1', reader='hume')
+    assert not stmts
+    stmts = db.get_statements_for_document(document_id='d1', reader='eidos')
+    assert len(stmts) == 2
+    # Hashes are different in the DB due to no matches_fun used in
+    # serialization
+    assert {s.uuid for s in stmts} == {s1.uuid, s2.uuid}
