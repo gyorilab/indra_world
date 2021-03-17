@@ -48,17 +48,29 @@ class ServiceController:
         # TODO: should we unpack this here and return just the output?
         return download_records([record])
 
-    def add_reader_output(self, content, reader, reader_version, document_id):
-        stmts = process_reader_output(reader, content, document_id, content)
+    def add_reader_output(self, content, reader, reader_version, doc_id):
+        stmts = process_reader_output(reader, content, doc_id, content)
+        return self.add_reader_statements(stmts, reader, reader_version,
+                                          doc_id)
+
+    def add_reader_statements(self, stmts, reader, reader_version, doc_id):
         prepared_stmts = preparation_pipeline.run(stmts)
-        self.db.add_statements_for_document(document_id,
+        return self.add_prepared_statements(prepared_stmts, reader,
+                                            reader_version, doc_id)
+
+    def add_prepared_statements(self, prepared_stmts, reader, reader_version,
+                                doc_id):
+        self.db.add_statements_for_document(doc_id,
+                                            reader=reader,
                                             reader_version=reader_version,
-                                            indra_version=1.0,
+                                            # FIXME: how should we set the
+                                            # version here?
+                                            indra_version='1.0',
                                             stmts=prepared_stmts)
         # We need to check here if these statements need to be incrementally
         # assembled into any projects. Do we do that every time or only when
         # all the readings have become available?
-        return self.check_assembly_triggers_for_output(document_id, reader)
+        return self.check_assembly_triggers_for_output(doc_id, reader)
 
     def add_curation(self, project_id, curation):
         self.db.add_curation_for_project(project_id, curation)
@@ -73,10 +85,12 @@ class ServiceController:
              in itertools.product(expected_readers, doc_ids)}
         return self.check_assembly_triggers_for_project(project_id)
 
-    def add_dart_record(self, reader, reader_version, document_id, date):
-        self.db.add_dart_record(reader, reader_version, document_id, date)
+    def add_dart_record(self, reader, reader_version, document_id,
+                        storage_key, date):
+        self.db.add_dart_record(reader, reader_version, document_id,
+                                storage_key, date)
 
-    def check_assembly_triggers_for_project(self, project_id=None):
+    def check_assembly_triggers_for_project(self, project_id):
         # Find trigger for project ID if any
         trigger = self.assembly_triggers.get(project_id)
         if not trigger:
