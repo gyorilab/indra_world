@@ -8,7 +8,7 @@ def _get_db():
     return db
 
 
-def test_add_project_documents():
+def test_project_documents():
     db = _get_db()
     db.add_project(0, 'My Project')
     db.add_documents_for_project(0, ['abc', 'def'])
@@ -16,7 +16,7 @@ def test_add_project_documents():
     assert docs == ['abc', 'def'], docs
 
 
-def test_add_dart_record():
+def test_dart_record():
     db = _get_db()
     db.add_dart_record('eidos', '1.0', 'abc1', 'xyz1', 'today')
     db.add_dart_record('eidos', '1.0', 'abc2', 'xyz2', 'today')

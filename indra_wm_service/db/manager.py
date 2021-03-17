@@ -96,11 +96,13 @@ class DbManager:
         """Return prepared statements for a given document."""
         qfilter = wms_schema.PreparedStatements.document_id.like(document_id)
         if reader_version:
-            qfilter = qfilter.and_(
+            qfilter = and_(
+                qfilter,
                 wms_schema.PreparedStatements.reader_version.like(reader_version)
             )
         if indra_version:
-            qfilter = qfilter.and_(
+            qfilter = and_(
+                qfilter,
                 wms_schema.PreparedStatements.indra_version.like(indra_version)
             )
 
@@ -135,8 +137,8 @@ class DbManager:
         qfilter = wms_schema.DartRecords.document_id.like(document_id)
         qfilter = and_(qfilter, wms_schema.DartRecords.reader.like(reader))
         if reader_version:
-            qfilter = qfilter.and_(wms_schema.DartRecords.
-                                   reader_version.like(reader_version))
+            qfilter = and_(qfilter, wms_schema.DartRecords.
+                           reader_version.like(reader_version))
         q = sess.query(wms_schema.DartRecords.storage_key).filter(qfilter)
         keys = [r[0] for r in q.all()]
         return keys
