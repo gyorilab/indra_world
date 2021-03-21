@@ -23,21 +23,12 @@
     "kwargs": {
       "score_threshold": 0.6,
       "groundings_to_exclude": [
-        "wm_compositional",
-        "wm_compositional/concept",
-        "wm_compositional/process",
-        "wm_compositional/property",
-        "wm_compositional/entity",
-        "wm_compositional/entity/artifact",
-        "wm_compositional/entity/community",
-        "wm_compositional/entity/geo-location",
-        "wm_compositional/entity/government_entity",
-        "wm_compositional/entity/geo-political_entity",
-        "wm_compositional/entity/household",
-        "wm_compositional/entity/organization",
-        "wm_compositional/entity/person_or_group",
-        "wm_compositional/time",
-        "wm_compositional/time/season"
+        "wm",
+        "wm/concept",
+        "wm/entity",
+        "wm/time",
+        "wm/process",
+        "wm/property"
       ]
     }
   },
