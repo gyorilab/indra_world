@@ -76,7 +76,7 @@
         "function": "listify",
         "kwargs": {
           "obj": {
-            "function": "make_default_compositional_refinement_filer"
+            "function": "make_default_compositional_refinement_filter"
           }
         }
       },

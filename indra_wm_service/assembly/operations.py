@@ -171,8 +171,7 @@ def filter_context_date(stmts, from_date=None, to_date=None):
         return stmts
     new_stmts = []
     for stmt in stmts:
-        doc_id = \
-            stmt.evidence[0].annotations['provenance'][0]['document']['@id']
+        doc_id = stmt.evidence[0].text_refs.get('DART')
         if isinstance(stmt, Influence):
             events = [stmt.subj, stmt.obj]
         elif isinstance(stmt, Association):
@@ -455,6 +454,7 @@ def event_compositional_refinement(st1, st2, ontology, entities_refined,
     return pol_ref
 
 
+@register_pipeline
 def compositional_refinement(st1, st2, ontology, entities_refined):
     if type(st1) != type(st2):
         return False
@@ -510,11 +510,12 @@ def make_compositional_refinement_filter(ontology, nproc=None):
 
 
 @register_pipeline
-def make_default_compositional_refinement_filer():
+def make_default_compositional_refinement_filter():
     return CompositionalRefinementFilter(comp_ontology, nproc=None)
 
 
 class CompositionalRefinementFilter(RefinementFilter):
+    # FIXME: if we have events here, we need to be able to handle them
     def __init__(self, ontology, nproc=None):
         super().__init__()
         self.ontology = ontology
