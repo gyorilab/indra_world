@@ -96,14 +96,14 @@ class ServiceController:
         if not trigger:
             return None
         # Keep track of documents we need to add
-        docs_with_records = []
+        docs_with_records = set()
         # Now check if we have records for each reader / document pair
         for reader, doc_id in trigger:
             rec = self.db.get_dart_record(reader, doc_id)
             # If no recotd, we return without doing anything else
             if not rec:
                 return None
-            docs_with_records.append(doc_id)
+            docs_with_records.add(doc_id)
         # If we got this far, then all the requirements for the trigger
         # ere met so we can get all statements and add them to the project
         # to generate an assembly delta.

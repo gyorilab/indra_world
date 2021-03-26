@@ -82,7 +82,8 @@ class IncrementalAssembler:
         # We fist organize statements by hash
         stmts_by_hash = defaultdict(list)
         for stmt in stmts:
-            stmts_by_hash[stmt.get_hash(self.matches_fun)].append(stmt)
+            stmts_by_hash[
+                stmt.get_hash(matches_fun=self.matches_fun)].append(stmt)
         stmts_by_hash = dict(stmts_by_hash)
 
         # We next create the new statements and new evidences data structures

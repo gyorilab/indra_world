@@ -1,3 +1,4 @@
+from copy import deepcopy
 from .test_incremental_assembler import s1, s2
 from indra_wm_service.controller import ServiceController
 
@@ -13,8 +14,10 @@ def test_project():
     sc.new_project(0, 'p1', ['d1', 'd2', 'd3'])
     sc.add_dart_record('eidos', '1.0', 'd1', 'xxx', '2020')
     sc.add_dart_record('eidos', '1.0', 'd2', 'yyy', '2020')
-    sc.add_prepared_statements([s1], 'eidos', '1.0', 'd1')
-    sc.add_prepared_statements([s2], 'eidos', '1.0', 'd2')
+    s1x = deepcopy(s1)
+    s2x = deepcopy(s2)
+    sc.add_prepared_statements([s1x], 'eidos', '1.0', 'd1')
+    sc.add_prepared_statements([s2x], 'eidos', '1.0', 'd2')
     sc.load_project(0)
     delta = sc.add_project_documents(0, ['d1'])
     assert not delta
