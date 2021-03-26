@@ -2,13 +2,11 @@ import os
 from copy import deepcopy
 from .test_incremental_assembler import s1, s2
 from indra_wm_service.controller import ServiceController
-import indra
-
-indra_tests_path = os.path.join(indra.__path__[0], 'tests')
 
 
 def _get_eidos_output():
-    fname = os.path.join(indra_tests_path, 'eidos_compositional.jsonld')
+    fname = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                         'eidos_compositional.jsonld')
     with open(fname, 'r') as fh:
         return fh.read()
 
@@ -57,6 +55,8 @@ def test_add_reader_output():
     eidos_output = _get_eidos_output()
     sc.add_reader_output(eidos_output, 'eidos', '1.0', 'd1')
     sc.load_project(0)
+    assert len(sc.assemblers[0].prepared_stmts) == 1, \
+        sc.assemblers[0].prepared_stmts
 
 
 def test_project():
@@ -73,7 +73,7 @@ def test_project():
     sc.add_prepared_statements([s2x], 'eidos', '1.0', 'd2')
     # Now load the project and add one of the documents to the project
     sc.load_project(0)
-    delta = sc.add_project_documents(0, ['d1'])
+    delta = sc.add_project_documents(0, ['d1'], add_assembly_trigger=True)
     # At this point we only have Eidos output for d1 so no delta
     assert not delta
     # We now add records for Sofia and Hume output for d1
@@ -81,6 +81,7 @@ def test_project():
     sc.add_dart_record('hume', '1.0', 'd1', 'xx2', '2020')
     # We now satisfy the requirements and generate a delta
     delta = sc.check_assembly_triggers_for_project(0)
+    assert delta is not None
     # We get one new statement
     assert set(delta.new_stmts) == {s1x.get_hash()}
     # We get one new evidence for the statement
