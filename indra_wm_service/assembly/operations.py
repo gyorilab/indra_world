@@ -523,8 +523,6 @@ class CompositionalRefinementFilter(RefinementFilter):
 
     def initialize(self, stmts_by_hash):
         super().initialize(stmts_by_hash)
-        # Take one statement to get the relevant roles
-        roles = stmts_by_hash[next(iter(stmts_by_hash))]._agent_order
         # Mapping agent keys to statement hashes
         agent_key_to_hash = {}
         # Mapping statement hashes to agent keys
@@ -532,6 +530,15 @@ class CompositionalRefinementFilter(RefinementFilter):
         # All agent keys for a given agent role
         all_keys_by_role = {}
         comp_idxes = list(range(4))
+        # Take one statement to get the relevant roles
+        # FIXME: here we assume that all statements are of the same type
+        # which may not be the case if we have standalone events.
+        if stmts_by_hash:
+            roles = stmts_by_hash[next(iter(stmts_by_hash))]._agent_order
+        # In the corner case that there are no initial statements, we just
+        # assume we are working with Influences
+        else:
+            roles = Influence._agent_order
         # Initialize agent key data structures
         for role in roles:
             agent_key_to_hash[role] = {}
