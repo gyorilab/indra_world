@@ -44,12 +44,12 @@ class ServiceController:
     def unload_project(self, project_id):
         self.assemblers.pop(project_id, None)
 
-    def get_reader_output(self, record):
-        # TODO: should we unpack this here and return just the output?
-        return download_records([record])
-
-    def add_reader_output(self, content, reader, reader_version, doc_id):
-        stmts = process_reader_output(reader, content, doc_id, content)
+    def add_reader_output(self, content, reader, reader_version, doc_id,
+                          grounding_mode='compositional',
+                          extract_filter='influence'):
+        stmts = process_reader_output(reader, content, doc_id,
+                                      grounding_mode=grounding_mode,
+                                      extract_filter=extract_filter)
         return self.add_reader_statements(stmts, reader, reader_version,
                                           doc_id)
 
@@ -75,14 +75,16 @@ class ServiceController:
     def add_curation(self, project_id, curation):
         self.db.add_curation_for_project(project_id, curation)
 
-    def add_project_documents(self, project_id, doc_ids):
+    def add_project_documents(self, project_id, doc_ids,
+                              add_assembly_trigger=False):
         self.db.add_documents_for_project(project_id, doc_ids)
         # TODO: we need to check here if there are already prepared
         # statements for these documents. If there are then we can
         # run incremental assembly and return an assembly delta.
-        self.assembly_triggers[project_id] = \
-            {(reader, doc_id) for reader, doc_id
-             in itertools.product(expected_readers, doc_ids)}
+        if add_assembly_trigger:
+            self.assembly_triggers[project_id] = \
+                {(reader, doc_id) for reader, doc_id
+                 in itertools.product(expected_readers, doc_ids)}
         return self.check_assembly_triggers_for_project(project_id)
 
     def add_dart_record(self, reader, reader_version, document_id,
