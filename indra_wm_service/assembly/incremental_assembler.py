@@ -19,6 +19,7 @@ eidos_scorer = get_eidos_scorer()
 
 class IncrementalAssembler:
     def __init__(self, prepared_stmts,
+                 refinement_filters=None,
                  matches_fun=location_matches_compositional):
         self.matches_fun = matches_fun
         # These are preassembly data structures
@@ -27,10 +28,14 @@ class IncrementalAssembler:
         self.refinement_edges = set()
         self.prepared_stmts = prepared_stmts
 
-        crf = CompositionalRefinementFilter(ontology=world_ontology)
-        rcf = RefinementConfirmationFilter(ontology=world_ontology,
-            refinement_fun=location_refinement_compositional)
-        self.refinement_filters = [crf, rcf]
+        if not refinement_filters:
+            crf = CompositionalRefinementFilter(ontology=world_ontology)
+            rcf = RefinementConfirmationFilter(ontology=world_ontology,
+                refinement_fun=location_refinement_compositional)
+            self.refinement_filters = [crf, rcf]
+        else:
+            self.refinement_filters = refinement_filters
+
         self.deduplicate()
         self.get_refinements()
         self.refinements_graph = \
