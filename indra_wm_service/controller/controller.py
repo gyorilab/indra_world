@@ -1,3 +1,4 @@
+import datetime
 import itertools
 from indra.literature.dart_client import download_records
 from indra_wm_service.db.manager import DbManager
@@ -44,6 +45,29 @@ class ServiceController:
     def unload_project(self, project_id):
         self.assemblers.pop(project_id, None)
 
+    def add_dart_record(self, reader, reader_version, document_id,
+                        storage_key, date=None):
+        if date is None:
+            date = datetime.datetime.utcnow().isoformat()
+        self.db.add_dart_record(reader, reader_version, document_id,
+                                storage_key, date)
+
+    def process_dart_record(self, reader, reader_version, document_id,
+                            storage_key, local_storage=None,
+                            grounding_mode=None,
+                            extraction_filter=None):
+        reader_outputs = download_records(
+            [{'identity': reader,
+              'version': reader_version,
+              'document_id': document_id,
+              'storage_key': storage_key}],
+            local_storage=local_storage)
+        content = reader_outputs[reader][document_id]
+        stmts = process_reader_output(reader, content, document_id,
+                                      grounding_mode=grounding_mode,
+                                      extract_filter=extraction_filter)
+        return stmts
+
     def add_reader_output(self, content, reader, reader_version, doc_id,
                           grounding_mode='compositional',
                           extract_filter='influence'):
@@ -86,11 +110,6 @@ class ServiceController:
                 {(reader, doc_id) for reader, doc_id
                  in itertools.product(expected_readers, doc_ids)}
         return self.check_assembly_triggers_for_project(project_id)
-
-    def add_dart_record(self, reader, reader_version, document_id,
-                        storage_key, date):
-        self.db.add_dart_record(reader, reader_version, document_id,
-                                storage_key, date)
 
     def check_assembly_triggers_for_project(self, project_id):
         # Find trigger for project ID if any
