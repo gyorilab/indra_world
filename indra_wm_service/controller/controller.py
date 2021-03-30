@@ -55,7 +55,7 @@ class ServiceController:
     def process_dart_record(self, reader, reader_version, document_id,
                             storage_key, local_storage=None,
                             grounding_mode=None,
-                            extraction_filter=None):
+                            extract_filter=None):
         reader_outputs = download_records(
             [{'identity': reader,
               'version': reader_version,
@@ -63,10 +63,10 @@ class ServiceController:
               'storage_key': storage_key}],
             local_storage=local_storage)
         content = reader_outputs[reader][document_id]
-        stmts = process_reader_output(reader, content, document_id,
+        return self.add_reader_output(content, reader, reader_version,
+                                      document_id,
                                       grounding_mode=grounding_mode,
-                                      extract_filter=extraction_filter)
-        return stmts
+                                      extract_filter=extract_filter)
 
     def add_reader_output(self, content, reader, reader_version, doc_id,
                           grounding_mode='compositional',
@@ -74,8 +74,7 @@ class ServiceController:
         stmts = process_reader_output(reader, content, doc_id,
                                       grounding_mode=grounding_mode,
                                       extract_filter=extract_filter)
-        return self.add_reader_statements(stmts, reader, reader_version,
-                                          doc_id)
+        return self.add_reader_statements(stmts, reader, reader_version, doc_id)
 
     def add_reader_statements(self, stmts, reader, reader_version, doc_id):
         prepared_stmts = preparation_pipeline.run(stmts)
