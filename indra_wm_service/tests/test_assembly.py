@@ -1,3 +1,4 @@
+import os
 from indra.statements import Concept
 from indra.statements.concept import get_top_compositional_grounding
 from indra_wm_service.assembly.operations import *

@@ -1,0 +1,710 @@
+{
+  "@context": {
+    "Argument": "https://w3id.org/wm/cag/argument",
+    "Grounding": "https://w3id.org/wm/cag/grounding",
+    "Interval": "https://w3id.org/wm/cag/interval",
+    "Extraction": "https://w3id.org/wm/cag/extraction",
+    "Provenance": "https://w3id.org/wm/cag/provenance",
+    "Groundings": "https://w3id.org/wm/cag/groundings",
+    "PredicateGrounding": "https://w3id.org/wm/cag/predicategrounding",
+    "State": "https://w3id.org/wm/cag/state",
+    "Dependency": "https://w3id.org/wm/cag/dependency",
+    "Corpus": "https://w3id.org/wm/cag/corpus",
+    "Trigger": "https://w3id.org/wm/cag/trigger",
+    "Sentence": "https://w3id.org/wm/cag/sentence",
+    "Word": "https://w3id.org/wm/cag/word",
+    "Document": "https://w3id.org/wm/cag/document"
+  },
+  "@type": "Corpus",
+  "documents": [
+    {
+      "@type": "Document",
+      "@id": "_:Document_1",
+      "text": "an increase in the price of oil resulted in decreased transportation of food",
+      "sentences": [
+        {
+          "text": "an increase in the price of oil resulted in decreased transportation of food .",
+          "relevance": 0.7331106662750244,
+          "rawText": "an increase in the price of oil resulted in decreased transportation of food",
+          "words": [
+            {
+              "endOffset": 2,
+              "chunk": "B-NP",
+              "lemma": "a",
+              "tag": "DT",
+              "text": "an",
+              "norm": "O",
+              "entity": "O",
+              "startOffset": 0,
+              "@type": "Word",
+              "@id": "_:Word_1"
+            },
+            {
+              "endOffset": 11,
+              "chunk": "I-NP",
+              "lemma": "increase",
+              "tag": "NN",
+              "text": "increase",
+              "norm": "O",
+              "entity": "O",
+              "startOffset": 3,
+              "@type": "Word",
+              "@id": "_:Word_2"
+            },
+            {
+              "endOffset": 14,
+              "chunk": "B-PP",
+              "lemma": "in",
+              "tag": "IN",
+              "text": "in",
+              "norm": "O",
+              "entity": "O",
+              "startOffset": 12,
+              "@type": "Word",
+              "@id": "_:Word_3"
+            },
+            {
+              "endOffset": 18,
+              "chunk": "B-NP",
+              "lemma": "the",
+              "tag": "DT",
+              "text": "the",
+              "norm": "O",
+              "entity": "O",
+              "startOffset": 15,
+              "@type": "Word",
+              "@id": "_:Word_4"
+            },
+            {
+              "endOffset": 24,
+              "chunk": "I-NP",
+              "lemma": "price",
+              "tag": "NN",
+              "text": "price",
+              "norm": "O",
+              "entity": "B-Property",
+              "startOffset": 19,
+              "@type": "Word",
+              "@id": "_:Word_5"
+            },
+            {
+              "endOffset": 27,
+              "chunk": "B-PP",
+              "lemma": "of",
+              "tag": "IN",
+              "text": "of",
+              "norm": "O",
+              "entity": "O",
+              "startOffset": 25,
+              "@type": "Word",
+              "@id": "_:Word_6"
+            },
+            {
+              "endOffset": 31,
+              "chunk": "B-NP",
+              "lemma": "oil",
+              "tag": "NN",
+              "text": "oil",
+              "norm": "O",
+              "entity": "O",
+              "startOffset": 28,
+              "@type": "Word",
+              "@id": "_:Word_7"
+            },
+            {
+              "endOffset": 40,
+              "chunk": "B-VP",
+              "lemma": "result",
+              "tag": "VBD",
+              "text": "resulted",
+              "norm": "O",
+              "entity": "O",
+              "startOffset": 32,
+              "@type": "Word",
+              "@id": "_:Word_8"
+            },
+            {
+              "endOffset": 43,
+              "chunk": "B-PP",
+              "lemma": "in",
+              "tag": "IN",
+              "text": "in",
+              "norm": "O",
+              "entity": "O",
+              "startOffset": 41,
+              "@type": "Word",
+              "@id": "_:Word_9"
+            },
+            {
+              "endOffset": 53,
+              "chunk": "B-NP",
+              "lemma": "decrease",
+              "tag": "VBN",
+              "text": "decreased",
+              "norm": "O",
+              "entity": "O",
+              "startOffset": 44,
+              "@type": "Word",
+              "@id": "_:Word_10"
+            },
+            {
+              "endOffset": 68,
+              "chunk": "I-NP",
+              "lemma": "transportation",
+              "tag": "NN",
+              "text": "transportation",
+              "norm": "O",
+              "entity": "O",
+              "startOffset": 54,
+              "@type": "Word",
+              "@id": "_:Word_11"
+            },
+            {
+              "endOffset": 71,
+              "chunk": "B-PP",
+              "lemma": "of",
+              "tag": "IN",
+              "text": "of",
+              "norm": "O",
+              "entity": "O",
+              "startOffset": 69,
+              "@type": "Word",
+              "@id": "_:Word_12"
+            },
+            {
+              "endOffset": 76,
+              "chunk": "B-NP",
+              "lemma": "food",
+              "tag": "NN",
+              "text": "food",
+              "norm": "O",
+              "entity": "O",
+              "startOffset": 72,
+              "@type": "Word",
+              "@id": "_:Word_13"
+            },
+            {
+              "endOffset": 76,
+              "chunk": "O",
+              "lemma": ".",
+              "tag": ".",
+              "text": ".",
+              "norm": "O",
+              "entity": "O",
+              "startOffset": 76,
+              "@type": "Word",
+              "@id": "_:Word_14"
+            }
+          ],
+          "@type": "Sentence",
+          "dependencies": [
+            {
+              "@type": "Dependency",
+              "source": {
+                "@id": "_:Word_2"
+              },
+              "destination": {
+                "@id": "_:Word_1"
+              },
+              "relation": "det"
+            },
+            {
+              "@type": "Dependency",
+              "source": {
+                "@id": "_:Word_2"
+              },
+              "destination": {
+                "@id": "_:Word_5"
+              },
+              "relation": "nmod_in"
+            },
+            {
+              "@type": "Dependency",
+              "source": {
+                "@id": "_:Word_5"
+              },
+              "destination": {
+                "@id": "_:Word_3"
+              },
+              "relation": "case"
+            },
+            {
+              "@type": "Dependency",
+              "source": {
+                "@id": "_:Word_5"
+              },
+              "destination": {
+                "@id": "_:Word_4"
+              },
+              "relation": "det"
+            },
+            {
+              "@type": "Dependency",
+              "source": {
+                "@id": "_:Word_5"
+              },
+              "destination": {
+                "@id": "_:Word_7"
+              },
+              "relation": "nmod_of"
+            },
+            {
+              "@type": "Dependency",
+              "source": {
+                "@id": "_:Word_7"
+              },
+              "destination": {
+                "@id": "_:Word_6"
+              },
+              "relation": "case"
+            },
+            {
+              "@type": "Dependency",
+              "source": {
+                "@id": "_:Word_8"
+              },
+              "destination": {
+                "@id": "_:Word_2"
+              },
+              "relation": "nsubj"
+            },
+            {
+              "@type": "Dependency",
+              "source": {
+                "@id": "_:Word_8"
+              },
+              "destination": {
+                "@id": "_:Word_11"
+              },
+              "relation": "nmod_in"
+            },
+            {
+              "@type": "Dependency",
+              "source": {
+                "@id": "_:Word_8"
+              },
+              "destination": {
+                "@id": "_:Word_14"
+              },
+              "relation": "punct"
+            },
+            {
+              "@type": "Dependency",
+              "source": {
+                "@id": "_:Word_11"
+              },
+              "destination": {
+                "@id": "_:Word_9"
+              },
+              "relation": "case"
+            },
+            {
+              "@type": "Dependency",
+              "source": {
+                "@id": "_:Word_11"
+              },
+              "destination": {
+                "@id": "_:Word_10"
+              },
+              "relation": "amod"
+            },
+            {
+              "@type": "Dependency",
+              "source": {
+                "@id": "_:Word_11"
+              },
+              "destination": {
+                "@id": "_:Word_13"
+              },
+              "relation": "nmod_of"
+            },
+            {
+              "@type": "Dependency",
+              "source": {
+                "@id": "_:Word_13"
+              },
+              "destination": {
+                "@id": "_:Word_12"
+              },
+              "relation": "case"
+            }
+          ],
+          "@id": "_:Sentence_1"
+        }
+      ]
+    }
+  ],
+  "extractions": [
+    {
+      "subtype": "entity",
+      "rule": "gazetteer++simple-np++Increase_ported_syntax_1_noun",
+      "text": "price of oil",
+      "canonicalName": "oil",
+      "labels": [
+        "Concept",
+        "Entity"
+      ],
+      "relevance": 0.7331106662750244,
+      "provenance": [
+        {
+          "documentCharPositions": [
+            {
+              "@type": "Interval",
+              "start": 19,
+              "end": 30
+            }
+          ],
+          "document": {
+            "@id": "_:Document_1"
+          },
+          "sentenceWordPositions": [
+            {
+              "@type": "Interval",
+              "start": 5,
+              "end": 7
+            }
+          ],
+          "@type": "Provenance",
+          "sentence": {
+            "@id": "_:Sentence_1"
+          }
+        }
+      ],
+      "@type": "Extraction",
+      "type": "concept",
+      "groundings": [
+        {
+          "name": "wm_compositional",
+          "versionDate": "2021-03-15T21:07:04Z",
+          "version": "28f5f28092c498632bce67c966a637b1209ccf90",
+          "values": [
+            {
+              "@type": "PredicateGrounding",
+              "themeProperties": [
+                {
+                  "@type": "Grounding",
+                  "ontologyConcept": "wm/property/price_or_cost",
+                  "value": 1
+                }
+              ],
+              "theme": [
+                {
+                  "@type": "Grounding",
+                  "ontologyConcept": "wm/concept/goods/fuel",
+                  "value": 0.837960422039032
+                },
+                {
+                  "@type": "Grounding",
+                  "ontologyConcept": "wm/concept/environment/natural_resources/fossil_fuels",
+                  "value": 0.8302767872810364
+                },
+                {
+                  "@type": "Grounding",
+                  "ontologyConcept": "wm/concept/environment/pollution",
+                  "value": 0.5528290867805481
+                }
+              ],
+              "value": 0.8279604315757751,
+              "display": "THEME: wm/concept/goods/fuel (0.8379604) , Theme properties: wm/property/price_or_cost (1.0)"
+            }
+          ],
+          "@type": "Groundings"
+        },
+        {
+          "name": "wm_flattened",
+          "versionDate": "2020-10-21T17:08:24Z",
+          "version": "53bb28c048264e89a30a605fddd77f93849299b1",
+          "values": [
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "wm/concept/causal_factor/economic_and_commerce/economic_activity/market/fuel",
+              "value": 0.8617476224899292
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "wm/concept/causal_factor/economic_and_commerce/economic_activity/market/price_or_cost/oil_price",
+              "value": 0.8399707674980164
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "wm/concept/causal_factor/economic_and_commerce/economic_activity/market/transaction/oil_transaction",
+              "value": 0.8313267230987549
+            }
+          ],
+          "@type": "Groundings"
+        }
+      ],
+      "states": [
+        {
+          "@type": "State",
+          "type": "INC",
+          "text": "increase",
+          "provenance": [
+            {
+              "documentCharPositions": [
+                {
+                  "@type": "Interval",
+                  "start": 3,
+                  "end": 10
+                }
+              ],
+              "document": {
+                "@id": "_:Document_1"
+              },
+              "sentenceWordPositions": [
+                {
+                  "@type": "Interval",
+                  "start": 2,
+                  "end": 2
+                }
+              ],
+              "@type": "Provenance",
+              "sentence": {
+                "@id": "_:Sentence_1"
+              }
+            }
+          ]
+        },
+        {
+          "@type": "State",
+          "type": "PROP",
+          "text": "price"
+        }
+      ],
+      "@id": "_:Extraction_1"
+    },
+    {
+      "subtype": "causation",
+      "rule": "reverse_causal-noun-1",
+      "text": "price of oil resulted in decreased transportation of food",
+      "canonicalName": "price oil resulted decreased transportation food",
+      "labels": [
+        "Causal",
+        "DirectedRelation",
+        "EntityLinker",
+        "Event"
+      ],
+      "relevance": 0.7331106662750244,
+      "provenance": [
+        {
+          "documentCharPositions": [
+            {
+              "@type": "Interval",
+              "start": 19,
+              "end": 75
+            }
+          ],
+          "document": {
+            "@id": "_:Document_1"
+          },
+          "sentenceWordPositions": [
+            {
+              "@type": "Interval",
+              "start": 5,
+              "end": 13
+            }
+          ],
+          "@type": "Provenance",
+          "sentence": {
+            "@id": "_:Sentence_1"
+          }
+        }
+      ],
+      "@type": "Extraction",
+      "type": "relation",
+      "groundings": [
+        {
+          "@type": "Groundings",
+          "name": "wm_compositional",
+          "version": "28f5f28092c498632bce67c966a637b1209ccf90",
+          "versionDate": "2021-03-15T21:07:04Z"
+        },
+        {
+          "@type": "Groundings",
+          "name": "wm_flattened",
+          "version": "53bb28c048264e89a30a605fddd77f93849299b1",
+          "versionDate": "2020-10-21T17:08:24Z"
+        }
+      ],
+      "arguments": [
+        {
+          "@type": "Argument",
+          "type": "source",
+          "value": {
+            "@id": "_:Extraction_1"
+          }
+        },
+        {
+          "@type": "Argument",
+          "type": "destination",
+          "value": {
+            "@id": "_:Extraction_3"
+          }
+        }
+      ],
+      "@id": "_:Extraction_2",
+      "trigger": {
+        "@type": "Trigger",
+        "text": "resulted in",
+        "provenance": [
+          {
+            "documentCharPositions": [
+              {
+                "@type": "Interval",
+                "start": 32,
+                "end": 42
+              }
+            ],
+            "document": {
+              "@id": "_:Document_1"
+            },
+            "sentenceWordPositions": [
+              {
+                "@type": "Interval",
+                "start": 8,
+                "end": 9
+              }
+            ],
+            "@type": "Provenance",
+            "sentence": {
+              "@id": "_:Sentence_1"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "subtype": "entity",
+      "rule": "simple-np++Decrease_ported_syntax_6_verb",
+      "text": "decreased transportation of food",
+      "canonicalName": "transportation food",
+      "labels": [
+        "Concept",
+        "Entity"
+      ],
+      "relevance": 0.7331106662750244,
+      "provenance": [
+        {
+          "documentCharPositions": [
+            {
+              "@type": "Interval",
+              "start": 44,
+              "end": 75
+            }
+          ],
+          "document": {
+            "@id": "_:Document_1"
+          },
+          "sentenceWordPositions": [
+            {
+              "@type": "Interval",
+              "start": 10,
+              "end": 13
+            }
+          ],
+          "@type": "Provenance",
+          "sentence": {
+            "@id": "_:Sentence_1"
+          }
+        }
+      ],
+      "@type": "Extraction",
+      "type": "concept",
+      "groundings": [
+        {
+          "name": "wm_compositional",
+          "versionDate": "2021-03-15T21:07:04Z",
+          "version": "28f5f28092c498632bce67c966a637b1209ccf90",
+          "values": [
+            {
+              "@type": "PredicateGrounding",
+              "theme": [
+                {
+                  "@type": "Grounding",
+                  "ontologyConcept": "wm/concept/goods/food",
+                  "value": 1
+                }
+              ],
+              "themeProcess": [
+                {
+                  "@type": "Grounding",
+                  "ontologyConcept": "wm/concept/infrastructure/transportation/",
+                  "value": 1
+                },
+                {
+                  "@type": "Grounding",
+                  "ontologyConcept": "wm/process/transport/commercial_transportation",
+                  "value": 0.8275017142295837
+                },
+                {
+                  "@type": "Grounding",
+                  "ontologyConcept": "wm/process/transport/personal_transportation",
+                  "value": 0.8005831837654114
+                }
+              ],
+              "value": 0.9998999834060669,
+              "display": "THEME: wm/concept/goods/food (1.0); THEME PROCESS: wm/concept/infrastructure/transportation/ (1.0)"
+            }
+          ],
+          "@type": "Groundings"
+        },
+        {
+          "name": "wm_flattened",
+          "versionDate": "2020-10-21T17:08:24Z",
+          "version": "53bb28c048264e89a30a605fddd77f93849299b1",
+          "values": [
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "wm/concept/causal_factor/food_security/food_availability",
+              "value": 0.8404273390769958
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "wm/concept/causal_factor/interventions/provide/livelihood_support/food_aid",
+              "value": 0.8382425904273987
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "wm/concept/causal_factor/access/infrastructure_access/transportation/",
+              "value": 0.8371492624282837
+            }
+          ],
+          "@type": "Groundings"
+        }
+      ],
+      "states": [
+        {
+          "@type": "State",
+          "type": "DEC",
+          "text": "decreased",
+          "provenance": [
+            {
+              "documentCharPositions": [
+                {
+                  "@type": "Interval",
+                  "start": 44,
+                  "end": 52
+                }
+              ],
+              "document": {
+                "@id": "_:Document_1"
+              },
+              "sentenceWordPositions": [
+                {
+                  "@type": "Interval",
+                  "start": 10,
+                  "end": 10
+                }
+              ],
+              "@type": "Provenance",
+              "sentence": {
+                "@id": "_:Sentence_1"
+              }
+            }
+          ]
+        }
+      ],
+      "@id": "_:Extraction_3"
+    }
+  ]
+}

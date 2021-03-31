@@ -1,4 +1,4 @@
-from .test_incremental_assember import s1, s2, s1h, s2h
+from .test_incremental_assembler import s1, s2
 from indra_wm_service.db.manager import DbManager
 
 
