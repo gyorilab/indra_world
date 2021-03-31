@@ -39,6 +39,7 @@ class CorpusManager:
             all_stmts += stmts
         ia = IncrementalAssembler(all_stmts)
         self.assembled_stmts = ia.get_statements()
+        self.metadata['num_statements'] = len(self.assembled_stmts)
 
     def dump_local(self, base_folder):
         corpus_folder = os.path.join(base_folder, self.corpus_id)
