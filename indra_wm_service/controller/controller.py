@@ -54,8 +54,8 @@ class ServiceController:
 
     def process_dart_record(self, reader, reader_version, document_id,
                             storage_key, local_storage=None,
-                            grounding_mode=None,
-                            extract_filter=None):
+                            grounding_mode='compositional',
+                            extract_filter='influence'):
         reader_outputs = download_records(
             [{'identity': reader,
               'version': reader_version,
