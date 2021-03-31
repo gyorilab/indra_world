@@ -1,5 +1,6 @@
 import os
-from indra.statements import Concept
+import indra.tools.assemble_corpus as ac
+from indra.statements import Concept, Event, Influence
 from indra.statements.concept import get_top_compositional_grounding
 from indra_wm_service.assembly.operations import *
 from indra.pipeline import AssemblyPipeline
