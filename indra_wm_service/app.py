@@ -20,6 +20,10 @@ dart_ns = api.namespace('DART endpoints',
                         'DART endpoints',
                         path='/dart')
 
+assembly_ns = api.namespace('Assembly endpoints',
+                            'Assembly endpoints',
+                            path='/assembly')
+
 # Models
 dart_record_model = api.model(
     'DartRecord',
@@ -30,6 +34,21 @@ dart_record_model = api.model(
      'storage_key': fields.String(
          example='bcd04c45-3cfc-456f-a31e-59e875aefabf.json')
     }
+)
+
+project_documents_model = api.model(
+    'ProjectDocuments',
+    {'project_id': fields.String(example='project1'),
+     'document_ids': fields.List(example=[
+         '70a62e43-f881-47b1-8367-a3cca9450c03'])}
+)
+
+
+project_records_model = api.model(
+    'ProjectRecords',
+    {'project_id': fields.String(example='project1'),
+     'records': fields.List(dart_record_model)
+     }
 )
 
 
@@ -67,6 +86,40 @@ class Notify(Resource):
                                document_id=document_id,
                                storage_key=storage_key)
         return 'OK'
+
+
+@assembly_ns.expect(project_documents_model)
+@dart_ns.route('/add_project_documents')
+class AddProjectDocuments(Resource):
+    @api.doc(False)
+    def options(self):
+        return {}
+
+    def post(self):
+        project_id = request.json.get('project_id')
+        doc_ids = request.json.get('document_ids')
+        sc.add_project_documents(project_id, doc_ids,
+                                 add_assembly_trigger=False)
+
+
+@assembly_ns.expect(project_records_model)
+@dart_ns.route('/add_project_records')
+class AddProjectRecords(Resource):
+    @api.doc(False)
+    def options(self):
+        return {}
+
+    def post(self):
+        project_id = request.json.get('project_id')
+        records = request.json.get('records')
+        for record in records:
+
+            # FIXME
+
+        sc.add_project_documents(project_id, doc_ids,
+                                 add_assembly_trigger=False)
+
+
 
 # download_curations
 # submit_curations

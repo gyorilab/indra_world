@@ -11,19 +11,17 @@ class Projects(Base):
     ontology_id = Column(Integer)
 
 
-class ProjectDocuments(Base):
+class ProjectRecords(Base):
     __tablename__ = 'project_documents'
     _dummy = Column(Integer, primary_key=True)
     project_id = Column(String)
-    document_id = Column(String)
+    record_key = Column(String)
 
 
 class PreparedStatements(Base):
     __tablename__ = 'prepared_statements'
     _dummy = Column(Integer, primary_key=True)
-    document_id = Column(String)
-    reader = Column(String)
-    reader_version = Column(String)
+    record_key = Column(String)
     indra_version = Column(String)
     stmt = Column(JSON)
 
@@ -45,8 +43,8 @@ class Ontologies(Base):
 class DartRecords(Base):
     __tablename__ = 'dart_records'
     _dummy = Column(Integer, primary_key=True)
-    document_id = Column(String)
     storage_key = Column(String)
+    document_id = Column(String)
     reader_version = Column(String)
     reader = Column(String)
     date = Column(String)
@@ -59,8 +57,8 @@ class Corpora(Base):
     meta_data = Column(JSON)
 
 
-class CorpusDocuments(Base):
+class CorpusRecords(Base):
     __tablename__ = 'corpus_documents'
     _dummy = Column(String, primary_key=True)
     corpus_id = Column(String)
-    document_id = Column(String)
+    record_key = Column(String)

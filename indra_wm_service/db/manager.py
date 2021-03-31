@@ -53,20 +53,21 @@ class DbManager:
                                                 name=name)
         return self.execute(op)
 
-    def add_documents_for_project(self, project_id, doc_ids):
+    def add_records_for_project(self, project_id, record_keys):
         """Add document IDs for a project with the given ID."""
-        op = insert(wms_schema.ProjectDocuments).values(
+        op = insert(wms_schema.ProjectRecords).values(
             [
                 {'project_id': project_id,
-                 'document_id': doc_id}
-                for doc_id in doc_ids
+                 'record_key': rec_key}
+                for rec_key in record_keys
             ]
         )
         return self.execute(op)
 
     def get_documents_for_project(self, project_id):
-        qfilter = wms_schema.ProjectDocuments.project_id.like(project_id)
-        q = self.query(wms_schema.ProjectDocuments.document_id).filter(qfilter)
+        qfilter = wms_schema.ProjectRecords.project_id.like(project_id)
+        q = self.query(wms_schema.ProjectRecords.record_key).filter(qfilter)
+        # JOIN WITH RECORDS
         doc_ids = [r[0] for r in q.all()]
         return doc_ids
 
@@ -75,31 +76,29 @@ class DbManager:
                                                meta_data=metadata)
         return self.execute(op)
 
-    def add_documents_for_corpus(self, corpus_id, doc_ids):
-        op = insert(wms_schema.CorpusDocuments).values(
+    def add_records_for_corpus(self, corpus_id, record_keys):
+        op = insert(wms_schema.CorpusRecords).values(
             [
                 {'corpus_id': corpus_id,
-                 'document_id': doc_id}
-                for doc_id in doc_ids
+                 'record_key': rec_key}
+                for rec_key in record_keys
             ]
         )
         return self.execute(op)
 
     def get_documents_for_corpus(self, corpus_id):
-        qfilter = wms_schema.CorpusDocuments.corpus_id.like(corpus_id)
-        q = self.query(wms_schema.CorpusDocuments.document_id).filter(qfilter)
+        qfilter = wms_schema.CorpusRecords.corpus_id.like(corpus_id)
+        q = self.query(wms_schema.CorpusRecords.record_key).filter(qfilter)
+        # JOIN WITH RECORDS
         doc_ids = [r[0] for r in q.all()]
         return doc_ids
 
-    def add_statements_for_document(self, document_id, reader, reader_version,
-                                    indra_version, stmts):
+    def add_statements_for_record(self, record_key, stmts, indra_version):
         """Add a set of prepared statements for a given document."""
         op = insert(wms_schema.PreparedStatements).values(
             [
                 {
-                    'document_id': document_id,
-                    'reader': reader,
-                    'reader_version': reader_version,
+                    'record_key': record_key,
                     'indra_version': indra_version,
                     'stmt': stmt
                  }
@@ -118,9 +117,16 @@ class DbManager:
                                                  curation=curation)
         return self.execute(op)
 
+    def get_statements_for_record(self, record_key):
+        qfilter = wms_schema.PreparedStatements.record_key.like(record_key)
+        q = self.query(wms_schema.PreparedStatements.stmt).filter(qfilter)
+        stmts = stmts_from_json([r[0] for r in q.all()])
+        return stmts
+
     def get_statements_for_document(self, document_id, reader=None,
                                     reader_version=None, indra_version=None):
         """Return prepared statements for a given document."""
+        # JOIN WITH RECORDS TABLE
         qfilter = wms_schema.PreparedStatements.document_id.like(document_id)
         if reader:
             qfilter = and_(
@@ -162,7 +168,8 @@ class DbManager:
         )
         return self.execute(op)
 
-    def get_dart_record(self, reader, document_id, reader_version=None):
+    def get_dart_records(self, reader, document_id, reader_version=None):
+        # TODO: allow more optional parameters
         qfilter = wms_schema.DartRecords.document_id.like(document_id)
         qfilter = and_(qfilter, wms_schema.DartRecords.reader.like(reader))
         if reader_version:
@@ -170,4 +177,6 @@ class DbManager:
                            reader_version.like(reader_version))
         q = self.query(wms_schema.DartRecords.storage_key).filter(qfilter)
         keys = [r[0] for r in q.all()]
+        # TODO: should we just return the keys here or the full record?
+        # maybe add a different function for getting keys
         return keys

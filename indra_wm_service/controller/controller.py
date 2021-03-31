@@ -30,9 +30,10 @@ class ServiceController:
         self.db.add_documents_for_project(project_id,
                                           doc_ids)
 
-    def load_project(self, project_id):
-        # 1. Select documents associated with project
-        doc_ids = self.db.get_documents_for_project(project_id)
+    def load_project(self, project_id, doc_ids=None):
+        if doc_ids is None:
+            # 1. Select documents associated with project
+            doc_ids = self.db.get_documents_for_project(project_id)
         # 2. Select statements from prepared stmts table
         prepared_stmts = []
         for doc_id in doc_ids:
@@ -94,6 +95,22 @@ class ServiceController:
         # assembled into any projects. Do we do that every time or only when
         # all the readings have become available?
         return self.check_assembly_triggers_for_output(doc_id, reader)
+
+    def assemble_new_documents(self, project_id, new_doc_ids):
+        # 1. We get all the document IDs associated with the project
+        # which may or may not include some of the new ones
+        doc_ids = self.db.get_documents_for_project(project_id)
+        old_doc_ids = list(set(doc_ids) - set(new_doc_ids))
+        # 2. Now load the project with the old document IDs
+        self.load_project(project_id, old_doc_ids)
+        # 3. Now get the new statements associated with the new doc IDs
+        new_stmts = []
+        for doc_id in new_doc_ids:
+            stmts = self.db.get_statements_for_document(doc_id)
+            new_stmts += stmts
+        # 4. Finally get an incremental assembly delta and return it
+        delta = self.assemblers[project_id].add_statements(new_stmts)
+        return delta
 
     def add_curation(self, project_id, curation):
         self.db.add_curation_for_project(project_id, curation)
