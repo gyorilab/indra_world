@@ -13,7 +13,7 @@ from indra.literature import dart_client
 from indra_wm_service.corpus_manager import CorpusManager
 
 
-DB_URL = get_config('INDRA_WM_DB_URL', failure_ok=False)
+DB_URL = get_config('INDRA_WM_SERVICE_DB', failure_ok=False)
 
 
 logger = logging.getLogger('indra_wm_service.assembly_dashboard')
