@@ -72,7 +72,7 @@ class DbManager:
 
     def add_corpus(self, corpus_id, metadata):
         op = insert(wms_schema.Corpora).values(id=corpus_id,
-                                               metadata=metadata)
+                                               meta_data=metadata)
         return self.execute(op)
 
     def add_documents_for_corpus(self, corpus_id, doc_ids):

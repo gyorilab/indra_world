@@ -56,7 +56,7 @@ class Corpora(Base):
     __tablename__ = 'corpora'
     _dummy = Column(Integer, primary_key=True)
     id = Column(String)
-    metadata = Column(JSON)
+    meta_data = Column(JSON)
 
 
 class CorpusDocuments(Base):
