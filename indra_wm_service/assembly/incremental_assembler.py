@@ -1,3 +1,4 @@
+from copy import deepcopy
 import networkx
 from collections import defaultdict
 from indra.belief import extend_refinements_graph
@@ -42,6 +43,7 @@ class IncrementalAssembler:
             self.build_refinements_graph(self.stmts_by_hash,
                                          self.refinement_edges)
         self.belief_scorer = eidos_scorer
+        self.beliefs = self.get_beliefs()
 
     def deduplicate(self):
         for stmt in self.prepared_stmts:
@@ -126,11 +128,20 @@ class IncrementalAssembler:
         return all_evs
 
     def get_beliefs(self):
-        beliefs = {}
+        self.beliefs = {}
         for sh, evs in self.evs_by_stmt_hash.items():
-            beliefs[sh] = self.belief_scorer.score_evidence_list(
+            self.beliefs[sh] = self.belief_scorer.score_evidence_list(
                 self.get_all_supporting_evidence(sh))
-        return beliefs
+        return self.beliefs
+
+    def get_statements(self):
+        stmts = []
+        for sh, stmt in deepcopy(self.stmts_by_hash).items():
+            stmt.evidence = self.evs_by_stmt_hash.get(sh, [])
+            stmt.belief = self.beliefs[sh]
+            stmts.append(stmt)
+        # TODO: add refinement edges as supports/supported_by?
+        return stmts
 
 
 class AssemblyDelta:
