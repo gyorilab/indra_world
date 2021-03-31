@@ -13,7 +13,7 @@ __all__ = ['get_expanded_events_influences', 'remove_namespaces',
            'make_compositional_refinement_filter',
            'make_default_compositional_refinement_filter',
            'CompositionalRefinementFilter', 'get_relevants_for_stmt',
-           'get_agent_key', 'listify']
+           'get_agent_key', 'listify', 'comp_ontology', 'comp_ontology_url']
 import os
 import yaml
 import copy
