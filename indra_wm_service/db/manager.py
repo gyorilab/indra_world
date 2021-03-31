@@ -70,6 +70,27 @@ class DbManager:
         doc_ids = [r[0] for r in q.all()]
         return doc_ids
 
+    def add_corpus(self, corpus_id, metadata):
+        op = insert(wms_schema.Corpora).values(id=corpus_id,
+                                               metadata=metadata)
+        return self.execute(op)
+
+    def add_documents_for_corpus(self, corpus_id, doc_ids):
+        op = insert(wms_schema.CorpusDocuments).values(
+            [
+                {'corpus_id': corpus_id,
+                 'document_id': doc_id}
+                for doc_id in doc_ids
+            ]
+        )
+        return self.execute(op)
+
+    def get_documents_for_corpus(self, corpus_id):
+        qfilter = wms_schema.CorpusDocuments.corpus_id.like(corpus_id)
+        q = self.query(wms_schema.CorpusDocuments.document_id).filter(qfilter)
+        doc_ids = [r[0] for r in q.all()]
+        return doc_ids
+
     def add_statements_for_document(self, document_id, reader, reader_version,
                                     indra_version, stmts):
         """Add a set of prepared statements for a given document."""

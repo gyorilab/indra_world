@@ -14,7 +14,7 @@ class Projects(Base):
 class ProjectDocuments(Base):
     __tablename__ = 'project_documents'
     _dummy = Column(Integer, primary_key=True)
-    project_id = Column(Integer)
+    project_id = Column(String)
     document_id = Column(String)
 
 
@@ -50,3 +50,17 @@ class DartRecords(Base):
     reader_version = Column(String)
     reader = Column(String)
     date = Column(String)
+
+
+class Corpora(Base):
+    __tablename__ = 'corpora'
+    _dummy = Column(Integer, primary_key=True)
+    id = Column(String)
+    metadata = Column(JSON)
+
+
+class CorpusDocuments(Base):
+    __tablename__ = 'corpus_documents'
+    _dummy = Column(String, primary_key=True)
+    corpus_id = Column(String)
+    document_id = Column(String)
