@@ -45,11 +45,11 @@ def test_notify(mock_get):
                         storage_key=storage_key
                     ))
     assert res
-    record = sc.db.get_dart_record(
+    records = sc.db.get_dart_records(
         reader='eidos',
         document_id=doc_id,
         reader_version='1.0')
-    assert record == [storage_key], record
+    assert records == [storage_key], records
 
     stmts = sc.db.get_statements_for_document(document_id=doc_id)
     assert len(stmts) == 1, stmts

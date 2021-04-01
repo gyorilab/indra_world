@@ -36,18 +36,10 @@ dart_record_model = api.model(
     }
 )
 
-project_documents_model = api.model(
-    'ProjectDocuments',
-    {'project_id': fields.String(example='project1'),
-     'document_ids': fields.List(example=[
-         '70a62e43-f881-47b1-8367-a3cca9450c03'])}
-)
-
-
 project_records_model = api.model(
     'ProjectRecords',
     {'project_id': fields.String(example='project1'),
-     'records': fields.List(dart_record_model)
+     'records': fields.List(fields.Nested(dart_record_model))
      }
 )
 
