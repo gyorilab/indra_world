@@ -22,8 +22,11 @@ class ServiceController:
         self.assemblers = {}
         self.assembly_triggers = {}
 
-    def new_project(self, project_id, name):
+    def new_project(self, project_id, name, corpus_id=None):
         self.db.add_project(project_id, name)
+        if corpus_id:
+            record_keys = self.db.get_records_for_corpus(corpus_id)
+            self.db.add_records_for_project(project_id, record_keys)
 
     def load_project(self, project_id, record_keys=None):
         # 1. Select records associated with project

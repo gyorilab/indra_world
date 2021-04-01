@@ -52,6 +52,15 @@ project_records_model = api.model(
 )
 
 
+new_project_model = api.model(
+    'NewProject',
+    {'project_id': fields.String(example='project1'),
+     'project_name': fields.String(example='Project 1'),
+     'corpus_id': fields.String(example='corpus1')
+     }
+)
+
+
 # Endpoints to implement
 # health
 @base_ns.route('/health')
@@ -86,6 +95,20 @@ class Notify(Resource):
                                document_id=document_id,
                                storage_key=storage_key)
         return 'OK'
+
+
+@assembly_ns.expect(new_project_model)
+@dart_ns.route('/new_project')
+class NewProject(Resource):
+    @api.doc(False)
+    def options(self):
+        return {}
+
+    def post(self):
+        project_id = request.json.get('project_id')
+        project_name = request.json.get('project_name')
+        corpus_id = request.json.get('corpus_id')
+        sc.new_project(project_id, project_name, corpus_id=corpus_id)
 
 
 @assembly_ns.expect(project_records_model)

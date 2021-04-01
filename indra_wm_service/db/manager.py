@@ -44,7 +44,7 @@ class DbManager:
 
         Parameters
         ----------
-        project_id : int
+        project_id : str
             The project ID.
         name : str
             The project name
@@ -67,8 +67,8 @@ class DbManager:
     def get_records_for_project(self, project_id):
         qfilter = and_(wms_schema.ProjectRecords.project_id.like(project_id))
         q = self.query(wms_schema.ProjectRecords.record_key).filter(qfilter)
-        doc_ids = [r[0] for r in q.all()]
-        return doc_ids
+        record_keys = [r[0] for r in q.all()]
+        return record_keys
 
     def get_documents_for_project(self, project_id):
         qfilter = and_(
@@ -93,6 +93,12 @@ class DbManager:
             ]
         )
         return self.execute(op)
+
+    def get_records_for_corpus(self, corpus_id):
+        qfilter = and_(wms_schema.CorpusRecords.corpus_id.like(corpus_id))
+        q = self.query(wms_schema.CorpusRecords.record_key).filter(qfilter)
+        record_keys = [r[0] for r in q.all()]
+        return record_keys
 
     def get_documents_for_corpus(self, corpus_id):
         qfilter = and_(
