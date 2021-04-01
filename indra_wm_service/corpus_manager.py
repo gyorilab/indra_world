@@ -21,8 +21,10 @@ class CorpusManager:
 
     def prepare(self):
         self.sc.db.add_corpus(self.corpus_id, self.metadata)
-        doc_ids = self._get_doc_ids_from_records(self.dart_records)
-        self.sc.db.add_documents_for_corpus(self.corpus_id, doc_ids)
+        self.sc.db.add_records_for_corpus(
+            self.corpus_id,
+            [c['storage_key'] for c in self.dart_records]
+        )
         for record in self.dart_records:
             # This adds DART records
             self.sc.add_dart_record(**record)

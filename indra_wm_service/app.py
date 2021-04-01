@@ -88,20 +88,6 @@ class Notify(Resource):
         return 'OK'
 
 
-@assembly_ns.expect(project_documents_model)
-@dart_ns.route('/add_project_documents')
-class AddProjectDocuments(Resource):
-    @api.doc(False)
-    def options(self):
-        return {}
-
-    def post(self):
-        project_id = request.json.get('project_id')
-        doc_ids = request.json.get('document_ids')
-        sc.add_project_documents(project_id, doc_ids,
-                                 add_assembly_trigger=False)
-
-
 @assembly_ns.expect(project_records_model)
 @dart_ns.route('/add_project_records')
 class AddProjectRecords(Resource):
@@ -112,13 +98,11 @@ class AddProjectRecords(Resource):
     def post(self):
         project_id = request.json.get('project_id')
         records = request.json.get('records')
-        for record in records:
-
-            # FIXME
-
-        sc.add_project_documents(project_id, doc_ids,
-                                 add_assembly_trigger=False)
-
+        record_keys = [rec['storage_key'] for rec in records]
+        sc.add_project_records(project_id, )
+        delta = sc.assemble_new_records(project_id,
+                                        new_record_keys=record_keys)
+        return delta.to_json()
 
 
 # download_curations
