@@ -82,18 +82,10 @@ class Notify(Resource):
         return {}
 
     def post(self):
-        reader = request.json.get('identity')
-        reader_version = request.json.get('version')
-        document_id = request.json.get('document_id')
-        storage_key = request.json.get('storage_key')
-        sc.add_dart_record(reader=reader,
-                           reader_version=reader_version,
-                           document_id=document_id,
-                           storage_key=storage_key)
-        sc.process_dart_record(reader=reader,
-                               reader_version=reader_version,
-                               document_id=document_id,
-                               storage_key=storage_key)
+        record = {k: request.json[k] for k in ['identity', 'version',
+                                               'document_id', 'storage_key']}
+        sc.add_dart_record(record)
+        sc.process_dart_record(record)
         return 'OK'
 
 
@@ -122,7 +114,7 @@ class AddProjectRecords(Resource):
         project_id = request.json.get('project_id')
         records = request.json.get('records')
         record_keys = [rec['storage_key'] for rec in records]
-        sc.add_project_records(project_id, )
+        sc.add_project_records(project_id, record_keys)
         delta = sc.assemble_new_records(project_id,
                                         new_record_keys=record_keys)
         return delta.to_json()
