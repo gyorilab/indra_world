@@ -1,5 +1,4 @@
 import datetime
-import itertools
 from indra.literature.dart_client import download_records
 from indra_wm_service.db.manager import DbManager
 from indra_wm_service.sources.dart import process_reader_output
@@ -23,22 +22,17 @@ class ServiceController:
         self.assemblers = {}
         self.assembly_triggers = {}
 
-    def new_project(self, project_id, name, doc_ids):
-        # 1. Add project to DB
+    def new_project(self, project_id, name):
         self.db.add_project(project_id, name)
-        # 2. Add project documents to table
-        self.db.add_documents_for_project(project_id,
-                                          doc_ids)
 
-    def load_project(self, project_id, doc_ids=None):
-        if doc_ids is None:
-            # 1. Select documents associated with project
-            doc_ids = self.db.get_documents_for_project(project_id)
+    def load_project(self, project_id, record_keys=None):
+        # 1. Select records associated with project
+        if record_keys is None:
+            record_keys = self.db.get_records_for_project(project_id)
         # 2. Select statements from prepared stmts table
         prepared_stmts = []
-        for doc_id in doc_ids:
-            prepared_stmts += self.db.get_statements_for_document(doc_id)
-
+        for record_key in record_keys:
+            prepared_stmts += self.db.get_statements_for_record(record_key)
         # 3. Initiate an assembler
         assembler = IncrementalAssembler(prepared_stmts)
         self.assemblers[project_id] = assembler
@@ -57,56 +51,47 @@ class ServiceController:
                             storage_key, local_storage=None,
                             grounding_mode='compositional',
                             extract_filter='influence'):
-        reader_outputs = download_records(
-            [{'identity': reader,
-              'version': reader_version,
-              'document_id': document_id,
-              'storage_key': storage_key}],
-            local_storage=local_storage)
+        record = \
+            {'identity': reader,
+             'version': reader_version,
+             'document_id': document_id,
+             'storage_key': storage_key}
+        reader_outputs = download_records([record], local_storage=local_storage)
         content = reader_outputs[reader][document_id]
-        return self.add_reader_output(content, reader, reader_version,
-                                      document_id,
+        return self.add_reader_output(content, record,
                                       grounding_mode=grounding_mode,
                                       extract_filter=extract_filter)
 
-    def add_reader_output(self, content, reader, reader_version, doc_id,
+    def add_reader_output(self, content, record,
                           grounding_mode='compositional',
                           extract_filter='influence'):
-        stmts = process_reader_output(reader, content, doc_id,
+        stmts = process_reader_output(content, record,
                                       grounding_mode=grounding_mode,
                                       extract_filter=extract_filter)
-        return self.add_reader_statements(stmts, reader, reader_version, doc_id)
+        return self.add_reader_statements(stmts, record)
 
-    def add_reader_statements(self, stmts, reader, reader_version, doc_id):
+    def add_reader_statements(self, stmts, record):
         prepared_stmts = preparation_pipeline.run(stmts)
-        return self.add_prepared_statements(prepared_stmts, reader,
-                                            reader_version, doc_id)
+        return self.add_prepared_statements(prepared_stmts, record)
 
-    def add_prepared_statements(self, prepared_stmts, reader, reader_version,
-                                doc_id):
-        self.db.add_statements_for_document(doc_id,
-                                            reader=reader,
-                                            reader_version=reader_version,
-                                            # FIXME: how should we set the
-                                            # version here?
-                                            indra_version='1.0',
-                                            stmts=prepared_stmts)
-        # We need to check here if these statements need to be incrementally
-        # assembled into any projects. Do we do that every time or only when
-        # all the readings have become available?
-        return self.check_assembly_triggers_for_output(doc_id, reader)
+    def add_prepared_statements(self, prepared_stmts, record):
+        self.db.add_statements_for_record(record_key=record['storage_key'],
+                                          # FIXME: how should we set the
+                                          # version here?
+                                          indra_version='1.0',
+                                          stmts=prepared_stmts)
 
-    def assemble_new_documents(self, project_id, new_doc_ids):
-        # 1. We get all the document IDs associated with the project
+    def assemble_new_records(self, project_id, new_record_keys):
+        # 1. We get all the records associated with the project
         # which may or may not include some of the new ones
-        doc_ids = self.db.get_documents_for_project(project_id)
-        old_doc_ids = list(set(doc_ids) - set(new_doc_ids))
-        # 2. Now load the project with the old document IDs
-        self.load_project(project_id, old_doc_ids)
-        # 3. Now get the new statements associated with the new doc IDs
+        record_keys = self.db.get_records_for_project(project_id)
+        old_record_keys = list(set(record_keys) - set(new_record_keys))
+        # 2. Now load the project with the old record keys
+        self.load_project(project_id, old_record_keys)
+        # 3. Now get the new statements associated with the new records
         new_stmts = []
-        for doc_id in new_doc_ids:
-            stmts = self.db.get_statements_for_document(doc_id)
+        for record_key in new_record_keys:
+            stmts = self.db.get_statements_for_record(record_key)
             new_stmts += stmts
         # 4. Finally get an incremental assembly delta and return it
         delta = self.assemblers[project_id].add_statements(new_stmts)
@@ -115,47 +100,5 @@ class ServiceController:
     def add_curation(self, project_id, curation):
         self.db.add_curation_for_project(project_id, curation)
 
-    def add_project_documents(self, project_id, doc_ids,
-                              add_assembly_trigger=False):
-        self.db.add_documents_for_project(project_id, doc_ids)
-        # TODO: we need to check here if there are already prepared
-        # statements for these documents. If there are then we can
-        # run incremental assembly and return an assembly delta.
-        if add_assembly_trigger:
-            self.assembly_triggers[project_id] = \
-                {(reader, doc_id) for reader, doc_id
-                 in itertools.product(expected_readers, doc_ids)}
-        return self.check_assembly_triggers_for_project(project_id)
-
-    def check_assembly_triggers_for_project(self, project_id):
-        # Find trigger for project ID if any
-        trigger = self.assembly_triggers.get(project_id)
-        if not trigger:
-            return None
-        # Keep track of documents we need to add
-        docs_with_records = set()
-        # Now check if we have records for each reader / document pair
-        for reader, doc_id in trigger:
-            rec = self.db.get_dart_record(reader, doc_id)
-            # If no recotd, we return without doing anything else
-            if not rec:
-                return None
-            docs_with_records.add(doc_id)
-        # If we got this far, then all the requirements for the trigger
-        # ere met so we can get all statements and add them to the project
-        # to generate an assembly delta.
-        all_stmts = []
-        for doc_id in docs_with_records:
-            stmts = self.db.get_statements_for_document(doc_id)
-            all_stmts += stmts
-        delta = self.assemblers[project_id].add_statements(all_stmts)
-        return delta
-
-    def check_assembly_triggers_for_output(self, document_id, reader):
-        deltas = {}
-        for project_id, conditions in self.assembly_triggers.items():
-            if (document_id, reader) in conditions:
-                delta = self.check_assembly_triggers_for_project(project_id)
-                if delta:
-                    deltas[project_id] = delta
-        return deltas
+    def add_project_records(self, project_id, record_keys):
+        self.db.add_records_for_project(project_id, record_keys)
