@@ -65,10 +65,12 @@ class DbManager:
         return self.execute(op)
 
     def get_documents_for_project(self, project_id):
-        qfilter = wms_schema.ProjectRecords.project_id.like(project_id)
-        q = self.query(wms_schema.ProjectRecords.record_key).filter(qfilter)
-        # JOIN WITH RECORDS
-        doc_ids = [r[0] for r in q.all()]
+        qfilter = and_(
+            wms_schema.ProjectRecords.project_id.like(project_id),
+            (wms_schema.DartRecords.storage_key ==
+             wms_schema.ProjectRecords.record_key))
+        q = self.query(wms_schema.DartRecords.document_id).filter(qfilter)
+        doc_ids = sorted(set(r[0] for r in q.all()))
         return doc_ids
 
     def add_corpus(self, corpus_id, metadata):
@@ -87,10 +89,12 @@ class DbManager:
         return self.execute(op)
 
     def get_documents_for_corpus(self, corpus_id):
-        qfilter = wms_schema.CorpusRecords.corpus_id.like(corpus_id)
-        q = self.query(wms_schema.CorpusRecords.record_key).filter(qfilter)
-        # JOIN WITH RECORDS
-        doc_ids = [r[0] for r in q.all()]
+        qfilter = and_(
+            wms_schema.CorpusRecords.corpus_id.like(corpus_id),
+            (wms_schema.DartRecords.storage_key ==
+             wms_schema.CorpusRecords.record_key))
+        q = self.query(wms_schema.DartRecords.document_id).filter(qfilter)
+        doc_ids = sorted(set(r[0] for r in q.all()))
         return doc_ids
 
     def add_statements_for_record(self, record_key, stmts, indra_version):
@@ -118,6 +122,7 @@ class DbManager:
         return self.execute(op)
 
     def get_statements_for_record(self, record_key):
+        """Return prepared statements for given record."""
         qfilter = wms_schema.PreparedStatements.record_key.like(record_key)
         q = self.query(wms_schema.PreparedStatements.stmt).filter(qfilter)
         stmts = stmts_from_json([r[0] for r in q.all()])
@@ -126,17 +131,19 @@ class DbManager:
     def get_statements_for_document(self, document_id, reader=None,
                                     reader_version=None, indra_version=None):
         """Return prepared statements for a given document."""
-        # JOIN WITH RECORDS TABLE
-        qfilter = wms_schema.PreparedStatements.document_id.like(document_id)
+        qfilter = and_(
+            wms_schema.DartRecords.document_id.like(document_id),
+            wms_schema.DartRecords.storage_key ==
+            wms_schema.PreparedStatements.record_key)
         if reader:
             qfilter = and_(
                 qfilter,
-                wms_schema.PreparedStatements.reader.like(reader)
+                wms_schema.DartRecords.reader.like(reader)
             )
         if reader_version:
             qfilter = and_(
                 qfilter,
-                wms_schema.PreparedStatements.reader_version.like(reader_version)
+                wms_schema.DartRecords.reader_version.like(reader_version)
             )
         if indra_version:
             qfilter = and_(
