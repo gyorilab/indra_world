@@ -43,24 +43,20 @@ class ServiceController:
     def unload_project(self, project_id):
         self.assemblers.pop(project_id, None)
 
-    def add_dart_record(self, reader, reader_version, document_id,
-                        storage_key, date=None):
+    def add_dart_record(self, record, date=None):
         if date is None:
             date = datetime.datetime.utcnow().isoformat()
-        self.db.add_dart_record(reader, reader_version, document_id,
-                                storage_key, date)
+        self.db.add_dart_record(reader=record['identity'],
+                                reader_version=record['version'],
+                                document_id=record['document_id'],
+                                storage_key=record['storage_key'],
+                                date=date)
 
-    def process_dart_record(self, reader, reader_version, document_id,
-                            storage_key, local_storage=None,
+    def process_dart_record(self, record, local_storage=None,
                             grounding_mode='compositional',
                             extract_filter='influence'):
-        record = \
-            {'identity': reader,
-             'version': reader_version,
-             'document_id': document_id,
-             'storage_key': storage_key}
         reader_outputs = download_records([record], local_storage=local_storage)
-        content = reader_outputs[reader][document_id]
+        content = reader_outputs[record['identity']][record['document_id']]
         return self.add_reader_output(content, record,
                                       grounding_mode=grounding_mode,
                                       extract_filter=extract_filter)
@@ -68,17 +64,19 @@ class ServiceController:
     def add_reader_output(self, content, record,
                           grounding_mode='compositional',
                           extract_filter='influence'):
-        stmts = process_reader_output(content, record,
+        stmts = process_reader_output(record['identity'], content,
+                                      record['document_id'],
                                       grounding_mode=grounding_mode,
                                       extract_filter=extract_filter)
         return self.add_reader_statements(stmts, record)
 
     def add_reader_statements(self, stmts, record):
         prepared_stmts = preparation_pipeline.run(stmts)
-        return self.add_prepared_statements(prepared_stmts, record)
+        return self.add_prepared_statements(prepared_stmts,
+                                            record['storage_key'])
 
-    def add_prepared_statements(self, prepared_stmts, record):
-        self.db.add_statements_for_record(record_key=record['storage_key'],
+    def add_prepared_statements(self, prepared_stmts, record_key):
+        self.db.add_statements_for_record(record_key=record_key,
                                           # FIXME: how should we set the
                                           # version here?
                                           indra_version='1.0',
