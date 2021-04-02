@@ -20,10 +20,11 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install nose coverage flask flask_wtf flask_bootstrap pyyaml boto3 openpyxl
+        pip install nose coverage flask flask_wtf flask_bootstrap pyyaml boto3 openpyxl sqlalchemy flask_restx
         pip install git+https://github.com/sorgerlab/indra.git
     - name: Run unit tests
       run: |
         export NOSEATTR="!notravis"
         export INDRA_WM_CACHE="."
+        export INDRA_WM_SERVICE_DB='sqlite:///:memory:'
         nosetests indra_wm_service -a $NOSEATTR -v --with-coverage --cover-inclusive --cover-package=indra_wm_service

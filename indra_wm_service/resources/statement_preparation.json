@@ -1,0 +1,62 @@
+[
+  {
+    "function": "filter_by_type",
+    "kwargs": {
+      "stmt_type": "Influence"
+    }
+  },
+  {
+    "function": "validate_grounding_format"
+  },
+  {
+    "function": "remove_namespaces",
+    "args": [
+      [
+        "WHO",
+        "MITRE12",
+        "UN"
+      ]
+    ]
+  },
+  {
+    "function": "compositional_grounding_filter",
+    "kwargs": {
+      "score_threshold": 0.6,
+      "groundings_to_exclude": [
+        "wm",
+        "wm/concept",
+        "wm/entity",
+        "wm/time",
+        "wm/process",
+        "wm/property"
+      ]
+    }
+  },
+  {
+    "function": "validate_grounding_format"
+  },
+  {
+    "function": "filter_out_long_words",
+    "args": [
+      10
+    ]
+  },
+  {
+    "function": "filter_context_date",
+    "kwargs": {
+      "from_date": {
+        "function": "datetime",
+        "args": [
+          1900,
+          1,
+          1
+        ]
+      }
+    }
+  },
+  {
+    "function": "set_positive_polarities"
+  },
+  {
+    "function": "sort_compositional_groundings"
+  }]

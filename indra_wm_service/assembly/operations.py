@@ -1,3 +1,19 @@
+__all__ = ['get_expanded_events_influences', 'remove_namespaces',
+           'remove_raw_grounding', 'check_event_context', 'reground_stmts',
+           'remove_hume_redundant', 'fix_wm_ontology', 'filter_context_date',
+           'filter_groundings', 'deduplicate_groundings',
+           'compositional_grounding_filter_stmt',
+           'compositional_grounding_filter', 'standardize_names_compositional',
+           'add_flattened_grounding_compositional', 'validate_grounding_format',
+           'make_display_name', 'set_positive_polarities',
+           'filter_out_long_words', 'concept_matches_compositional',
+           'matches_compositional', 'location_matches_compositional',
+           'event_compositional_refinement', 'compositional_refinement',
+           'location_refinement_compositional',
+           'make_compositional_refinement_filter',
+           'make_default_compositional_refinement_filter',
+           'CompositionalRefinementFilter', 'get_relevants_for_stmt',
+           'get_agent_key', 'listify', 'comp_ontology', 'comp_ontology_url']
 import os
 import yaml
 import copy
@@ -171,8 +187,7 @@ def filter_context_date(stmts, from_date=None, to_date=None):
         return stmts
     new_stmts = []
     for stmt in stmts:
-        doc_id = \
-            stmt.evidence[0].annotations['provenance'][0]['document']['@id']
+        doc_id = stmt.evidence[0].text_refs.get('DART')
         if isinstance(stmt, Influence):
             events = [stmt.subj, stmt.obj]
         elif isinstance(stmt, Association):
@@ -455,6 +470,7 @@ def event_compositional_refinement(st1, st2, ontology, entities_refined,
     return pol_ref
 
 
+@register_pipeline
 def compositional_refinement(st1, st2, ontology, entities_refined):
     if type(st1) != type(st2):
         return False
@@ -510,11 +526,12 @@ def make_compositional_refinement_filter(ontology, nproc=None):
 
 
 @register_pipeline
-def make_default_compositional_refinement_filer():
+def make_default_compositional_refinement_filter():
     return CompositionalRefinementFilter(comp_ontology, nproc=None)
 
 
 class CompositionalRefinementFilter(RefinementFilter):
+    # FIXME: if we have events here, we need to be able to handle them
     def __init__(self, ontology, nproc=None):
         super().__init__()
         self.ontology = ontology
@@ -522,8 +539,6 @@ class CompositionalRefinementFilter(RefinementFilter):
 
     def initialize(self, stmts_by_hash):
         super().initialize(stmts_by_hash)
-        # Take one statement to get the relevant roles
-        roles = stmts_by_hash[next(iter(stmts_by_hash))]._agent_order
         # Mapping agent keys to statement hashes
         agent_key_to_hash = {}
         # Mapping statement hashes to agent keys
@@ -531,6 +546,16 @@ class CompositionalRefinementFilter(RefinementFilter):
         # All agent keys for a given agent role
         all_keys_by_role = {}
         comp_idxes = list(range(4))
+        # Take one statement to get the relevant roles
+        # FIXME: here we assume that all statements are of the same type
+        # which may not be the case if we have standalone events.
+        if stmts_by_hash:
+            roles = stmts_by_hash[next(iter(stmts_by_hash))]._agent_order
+        # In the corner case that there are no initial statements, we just
+        # assume we are working with Influences
+        else:
+            roles = Influence._agent_order
+        # Initialize agent key data structures
         for role in roles:
             agent_key_to_hash[role] = {}
             hash_to_agent_key[role] = {}
@@ -539,7 +564,19 @@ class CompositionalRefinementFilter(RefinementFilter):
                     collections.defaultdict(set)
                 hash_to_agent_key[role][comp_idx] = \
                     collections.defaultdict(set)
+        # Extend agent key data structures
+        self._extend_maps(roles, stmts_by_hash, agent_key_to_hash,
+                          hash_to_agent_key, all_keys_by_role)
+        self.shared_data['agent_key_to_hash'] = agent_key_to_hash
+        self.shared_data['hash_to_agent_key'] = hash_to_agent_key
+        self.shared_data['all_keys_by_role'] = all_keys_by_role
+        self.shared_data['roles'] = roles
 
+    @staticmethod
+    def _extend_maps(roles, stmts_by_hash, agent_key_to_hash,
+                     hash_to_agent_key, all_keys_by_role):
+        comp_idxes = list(range(4))
+        # Fill up agent key data structures
         for sh, stmt in stmts_by_hash.items():
             for role in roles:
                 agents = getattr(stmt, role)
@@ -555,10 +592,17 @@ class CompositionalRefinementFilter(RefinementFilter):
             for comp_idx in comp_idxes:
                 all_keys_by_role[role][comp_idx] = \
                     set(agent_key_to_hash[role][comp_idx].keys())
-        self.shared_data['agent_key_to_hash'] = agent_key_to_hash
-        self.shared_data['hash_to_agent_key'] = hash_to_agent_key
-        self.shared_data['all_keys_by_role'] = all_keys_by_role
-        self.shared_data['roles'] = roles
+
+    def extend(self, stmts_by_hash):
+        if not stmts_by_hash:
+            return
+        roles = stmts_by_hash[next(iter(stmts_by_hash))]._agent_order
+        self._extend_maps(roles, stmts_by_hash,
+                          self.shared_data['agent_key_to_hash'],
+                          self.shared_data['hash_to_agent_key'],
+                          self.shared_data['all_keys_by_role'])
+        # We can assume that these stmts_by_hash are unique
+        self.shared_data['stmts_by_hash'].update(stmts_by_hash)
 
     def get_related(self, stmt, possibly_related=None,
                     direction='less_specific'):

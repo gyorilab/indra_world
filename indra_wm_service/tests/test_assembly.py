@@ -1,23 +1,12 @@
-from indra.statements import Concept
+import os
+import indra.tools.assemble_corpus as ac
+from indra.statements import Concept, Event, Influence
 from indra.statements.concept import get_top_compositional_grounding
 from indra_wm_service.assembly.operations import *
 from indra.pipeline import AssemblyPipeline
 from indra.statements import stmts_from_json_file
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-
-
-def test_get_top_compositional_grounding():
-    gr1 = [('x', 0.7), None, None, None]
-    assert get_top_compositional_grounding([gr1]) == gr1
-    gr2 = [('y', 0.6), None, None, None]
-    assert get_top_compositional_grounding([gr1, gr2]) == gr1
-    assert get_top_compositional_grounding([gr2, gr1]) == gr1
-    gr3 = [('z', 0.6), None, ('a', 0.5)]
-    assert get_top_compositional_grounding([gr1, gr3]) == gr1
-    assert get_top_compositional_grounding([gr2, gr3]) == gr3
-    gr4 = [('z', 0.6), None, ('a', 0.4)]
-    assert get_top_compositional_grounding([gr4, gr3]) == gr3
 
 
 def test_get_top_compositional_grounding():
@@ -185,7 +174,7 @@ comp_assembly_json = [{
          "function": "listify",
          "kwargs": {
              "obj": {
-                 "function": "make_default_compositional_refinement_filer"
+                 "function": "make_default_compositional_refinement_filter"
              }
          }
       },

@@ -1,22 +1,19 @@
 import os
 import logging
 import argparse
-from flask import jsonify, abort, Response, Flask, render_template, request, \
-    redirect, session
+from flask import jsonify, Flask, render_template, request
 from flask_wtf import FlaskForm
 from wtforms import SubmitField, validators, SelectMultipleField, \
     StringField, TextAreaField, SelectField
 from wtforms.fields.html5 import DateField
 from flask_bootstrap import Bootstrap
 
-from indra.pipeline import AssemblyPipeline
-from indra_wm_service.assembly.operations import *
-from indra_wm_service.assembly.dart import process_reader_outputs
-from indra_wm_service.live_curation import Corpus
+from indra.config import get_config
+from indra.literature import dart_client
+from indra_wm_service.corpus_manager import CorpusManager
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-DEFAULT_ASSEMBLY_JSON = 'default_pipeline'
-DART_STORAGE = os.environ.get('DART_STORAGE')
+
+DB_URL = get_config('INDRA_WM_SERVICE_DB', failure_ok=False)
 
 
 logger = logging.getLogger('indra_wm_service.assembly_dashboard')
@@ -27,7 +24,6 @@ Bootstrap(app)
 
 reader_names = [('eidos', 'eidos'),
                 ('hume', 'hume'),
-                ('cwms', 'cwms'),
                 ('sofia', 'sofia')]
 
 assembly_levels = [('grounding', 'grounding'),
@@ -71,8 +67,6 @@ def run_assembly():
     corpus_name = request.form.get('corpus_name')
     corpus_descr = request.form.get('corpus_descr')
     assembly_level = request.form.get('assembly_level')
-    assembly_config_name = request.form.get('assembly_config_name')
-    from indra.literature import dart_client
     timestamp = None if (not before_date and not after_date) else {}
     if after_date:
         timestamp['after'] = after_date
@@ -93,26 +87,6 @@ def run_assembly():
 
     num_docs = len({rec['document_id'] for rec in records})
 
-    reader_outputs = dart_client.download_records(records,
-                                                  local_storage=DART_STORAGE)
-
-    if not reader_outputs:
-        return jsonify({})
-
-    logger.info('Processing reader output...')
-    stmts = process_reader_outputs(reader_outputs, corpus_id)
-    logger.info('Got a total of %s statements' % len(stmts))
-
-    if not stmts:
-        return jsonify({})
-
-    assembly_config = assembly_config_name if assembly_config_name else \
-        DEFAULT_ASSEMBLY_JSON
-    assembly_config_file = os.path.join(HERE, os.pardir, 'resources',
-                                        '%s.json' % assembly_config)
-    pipeline = AssemblyPipeline.from_json_file(assembly_config_file)
-    assembled_stmts = pipeline.run(stmts)
-
     meta_data = {
         'corpus_id': corpus_id,
         'description': corpus_descr,
@@ -122,15 +96,13 @@ def run_assembly():
             'level': assembly_level,
             'grounding_threshold': 0.7,
         },
-        'num_statements': len(assembled_stmts),
         'num_documents': num_docs
     }
 
-    corpus = Corpus(corpus_id=corpus_id,
-                    statements=assembled_stmts,
-                    raw_statements=stmts,
-                    meta_data=meta_data)
-    corpus.s3_put()
+    cm = CorpusManager(db_url=DB_URL,
+                       corpus_id=corpus_id,
+                       metadata=meta_data)
+    cm.dump_s3()
     return 'Assembly complete'
 
 
