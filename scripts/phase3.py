@@ -6,7 +6,7 @@ import pickle
 import logging
 from indra_world.corpus import Corpus
 from indra_world.assembly.operations import *
-from indra_world.assembly.dart import process_reader_outputs
+from indra_world.sources.dart import process_reader_outputs
 from indra.pipeline import AssemblyPipeline
 
 logger = logging.getLogger('phase3')
