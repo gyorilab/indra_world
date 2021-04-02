@@ -1,8 +1,7 @@
-import os
 from indra.config import get_config
 from flask import Flask, request
-from flask_restx import Api, Resource, fields, abort
-from indra_wm_service.controller import ServiceController
+from flask_restx import Api, Resource, fields
+from .controller import ServiceController
 
 db_url = get_config('INDRA_WM_SERVICE_DB', failure_ok=False)
 sc = ServiceController(db_url)

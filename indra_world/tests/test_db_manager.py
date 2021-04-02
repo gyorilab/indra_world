@@ -1,5 +1,5 @@
 from .test_incremental_assembler import s1, s2
-from indra_wm_service.db.manager import DbManager
+from indra_world.service.db.manager import DbManager
 
 
 def _get_db():

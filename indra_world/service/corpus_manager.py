@@ -3,9 +3,9 @@ import json
 import logging
 import datetime
 from indra.statements import stmts_to_json, stmts_to_json_file
-from indra_wm_service import default_bucket, default_key_base
-from indra_wm_service.assembly.incremental_assembler import IncrementalAssembler
-from indra_wm_service.controller import ServiceController
+from indra_world import default_bucket, default_key_base
+from indra_world.assembly.incremental_assembler import IncrementalAssembler
+from .controller import ServiceController
 
 
 logger = logging.getLogger(__name__)

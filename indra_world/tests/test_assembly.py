@@ -2,7 +2,7 @@ import os
 import indra.tools.assemble_corpus as ac
 from indra.statements import Concept, Event, Influence
 from indra.statements.concept import get_top_compositional_grounding
-from indra_wm_service.assembly.operations import *
+from indra_world.assembly.operations import *
 from indra.pipeline import AssemblyPipeline
 from indra.statements import stmts_from_json_file
 

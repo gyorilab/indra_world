@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.abspath('..'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'indra_wm_service'
+project = 'indra_world'
 copyright = '2020, INDRA team'
 author = 'INDRA team'
 
