@@ -1,8 +1,8 @@
 import os
 import json
 import copy
-from indra_wm_service.corpus import Corpus
-from indra_wm_service.curator import LiveCurator
+from indra_world.corpus import Corpus
+from indra_world.curator import LiveCurator
 from indra.statements import *
 from indra.tools import assemble_corpus as ac
 from indra.ontology.world.ontology import world_ontology

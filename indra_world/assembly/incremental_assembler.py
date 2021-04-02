@@ -5,8 +5,8 @@ from indra.belief import extend_refinements_graph
 from indra.belief.wm_scorer import get_eidos_scorer
 from indra.ontology.world import load_world_ontology
 from indra.preassembler.refinement import RefinementConfirmationFilter
-from indra_wm_service.assembly.operations import CompositionalRefinementFilter
-from indra_wm_service.assembly.operations import \
+from indra_world.assembly.operations import CompositionalRefinementFilter
+from indra_world.assembly.operations import \
     location_matches_compositional, location_refinement_compositional
 
 

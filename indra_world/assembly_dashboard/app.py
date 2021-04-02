@@ -10,7 +10,7 @@ from flask_bootstrap import Bootstrap
 
 from indra.config import get_config
 from indra.literature import dart_client
-from indra_wm_service.corpus_manager import CorpusManager
+from indra_world.corpus_manager import CorpusManager
 
 
 DB_URL = get_config('INDRA_WM_SERVICE_DB', failure_ok=False)

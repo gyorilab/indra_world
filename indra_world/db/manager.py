@@ -3,7 +3,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.engine.url import make_url
 from sqlalchemy import and_, insert, create_engine
 from indra.statements import stmts_from_json, stmts_to_json
-import indra_wm_service.db.schema as wms_schema
+import indra_world.db.schema as wms_schema
 
 
 class DbManager:

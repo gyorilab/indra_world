@@ -4,9 +4,9 @@ import logging
 import unittest
 from nose.plugins.attrib import attr
 from indra.statements import *
-from indra_wm_service.live_curation import app, curator
-from indra_wm_service.corpus import Corpus
-from indra_wm_service.curator import LiveCurator
+from indra_world.live_curation import app, curator
+from indra_world.corpus import Corpus
+from indra_world.curator import LiveCurator
 
 logger = logging.getLogger(__name__)
 

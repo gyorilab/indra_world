@@ -4,9 +4,9 @@ import glob
 import tqdm
 import pickle
 import logging
-from indra_wm_service.corpus import Corpus
-from indra_wm_service.assembly.operations import *
-from indra_wm_service.assembly.dart import process_reader_outputs
+from indra_world.corpus import Corpus
+from indra_world.assembly.operations import *
+from indra_world.assembly.dart import process_reader_outputs
 from indra.pipeline import AssemblyPipeline
 
 logger = logging.getLogger('dec2020_compositional')

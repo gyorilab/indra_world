@@ -1,9 +1,9 @@
 import json
 from datetime import datetime
 from unittest.mock import patch
-from indra_wm_service.app import api
-from indra_wm_service.app import sc
-from indra_wm_service.db.manager import DbManager
+from indra_world.app import api
+from indra_world.app import sc
+from indra_world.db.manager import DbManager
 from .test_service_controller import _get_eidos_output
 
 

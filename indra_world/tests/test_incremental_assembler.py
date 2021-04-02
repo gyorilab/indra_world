@@ -1,7 +1,7 @@
 from indra.statements import Influence, Event, Concept, Evidence
-from indra_wm_service.assembly.incremental_assembler import \
+from indra_world.assembly.incremental_assembler import \
     IncrementalAssembler, AssemblyDelta
-from indra_wm_service.assembly.operations import location_matches_compositional
+from indra_world.assembly.operations import location_matches_compositional
 
 e1 = Event(Concept('x',
                    db_refs={'WM': [[('wm/concept/agriculture', 1.0),
