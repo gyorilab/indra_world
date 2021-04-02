@@ -1,14 +1,14 @@
-INDRA WM service modules
-========================
+INDRA World
+===========
 
-.. automodule:: indra_wm_service
+.. automodule:: indra_world
     :members:
 
-.. automodule:: indra_wm_service.curator
+.. automodule:: indra_world.curator
     :members:
 
-.. automodule:: indra_wm_service.corpus
+.. automodule:: indra_world.corpus
     :members:
 
-.. automodule:: indra_wm_service.util
+.. automodule:: indra_world.util
     :members:
