@@ -1,6 +1,5 @@
 import os
 import json
-import tqdm
 import pickle
 import logging
 from indra.statements import Statement

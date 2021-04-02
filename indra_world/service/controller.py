@@ -1,12 +1,12 @@
 import datetime
 from indra.literature.dart_client import download_records
-from indra_world.db.manager import DbManager
 from indra_world.sources.dart import process_reader_output
 from indra_world.assembly.incremental_assembler import \
     IncrementalAssembler
 from indra_world.resources import get_resource_file
 from indra.pipeline import AssemblyPipeline
 from indra_world.assembly.operations import *
+from .db import DbManager
 
 
 preparation_pipeline = AssemblyPipeline.from_json_file(

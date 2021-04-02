@@ -1,7 +1,7 @@
 import os
 from copy import deepcopy
 from .test_incremental_assembler import s1, s2
-from indra_world.controller import ServiceController
+from indra_world.service.controller import ServiceController
 
 
 def _get_eidos_output():
