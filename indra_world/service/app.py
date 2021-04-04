@@ -81,7 +81,7 @@ class Notify(Resource):
 
 
 @assembly_ns.expect(new_project_model)
-@dart_ns.route('/new_project')
+@assembly_ns.route('/new_project')
 class NewProject(Resource):
     @api.doc(False)
     def options(self):
@@ -95,7 +95,7 @@ class NewProject(Resource):
 
 
 @assembly_ns.expect(project_records_model)
-@dart_ns.route('/add_project_records')
+@assembly_ns.route('/add_project_records')
 class AddProjectRecords(Resource):
     @api.doc(False)
     def options(self):
