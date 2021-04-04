@@ -37,7 +37,9 @@ class DbManager:
     def execute(self, operation):
         """Execute an operation on the current session and return results."""
         session = self.get_session()
-        return session.execute(operation)
+        res = session.execute(operation)
+        session.commit()
+        return res
 
     def add_project(self, project_id, name):
         """Add a new project.
