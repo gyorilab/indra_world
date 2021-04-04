@@ -12,7 +12,7 @@ class Projects(Base):
 
 
 class ProjectRecords(Base):
-    __tablename__ = 'project_documents'
+    __tablename__ = 'project_records'
     _dummy = Column(Integer, primary_key=True)
     project_id = Column(String)
     record_key = Column(String)
@@ -58,7 +58,7 @@ class Corpora(Base):
 
 
 class CorpusRecords(Base):
-    __tablename__ = 'corpus_documents'
+    __tablename__ = 'corpus_records'
     _dummy = Column(String, primary_key=True)
     corpus_id = Column(String)
     record_key = Column(String)
