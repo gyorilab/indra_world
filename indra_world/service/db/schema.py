@@ -59,6 +59,6 @@ class Corpora(Base):
 
 class CorpusRecords(Base):
     __tablename__ = 'corpus_records'
-    _dummy = Column(String, primary_key=True)
+    _dummy = Column(Integer, primary_key=True)
     corpus_id = Column(String)
     record_key = Column(String)
