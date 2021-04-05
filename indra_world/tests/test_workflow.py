@@ -2,6 +2,7 @@ import os
 import glob
 import uuid
 import random
+from nose.plugins.attrib import attr
 from indra_world.service.app import sc
 from indra_world.service.db.manager import DbManager
 from indra_world.service.corpus_manager import CorpusManager
@@ -12,6 +13,7 @@ TEST_DB_FILE = os.path.join(HERE, 'workflow_test.db')
 TEST_DB_URL = f'sqlite:///{TEST_DB_FILE}'
 
 
+@attr('notravis')
 def test_end_to_end():
     try:
         os.remove(TEST_DB_FILE)
