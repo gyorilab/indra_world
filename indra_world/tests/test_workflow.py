@@ -15,6 +15,7 @@ TEST_DB_URL = f'sqlite:///{TEST_DB_FILE}'
 
 @attr('notravis')
 def test_end_to_end():
+    # We create a new empty DB here
     try:
         os.remove(TEST_DB_FILE)
     except FileNotFoundError:
@@ -22,7 +23,8 @@ def test_end_to_end():
     sc.db = DbManager(url=TEST_DB_URL)
     sc.db.create_all()
 
-    # Populate the records here
+    # Stage 1: we create an initial corpus based on a set of reader
+    # outputs and populate the DB with the relevant records and corpus info.
     dart_base = os.path.join(os.path.expanduser('~'), 'data', 'dart')
     print(f'Dart base: {dart_base}')
     readers = ['eidos', 'sofia', 'hume']
@@ -52,17 +54,25 @@ def test_end_to_end():
                        metadata={},
                        local_storage=dart_base)
     cm.prepare()
+
+    # Stage 2: Now that an initial corpus is loaded, we can do incremental
+    # reading against it using the web service
     os.environ['INDRA_WM_CACHE'] = dart_base
+    # Step 1: Create a new project based on the existing corpus
     res = _call_api('post', 'assembly/new_project',
                     json={'project_id': 'test_project',
                           'project_name': 'my project',
                           'corpus_id': 'test_corpus'})
+    # Step 2: We get a notification about a new reader output record.
     res = _call_api('post', 'dart/notify',
                     json=all_records[LIMIT])
     assert res == 'OK'
+    # Step 3: We are now asked to add the new reader output record to the
+    # new project and send back an assembly delta.
     res = _call_api('post', 'assembly/add_project_records',
                     json={'project_id': 'test_project',
                           'records': [all_records[LIMIT]]})
+    # These are the expected fields in the assembly delta
     assert set(res) == {'new_stmts', 'new_evidence', 'new_refinements',
                         'beliefs'}
     assert len(res['new_stmts']) == 7, len(res['new_stmts'])
