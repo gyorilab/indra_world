@@ -12,12 +12,14 @@ logger = logging.getLogger(__name__)
 
 
 class CorpusManager:
-    def __init__(self, db_url, dart_records, corpus_id, metadata):
+    def __init__(self, db_url, dart_records, corpus_id, metadata,
+                 local_storage=None):
         self.sc = ServiceController(db_url=db_url)
         self.corpus_id = corpus_id
         self.dart_records = dart_records
         self.metadata = metadata
         self.assembled_stmts = None
+        self.local_storage = local_storage
 
     def prepare(self):
         self.sc.db.add_corpus(self.corpus_id, self.metadata)
@@ -27,9 +29,10 @@ class CorpusManager:
         )
         for record in self.dart_records:
             # This adds DART records
-            self.sc.add_dart_record(**record)
+            self.sc.add_dart_record(record)
             # This adds prepared statements
-            self.sc.process_dart_record(**record)
+            self.sc.process_dart_record(record,
+                                        local_storage=self.local_storage)
 
     def assemble(self):
         all_stmts = []
