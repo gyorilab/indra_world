@@ -4,6 +4,7 @@ from flask_restx import Api, Resource, fields
 from .controller import ServiceController
 
 db_url = get_config('INDRA_WM_SERVICE_DB', failure_ok=False)
+local_storage = get_config('INDRA_WM_CACHE')
 sc = ServiceController(db_url)
 
 
@@ -76,12 +77,12 @@ class Notify(Resource):
         record = {k: request.json[k] for k in ['identity', 'version',
                                                'document_id', 'storage_key']}
         sc.add_dart_record(record)
-        sc.process_dart_record(record)
+        sc.process_dart_record(record, local_storage=local_storage)
         return 'OK'
 
 
 @assembly_ns.expect(new_project_model)
-@dart_ns.route('/new_project')
+@assembly_ns.route('/new_project')
 class NewProject(Resource):
     @api.doc(False)
     def options(self):
@@ -95,7 +96,7 @@ class NewProject(Resource):
 
 
 @assembly_ns.expect(project_records_model)
-@dart_ns.route('/add_project_records')
+@assembly_ns.route('/add_project_records')
 class AddProjectRecords(Resource):
     @api.doc(False)
     def options(self):

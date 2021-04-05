@@ -1,9 +1,13 @@
+import logging
 from copy import deepcopy
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.engine.url import make_url
 from sqlalchemy import and_, insert, create_engine
 from indra.statements import stmts_from_json, stmts_to_json
 from . import schema as wms_schema
+
+logger = logging.getLogger(__name__)
 
 
 class DbManager:
@@ -37,8 +41,13 @@ class DbManager:
     def execute(self, operation):
         """Execute an operation on the current session and return results."""
         session = self.get_session()
-        res = session.execute(operation)
-        session.commit()
+        try:
+            res = session.execute(operation)
+            session.commit()
+        except SQLAlchemyError as e:
+            logger.error(e)
+            session.rollback()
+            res = None
         return res
 
     def add_project(self, project_id, name):
