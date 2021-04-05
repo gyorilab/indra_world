@@ -4,6 +4,7 @@ from flask_restx import Api, Resource, fields
 from .controller import ServiceController
 
 db_url = get_config('INDRA_WM_SERVICE_DB', failure_ok=False)
+local_storage = get_config('INDRA_WM_CACHE')
 sc = ServiceController(db_url)
 
 
@@ -76,7 +77,7 @@ class Notify(Resource):
         record = {k: request.json[k] for k in ['identity', 'version',
                                                'document_id', 'storage_key']}
         sc.add_dart_record(record)
-        sc.process_dart_record(record)
+        sc.process_dart_record(record, local_storage=local_storage)
         return 'OK'
 
 
