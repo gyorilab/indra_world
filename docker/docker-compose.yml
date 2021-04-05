@@ -1,0 +1,13 @@
+version: "3.9"
+services:
+  service:
+    image: indra_world
+    ports:
+      - "8001:8000"
+    env_file: indra_world.env
+    entrypoint: gunicorn -w 1 -b :8000 -t 600 indra_world.service.app:app
+  db:
+    image: postgres:indra_world
+    ports:
+      - "5434:5432"
+    env_file: indra_world_db.env
