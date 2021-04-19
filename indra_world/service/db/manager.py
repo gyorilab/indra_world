@@ -44,11 +44,12 @@ class DbManager:
         try:
             res = session.execute(operation)
             session.commit()
+            return {'rowcount': res.rowcount,
+                    'inserted_primary_key': res.inserted_primary_key}
         except SQLAlchemyError as e:
             logger.error(e)
             session.rollback()
-            res = None
-        return res
+            return None
 
     def add_project(self, project_id, name):
         """Add a new project.
