@@ -66,3 +66,15 @@ def test_corpus_records_unique():
     db.add_records_for_corpus('c1', ['xyz3'])
     records = db.get_records_for_corpus('c1')
     assert len(records) == 1
+
+
+def test_add_no_stmts_for_record():
+    db = _get_db()
+    db.add_statements_for_record(record_key='x', stmts=[s1, s2],
+                                 indra_version='1.0')
+    stmts = db.get_statements()
+    assert len(stmts) == 2
+    db.add_statements_for_record(record_key='x', stmts=[],
+                                 indra_version='1.0')
+    stmts = db.get_statements()
+    assert len(stmts) == 2

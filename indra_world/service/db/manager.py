@@ -123,6 +123,8 @@ class DbManager:
 
     def add_statements_for_record(self, record_key, stmts, indra_version):
         """Add a set of prepared statements for a given document."""
+        if not stmts:
+            return None
         op = insert(wms_schema.PreparedStatements).values(
             [
                 {
@@ -149,6 +151,12 @@ class DbManager:
         """Return prepared statements for given record."""
         qfilter = wms_schema.PreparedStatements.record_key.like(record_key)
         q = self.query(wms_schema.PreparedStatements.stmt).filter(qfilter)
+        stmts = stmts_from_json([r[0] for r in q.all()])
+        return stmts
+
+    def get_statements(self):
+        """Return all prepared statements in the DB."""
+        q = self.query(wms_schema.PreparedStatements.stmt)
         stmts = stmts_from_json([r[0] for r in q.all()])
         return stmts
 
