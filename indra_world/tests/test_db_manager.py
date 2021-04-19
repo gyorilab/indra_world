@@ -46,3 +46,23 @@ def test_curations():
     curs = db.get_curations_for_project('p1')
     assert len(curs) == 1
     assert curs[0]['curation'] == {'x': 'y'}
+
+
+def test_project_records_unique():
+    db = _get_db()
+    db.add_project('p1', 'project 1')
+    db.add_dart_record('hume', '2.0', 'abc1', 'xyz3', 'today')
+    db.add_records_for_project('p1', ['xyz3'])
+    db.add_records_for_project('p1', ['xyz3'])
+    records = db.get_records_for_project('p1')
+    assert len(records) == 1
+
+
+def test_corpus_records_unique():
+    db = _get_db()
+    db.add_corpus('c1', 'corpus 1')
+    db.add_dart_record('hume', '2.0', 'abc1', 'xyz3', 'today')
+    db.add_records_for_corpus('c1', ['xyz3'])
+    db.add_records_for_corpus('c1', ['xyz3'])
+    records = db.get_records_for_corpus('c1')
+    assert len(records) == 1

@@ -1,5 +1,5 @@
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, String, Integer, JSON
+from sqlalchemy import Column, String, Integer, JSON, UniqueConstraint
 
 Base = declarative_base()
 
@@ -13,6 +13,8 @@ class Projects(Base):
 
 class ProjectRecords(Base):
     __tablename__ = 'project_records'
+    __table_args__ = (UniqueConstraint('project_id', 'record_key',
+                                       name='uc_pr'),)
     _dummy = Column(Integer, primary_key=True)
     project_id = Column(String)
     record_key = Column(String)
@@ -42,8 +44,7 @@ class Ontologies(Base):
 
 class DartRecords(Base):
     __tablename__ = 'dart_records'
-    _dummy = Column(Integer, primary_key=True)
-    storage_key = Column(String)
+    storage_key = Column(String, primary_key=True)
     document_id = Column(String)
     reader_version = Column(String)
     reader = Column(String)
@@ -52,13 +53,14 @@ class DartRecords(Base):
 
 class Corpora(Base):
     __tablename__ = 'corpora'
-    _dummy = Column(Integer, primary_key=True)
-    id = Column(String)
+    id = Column(String, primary_key=True)
     meta_data = Column(JSON)
 
 
 class CorpusRecords(Base):
     __tablename__ = 'corpus_records'
+    __table_args__ = (UniqueConstraint('corpus_id', 'record_key',
+                                       name='uc_cr'),)
     _dummy = Column(Integer, primary_key=True)
     corpus_id = Column(String)
     record_key = Column(String)
