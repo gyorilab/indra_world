@@ -9,7 +9,7 @@ from wtforms.fields.html5 import DateField
 from flask_bootstrap import Bootstrap
 
 from indra.config import get_config
-from indra.literature import dart_client
+import indra_world.sources.dart.client as dart_client
 from indra_world.service.corpus_manager import CorpusManager
 
 

@@ -1,6 +1,5 @@
 import datetime
-from indra.literature.dart_client import download_records
-from indra_world.sources.dart import process_reader_output
+from indra_world.sources.dart import process_reader_output, download_records
 from indra_world.assembly.incremental_assembler import \
     IncrementalAssembler
 from indra_world.resources import get_resource_file
@@ -23,10 +22,12 @@ class ServiceController:
         self.assembly_triggers = {}
 
     def new_project(self, project_id, name, corpus_id=None):
-        self.db.add_project(project_id, name)
+        res = self.db.add_project(project_id, name)
+        if res is None:
+            return None
         if corpus_id:
             record_keys = self.db.get_records_for_corpus(corpus_id)
-            self.db.add_records_for_project(project_id, record_keys)
+            return self.db.add_records_for_project(project_id, record_keys)
 
     def load_project(self, project_id, record_keys=None):
         # 1. Select records associated with project
@@ -46,11 +47,11 @@ class ServiceController:
     def add_dart_record(self, record, date=None):
         if date is None:
             date = datetime.datetime.utcnow().isoformat()
-        self.db.add_dart_record(reader=record['identity'],
-                                reader_version=record['version'],
-                                document_id=record['document_id'],
-                                storage_key=record['storage_key'],
-                                date=date)
+        return self.db.add_dart_record(reader=record['identity'],
+                                       reader_version=record['version'],
+                                       document_id=record['document_id'],
+                                       storage_key=record['storage_key'],
+                                       date=date)
 
     def process_dart_record(self, record, local_storage=None,
                             grounding_mode='compositional',
@@ -76,11 +77,11 @@ class ServiceController:
                                             record['storage_key'])
 
     def add_prepared_statements(self, prepared_stmts, record_key):
-        self.db.add_statements_for_record(record_key=record_key,
-                                          # FIXME: how should we set the
-                                          # version here?
-                                          indra_version='1.0',
-                                          stmts=prepared_stmts)
+        return self.db.add_statements_for_record(record_key=record_key,
+                                                 # FIXME: how should we set the
+                                                 # version here?
+                                                 indra_version='1.0',
+                                                 stmts=prepared_stmts)
 
     def assemble_new_records(self, project_id, new_record_keys):
         # 1. We get all the records associated with the project
@@ -99,7 +100,7 @@ class ServiceController:
         return delta
 
     def add_curation(self, project_id, curation):
-        self.db.add_curation_for_project(project_id, curation)
+        return self.db.add_curation_for_project(project_id, curation)
 
     def add_project_records(self, project_id, record_keys):
-        self.db.add_records_for_project(project_id, record_keys)
+        return self.db.add_records_for_project(project_id, record_keys)

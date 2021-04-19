@@ -1,5 +1,5 @@
 from indra.config import get_config
-from flask import Flask, request
+from flask import Flask, request, abort
 from flask_restx import Api, Resource, fields
 from .controller import ServiceController
 
@@ -76,7 +76,10 @@ class Notify(Resource):
     def post(self):
         record = {k: request.json[k] for k in ['identity', 'version',
                                                'document_id', 'storage_key']}
-        sc.add_dart_record(record)
+        res = sc.add_dart_record(record)
+        if res is None:
+            abort(400, 'The record could not be added, possibly because '
+                       'it\'s a duplicate.')
         sc.process_dart_record(record, local_storage=local_storage)
         return 'OK'
 
@@ -90,6 +93,8 @@ class NewProject(Resource):
 
     def post(self):
         project_id = request.json.get('project_id')
+        if not project_id:
+            abort(400, 'The project_id parameter is missing or empty.')
         project_name = request.json.get('project_name')
         corpus_id = request.json.get('corpus_id')
         sc.new_project(project_id, project_name, corpus_id=corpus_id)
@@ -104,6 +109,8 @@ class AddProjectRecords(Resource):
 
     def post(self):
         project_id = request.json.get('project_id')
+        if not project_id:
+            abort(400, 'The project_id parameter is missing or empty.')
         records = request.json.get('records')
         record_keys = [rec['storage_key'] for rec in records]
         sc.add_project_records(project_id, record_keys)

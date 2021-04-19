@@ -109,3 +109,16 @@ def test_project():
     assert set(delta.new_evidences) == {s1x.get_hash()}
     assert not delta.new_refinements
     assert set(delta.beliefs) == {s1x.get_hash(), s2x.get_hash()}
+
+
+def test_duplicate_record():
+    sc = _get_controller()
+
+    rec = {'identity': 'eidos',
+           'version': '1.0',
+           'document_id': 'd1',
+           'storage_key': 'xxx'}
+    res = sc.add_dart_record(rec, '2020')
+    assert res.get('rowcount') == 1
+    res = sc.add_dart_record(rec, '2020')
+    assert res is None

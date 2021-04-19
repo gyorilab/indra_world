@@ -44,11 +44,12 @@ class DbManager:
         try:
             res = session.execute(operation)
             session.commit()
+            return {'rowcount': res.rowcount,
+                    'inserted_primary_key': res.inserted_primary_key}
         except SQLAlchemyError as e:
             logger.error(e)
             session.rollback()
-            res = None
-        return res
+            return None
 
     def add_project(self, project_id, name):
         """Add a new project.
@@ -122,6 +123,8 @@ class DbManager:
 
     def add_statements_for_record(self, record_key, stmts, indra_version):
         """Add a set of prepared statements for a given document."""
+        if not stmts:
+            return None
         op = insert(wms_schema.PreparedStatements).values(
             [
                 {
@@ -148,6 +151,12 @@ class DbManager:
         """Return prepared statements for given record."""
         qfilter = wms_schema.PreparedStatements.record_key.like(record_key)
         q = self.query(wms_schema.PreparedStatements.stmt).filter(qfilter)
+        stmts = stmts_from_json([r[0] for r in q.all()])
+        return stmts
+
+    def get_statements(self):
+        """Return all prepared statements in the DB."""
+        q = self.query(wms_schema.PreparedStatements.stmt)
         stmts = stmts_from_json([r[0] for r in q.all()])
         return stmts
 
