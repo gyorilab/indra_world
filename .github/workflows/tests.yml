@@ -27,4 +27,4 @@ jobs:
         export NOSEATTR="!notravis"
         export INDRA_WM_CACHE="."
         export INDRA_WM_SERVICE_DB='sqlite:///:memory:'
-        nosetests indra_world -a $NOSEATTR -v --with-coverage --cover-inclusive --cover-package=indra_world
+        nosetests indra_world/tests -a $NOSEATTR -v --with-coverage --cover-inclusive --cover-package=indra_world
