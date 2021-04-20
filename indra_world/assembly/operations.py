@@ -13,26 +13,25 @@ __all__ = ['get_expanded_events_influences', 'remove_namespaces',
            'make_compositional_refinement_filter',
            'make_default_compositional_refinement_filter',
            'CompositionalRefinementFilter', 'get_relevants_for_stmt',
-           'get_agent_key', 'listify', 'comp_ontology', 'comp_ontology_url']
+           'get_agent_key', 'listify', 'comp_ontology', 'comp_ontology_url',
+           'merge_deltas']
 import os
 import yaml
 import copy
 import logging
 import itertools
 import statistics
-import collections
 from datetime import datetime
 from collections import defaultdict
 import indra.tools.assemble_corpus as ac
 from indra.sources.eidos.client import reground_texts
 from indra.pipeline import register_pipeline
 from indra.statements import Influence, Association, Event
-from indra.preassembler import get_agent_key, get_relevant_keys
 from indra.statements.concept import get_sorted_compositional_groundings
-from indra.preassembler.custom_preassembly import event_location_refinement, \
-    get_location
-from indra.preassembler.refinement import RefinementFilter
-from indra.ontology.world.ontology import WorldOntology
+from indra_world.ontology.ontology import WorldOntology
+
+from .matches import *
+from .refinement import *
 
 logger = logging.getLogger(__name__)
 
@@ -389,276 +388,6 @@ def filter_out_long_words(stmts, k=10):
 
 
 @register_pipeline
-def concept_matches_compositional(concept):
-    wm = concept.db_refs.get('WM')
-    if not wm:
-        return concept.name
-    wm_top = tuple(entry[0] if entry else None for entry in wm[0])
-    return wm_top
-
-
-@register_pipeline
-def matches_compositional(stmt):
-    if isinstance(stmt, Influence):
-        key = (stmt.__class__.__name__,
-               concept_matches_compositional(stmt.subj.concept),
-               concept_matches_compositional(stmt.obj.concept),
-               stmt.polarity_count(),
-               stmt.overall_polarity()
-               )
-    elif isinstance(stmt, Event):
-        key = (stmt.__class__.__name__,
-               concept_matches_compositional(stmt.concept),
-               stmt.delta.polarity)
-    # TODO: handle Associations?
-    return str(key)
-
-
-@register_pipeline
-def location_matches_compositional(stmt):
-    """Return a matches_key which takes geo-location into account."""
-    if isinstance(stmt, Event):
-        context_key = get_location(stmt)
-        matches_key = str((matches_compositional(stmt), context_key))
-    elif isinstance(stmt, Influence):
-        subj_context_key = get_location(stmt.subj)
-        obj_context_key = get_location(stmt.obj)
-        matches_key = str((matches_compositional(stmt), subj_context_key,
-                           obj_context_key))
-    else:
-        matches_key = matches_compositional(stmt)
-    return matches_key
-
-
-@register_pipeline
-def event_compositional_refinement(st1, st2, ontology, entities_refined,
-                                   ignore_polarity=False):
-    gr1 = concept_matches_compositional(st1.concept)
-    gr2 = concept_matches_compositional(st2.concept)
-    refinement = True
-    # If they are both just string names, we require equality
-    if not isinstance(gr1, tuple) and not isinstance(gr2, tuple):
-        return gr1 == gr2
-    # Otherwise we compare the tuples
-    for entry1, entry2 in zip(gr1, gr2):
-        # If the potentially refined value is None, it is
-        # always potentially refined.
-        if entry2 is None:
-            continue
-        # A None can never be the refinement of a not-None
-        # value so we can break out here with no refinement
-        elif entry1 is None:
-            refinement = False
-            break
-        # Otherwise the values can still be equal which we allow
-        # for refinement purposes
-        elif entry1 == entry2:
-            continue
-        # Finally, the only way there is a refinement is if entry1
-        # isa entry2
-        else:
-            if not ontology.isa('WM', entry1, 'WM', entry2):
-                refinement = False
-                break
-    if not refinement:
-        return False
-
-    if ignore_polarity:
-        return True
-    pol_ref = (st1.delta.polarity and not st2.delta.polarity) or \
-        st1.delta.polarity == st2.delta.polarity
-    return pol_ref
-
-
-@register_pipeline
-def compositional_refinement(st1, st2, ontology, entities_refined):
-    if type(st1) != type(st2):
-        return False
-    if isinstance(st1, Event):
-        return event_compositional_refinement(st1, st2, ontology,
-                                              entities_refined)
-    elif isinstance(st1, Influence):
-        subj_ref = event_compositional_refinement(st1.subj, st2.subj,
-                                                  ontology, entities_refined,
-                                                  ignore_polarity=True)
-        if not subj_ref:
-            return False
-        obj_ref = event_compositional_refinement(st1.subj, st2.subj,
-                                                 ontology, entities_refined,
-                                                 ignore_polarity=True)
-        if not obj_ref:
-            return False
-        delta_refinement = st1.delta_refinement_of(st2)
-        if delta_refinement:
-            return True
-        else:
-            return False
-    # TODO: handle Associations?
-    return False
-
-
-@register_pipeline
-def location_refinement_compositional(st1, st2, ontology,
-                                      entities_refined=True):
-    """Return True if there is a location-aware refinement between stmts."""
-    if type(st1) != type(st2):
-        return False
-    if isinstance(st1, Event):
-        event_ref = event_location_refinement(st1, st2, ontology,
-                                              entities_refined)
-        return event_ref
-    elif isinstance(st1, Influence):
-        subj_ref = event_location_refinement(st1.subj, st2.subj,
-                                             ontology, entities_refined,
-                                             ignore_polarity=True)
-        obj_ref = event_location_refinement(st1.obj, st2.obj,
-                                            ontology, entities_refined,
-                                            ignore_polarity=True)
-        delta_refinement = st1.delta_refinement_of(st2)
-        return delta_refinement and subj_ref and obj_ref
-    else:
-        compositional_refinement(st1, st2, ontology, entities_refined)
-
-
-@register_pipeline
-def make_compositional_refinement_filter(ontology, nproc=None):
-    return CompositionalRefinementFilter(ontology, nproc=nproc)
-
-
-@register_pipeline
-def make_default_compositional_refinement_filter():
-    return CompositionalRefinementFilter(comp_ontology, nproc=None)
-
-
-class CompositionalRefinementFilter(RefinementFilter):
-    # FIXME: if we have events here, we need to be able to handle them
-    def __init__(self, ontology, nproc=None):
-        super().__init__()
-        self.ontology = ontology
-        self.nproc = nproc
-
-    def initialize(self, stmts_by_hash):
-        super().initialize(stmts_by_hash)
-        # Mapping agent keys to statement hashes
-        agent_key_to_hash = {}
-        # Mapping statement hashes to agent keys
-        hash_to_agent_key = {}
-        # All agent keys for a given agent role
-        all_keys_by_role = {}
-        comp_idxes = list(range(4))
-        # Take one statement to get the relevant roles
-        # FIXME: here we assume that all statements are of the same type
-        # which may not be the case if we have standalone events.
-        if stmts_by_hash:
-            roles = stmts_by_hash[next(iter(stmts_by_hash))]._agent_order
-        # In the corner case that there are no initial statements, we just
-        # assume we are working with Influences
-        else:
-            roles = Influence._agent_order
-        # Initialize agent key data structures
-        for role in roles:
-            agent_key_to_hash[role] = {}
-            hash_to_agent_key[role] = {}
-            for comp_idx in comp_idxes:
-                agent_key_to_hash[role][comp_idx] = \
-                    collections.defaultdict(set)
-                hash_to_agent_key[role][comp_idx] = \
-                    collections.defaultdict(set)
-        # Extend agent key data structures
-        self._extend_maps(roles, stmts_by_hash, agent_key_to_hash,
-                          hash_to_agent_key, all_keys_by_role)
-        self.shared_data['agent_key_to_hash'] = agent_key_to_hash
-        self.shared_data['hash_to_agent_key'] = hash_to_agent_key
-        self.shared_data['all_keys_by_role'] = all_keys_by_role
-        self.shared_data['roles'] = roles
-
-    @staticmethod
-    def _extend_maps(roles, stmts_by_hash, agent_key_to_hash,
-                     hash_to_agent_key, all_keys_by_role):
-        comp_idxes = list(range(4))
-        # Fill up agent key data structures
-        for sh, stmt in stmts_by_hash.items():
-            for role in roles:
-                agents = getattr(stmt, role)
-                for comp_idx in comp_idxes:
-                    agent_keys = {get_agent_key(agent, comp_idx) for agent in
-                                  (agents if isinstance(agents, list)
-                                   else [agents])}
-                    for agent_key in agent_keys:
-                        agent_key_to_hash[role][comp_idx][agent_key].add(sh)
-                        hash_to_agent_key[role][comp_idx][sh].add(agent_key)
-        for role in roles:
-            all_keys_by_role[role] = {}
-            for comp_idx in comp_idxes:
-                all_keys_by_role[role][comp_idx] = \
-                    set(agent_key_to_hash[role][comp_idx].keys())
-
-    def extend(self, stmts_by_hash):
-        if not stmts_by_hash:
-            return
-        roles = stmts_by_hash[next(iter(stmts_by_hash))]._agent_order
-        self._extend_maps(roles, stmts_by_hash,
-                          self.shared_data['agent_key_to_hash'],
-                          self.shared_data['hash_to_agent_key'],
-                          self.shared_data['all_keys_by_role'])
-        # We can assume that these stmts_by_hash are unique
-        self.shared_data['stmts_by_hash'].update(stmts_by_hash)
-
-    def get_related(self, stmt, possibly_related=None,
-                    direction='less_specific'):
-        sh = stmt.get_hash()
-        all_keys_by_role = self.shared_data['all_keys_by_role']
-        agent_key_to_hash = self.shared_data['agent_key_to_hash']
-        hash_to_agent_key = self.shared_data['hash_to_agent_key']
-        relevants = \
-            get_relevants_for_stmt(sh,
-                                   all_keys_by_role=all_keys_by_role,
-                                   agent_key_to_hash=agent_key_to_hash,
-                                   hash_to_agent_key=hash_to_agent_key,
-                                   ontology=self.ontology,
-                                   direction=direction)
-        assert all(isinstance(r, int) for r in relevants)
-
-        return relevants
-
-
-def get_relevants_for_stmt(sh, all_keys_by_role, agent_key_to_hash,
-                           hash_to_agent_key, ontology, direction):
-    relevants = None
-    # We now iterate over all the agent roles in the given statement
-    # type
-    for role, comp_idx_hashes in hash_to_agent_key.items():
-        for comp_idx, hash_to_agent_key_for_role in \
-                hash_to_agent_key[role].items():
-            # We get all the agent keys in all other statements that the
-            # agent in this role in this statement can be a refinement of.
-            for agent_key in hash_to_agent_key_for_role[sh]:
-                relevant_keys = get_relevant_keys(
-                    agent_key,
-                    all_keys_by_role[role][comp_idx],
-                    ontology=ontology,
-                    direction=direction)
-                # We now get the actual statement hashes that these other
-                # potentially refined agent keys appear in in the given role
-                role_relevant_stmt_hashes = set.union(
-                    *[agent_key_to_hash[role][comp_idx][rel]
-                      for rel in relevant_keys]) - {sh}
-                # In the first iteration, we initialize the set with the
-                # relevant statement hashes
-                if relevants is None:
-                    relevants = role_relevant_stmt_hashes
-                # If not none but an empty set then we can stop
-                # here
-                elif not relevants:
-                    break
-                # In subsequent iterations, we take the intersection of
-                # the relevant sets per role
-                else:
-                    relevants &= role_relevant_stmt_hashes
-    return relevants
-
-
-@register_pipeline
 def sort_compositional_groundings(statements):
     for stmt in statements:
         for concept in stmt.agent_list():
@@ -666,6 +395,78 @@ def sort_compositional_groundings(statements):
                 concept.db_refs['WM'] = \
                     get_sorted_compositional_groundings(concept.db_refs['WM'])
     return statements
+
+
+@register_pipeline
+def merge_deltas(stmts_in):
+    """Gather and merge original Influence delta information from evidence.
+
+
+    This function is only applicable to Influence Statements that have
+    subj and obj deltas. All other statement types are passed through unchanged.
+    Polarities and adjectives for subjects and objects respectivey are
+    collected and merged by travesrsing all evidences of a Statement.
+
+    Parameters
+    ----------
+    stmts_in : list[indra.statements.Statement]
+        A list of INDRA Statements whose influence deltas should be merged.
+        These Statements are meant to have been preassembled and potentially
+        have multiple pieces of evidence.
+
+    Returns
+    -------
+    stmts_out : list[indra.statements.Statement]
+        The list of Statements now with deltas merged at the Statement
+        level.
+    """
+    stmts_out = []
+    for stmt in stmts_in:
+        # This operation is only applicable to Influences
+        if not isinstance(stmt, Influence):
+            stmts_out.append(stmt)
+            continue
+        # At this point this is guaranteed to be an Influence
+        deltas = {}
+        for role in ('subj', 'obj'):
+            for info in ('polarity', 'adjectives'):
+                key = (role, info)
+                deltas[key] = []
+                for ev in stmt.evidence:
+                    entry = ev.annotations.get('%s_%s' % key)
+                    deltas[key].append(entry if entry else None)
+        # POLARITY
+        # For polarity we need to work in pairs
+        polarity_pairs = list(zip(deltas[('subj', 'polarity')],
+                                  deltas[('obj', 'polarity')]))
+        # If we have some fully defined pairs, we take the most common one
+        both_pols = [pair for pair in polarity_pairs if pair[0] is not None and
+                     pair[1] is not None]
+        if both_pols:
+            subj_pol, obj_pol = max(set(both_pols), key=both_pols.count)
+            stmt.subj.delta.polarity = subj_pol
+            stmt.obj.delta.polarity = obj_pol
+        # Otherwise we prefer the case when at least one entry of the
+        # pair is given
+        else:
+            one_pol = [pair for pair in polarity_pairs if pair[0] is not None or
+                       pair[1] is not None]
+            if one_pol:
+                subj_pol, obj_pol = max(set(one_pol), key=one_pol.count)
+                stmt.subj.delta.polarity = subj_pol
+                stmt.obj.delta.polarity = obj_pol
+
+        # ADJECTIVES
+        for attr, role in ((stmt.subj.delta, 'subj'), (stmt.obj.delta, 'obj')):
+            all_adjectives = []
+            for adj in deltas[(role, 'adjectives')]:
+                if isinstance(adj, list):
+                    all_adjectives += adj
+                elif adj is not None:
+                    all_adjectives.append(adj)
+            attr.adjectives = all_adjectives
+        stmts_out.append(stmt)
+    return stmts_out
 
 
 def get_agent_key(agent, comp_idx):
