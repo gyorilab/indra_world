@@ -10,8 +10,12 @@ file_defaults = {'raw': 'raw_statements',
 
 
 default_profile = 'wm'
-CACHE = Path(get_config('INDRA_WM_CACHE', failure_ok=False))
-CACHE.mkdir(exist_ok=True)
+cache_config = get_config('INDRA_WM_CACHE')
+if cache_config:
+    CACHE = Path(cache_config)
+    CACHE.mkdir(exist_ok=True)
+else:
+    CACHE = None
 
 
 class InvalidCorpusError(Exception):
