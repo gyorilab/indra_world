@@ -294,7 +294,7 @@ def test_merge_deltas():
                                                      text='%d' % idx)]))
              for idx, (sd, od) in enumerate([(d1, d2), (d3, d4)])]
     stmts = ac.run_preassembly(stmts, return_toplevel=True)
-    stmts = ac.merge_deltas(stmts)
+    stmts = merge_deltas(stmts)
     assert stmts[0].subj.delta.polarity == 1, stmts[0].subj.delta
     assert stmts[0].obj.delta.polarity == -1, stmts[0].obj.delta
     assert set(stmts[0].subj.delta.adjectives) == {'a', 'b', 'c', 'g'}, \

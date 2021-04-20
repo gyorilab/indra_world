@@ -5,7 +5,7 @@ from indra_world.corpus import Corpus
 from indra_world.curator import LiveCurator
 from indra.statements import *
 from indra.tools import assemble_corpus as ac
-from indra.ontology.world.ontology import world_ontology
+from indra_world.ontology import world_ontology
 
 os.environ['IGNORE_AWS'] = "TRUE"
 
