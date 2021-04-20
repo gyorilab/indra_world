@@ -1,13 +1,20 @@
 import os
+import json
 from copy import deepcopy
+
 import indra.tools.assemble_corpus as ac
 from indra.statements import Concept, Event, Influence
 from indra.statements.concept import get_top_compositional_grounding
-from indra_world.assembly.operations import *
 from indra.pipeline import AssemblyPipeline
 from indra.statements import stmts_from_json_file
+from indra.statements import Evidence, QualitativeDelta, RefContext, \
+    WorldContext
+from indra.preassembler import Preassembler
+
+from indra_world.assembly.operations import *
+from indra_world.ontology import comp_ontology
 from indra_world.ontology import world_ontology
-from indra.statements import Evidence, QualitativeDelta
+from indra_world.assembly.matches import location_matches
 
 
 HERE = os.path.dirname(os.path.abspath(__file__))

@@ -5,12 +5,15 @@ __all__ = ['compositional_refinement', 'location_refinement_compositional',
            'event_location_refinement', 'location_refinement',
            'event_location_time_refinement', 'location_time_refinement',
            'event_location_time_delta_refinement',
-           'location_time_delta_refinement', 'CompositionalRefinementFilter']
+           'location_time_delta_refinement', 'CompositionalRefinementFilter',
+           'get_agent_key']
+
 import collections
 from .matches import has_location, has_time, get_location
 from indra.statements import Influence, Event
 from indra.pipeline import register_pipeline
-from indra.preassembler import RefinementFilter
+from indra.preassembler import RefinementFilter, get_relevant_keys
+from indra_world.ontology import comp_ontology
 from .matches import concept_matches_compositional
 
 
@@ -352,3 +355,37 @@ def location_time_delta_refinement(st1, st2, ontology, entities_refined):
         return subj_ref and obj_ref
     else:
         return st1.refinement_of(st2, ontology, entities_refined)
+
+
+def get_agent_key(agent, comp_idx):
+    """Return a key for an Agent for use in refinement finding.
+
+    Parameters
+    ----------
+    agent : indra.statements.Agent or None
+         An INDRA Agent whose key should be returned.
+
+    Returns
+    -------
+    tuple or None
+        The key that maps the given agent to the ontology, with special
+        handling for ungrounded and None Agents.
+    """
+    # Possibilities are as follows:
+    # Case 1: no grounding, in which case we use the agent name as a theme
+    # grounding. If we are looking at another component, we return None.
+    # Case 2: There is a WM compositional grounding in which case we return
+    # the specific entry in the compositional tuple if available, or None if
+    # not.
+    if isinstance(agent, Event):
+        agent = agent.concept
+    gr = agent.get_grounding(ns_order=['WM'])
+    if gr[0] is None:
+        if comp_idx == 0:
+            agent_key = ('NAME', agent.name)
+        else:
+            agent_key = None
+    else:
+        comp_gr = gr[1][comp_idx]
+        agent_key = ('WM', comp_gr) if comp_gr else None
+    return agent_key

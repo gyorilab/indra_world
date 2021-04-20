@@ -8,7 +8,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 
 
 def _get_eidos_output():
-    fname = os.path.join(HERE, 'eidos_compositional.jsonld')
+    fname = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data',
+                         'eidos', 'eidos_compositional.jsonld')
     with open(fname, 'r') as fh:
         return fh.read()
 
