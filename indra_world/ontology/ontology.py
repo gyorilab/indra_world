@@ -7,7 +7,7 @@ import logging
 import requests
 from collections import defaultdict
 from indra.pipeline import register_pipeline
-from ..ontology_graph import IndraOntology, with_initialize
+from indra.ontology.ontology_graph import IndraOntology, with_initialize
 
 
 logger = logging.getLogger(__name__)

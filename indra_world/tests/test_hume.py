@@ -10,7 +10,7 @@ path_here = os.path.dirname(os.path.abspath(__file__))
 
 
 def _get_data_file(fname):
-    return os.path.join(path_here, 'data', 'cwms', fname)
+    return os.path.join(path_here, 'data', 'hume', fname)
 
 
 test_file_new_simple = _get_data_file('wm_m12.ben_sentence.json-ld')
