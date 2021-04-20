@@ -16,6 +16,10 @@ WorldContext.__test__ = False
 path_here = os.path.abspath(os.path.dirname(__file__))
 
 
+def _get_data_file(fname):
+    return os.path.join(path_here, 'data', 'sofia', fname)
+
+
 @attr('webservice', 'nonpublic')
 @unittest.skip('webservice non-responsive')
 def test_text_process_webservice():
@@ -27,7 +31,7 @@ def test_text_process_webservice():
 
 
 def test_process_json():
-    test_file = os.path.join(path_here, 'sofia_test.json')
+    test_file = _get_data_file('sofia_test.json')
     sp = sofia.process_json_file(test_file)
     assert len(sp.statements) == 2
     assert isinstance(sp.statements[0], Influence)
@@ -42,7 +46,7 @@ def test_process_json():
 
 
 def test_compositional_grounding():
-    test_file = os.path.join(path_here, 'sofia_test_comp_no_causal.json')
+    test_file = _get_data_file('sofia_test_comp_no_causal.json')
     sp = sofia.process_json_file(test_file, grounding_mode='compositional')
     assert len(sp.statements) == 2
     assert isinstance(sp.statements[0], Event)
@@ -60,7 +64,7 @@ def test_compositional_grounding():
 
 
 def test_event_decrease():
-    test_file = os.path.join(path_here, 'sofia_event_decreased.json')
+    test_file = _get_data_file('sofia_event_decreased.json')
     sp = sofia.process_json_file(test_file)
     assert len(sp.statements) == 1, sp.statements
     stmt = sp.statements[0]
@@ -74,7 +78,7 @@ def test_event_decrease():
 
 
 def test_influence_event_polarity():
-    test_file = os.path.join(path_here, 'sofia_infl_polarities.json')
+    test_file = _get_data_file('sofia_infl_polarities.json')
     sp = sofia.process_json_file(test_file)
     assert len(sp.statements) == 1, sp.statements
     stmt = sp.statements[0]

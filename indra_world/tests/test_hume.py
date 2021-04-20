@@ -6,24 +6,26 @@ from indra_world.sources.hume.api import *
 from indra.statements import *
 
 # Path to the HUME test files
-path_this = os.path.dirname(os.path.abspath(__file__))
+path_here = os.path.dirname(os.path.abspath(__file__))
 
-test_file_new_simple = os.path.join(path_this, 'wm_m12.ben_sentence.json-ld')
 
-standalone_events = os.path.join(
-    path_this, 'wm_ben_event_sentences.v1.json-ld')
+def _get_data_file(fname):
+    return os.path.join(path_here, 'data', 'cwms', fname)
 
-migration_events = os.path.join(
-    path_this, 'wm_migration_numeric_one_sentence.082019.json-ld')
+
+test_file_new_simple = _get_data_file('wm_m12.ben_sentence.json-ld')
+
+standalone_events = _get_data_file('wm_ben_event_sentences.v1.json-ld')
+
+migration_events = _get_data_file(
+    'wm_migration_numeric_one_sentence.082019.json-ld')
 
 
 def test_large_bbn_corpus():
-    file_path = os.path.join(path_this,
-                             'wm_m12.v8.full.v4.json-ld')
+    file_path = _get_data_file('wm_m12.v8.full.v4.json-ld')
     if not os.path.exists(file_path):
         raise unittest.SkipTest("The test file is not available.")
-    bp = process_jsonld_file(os.path.join(path_this,
-                             'wm_m12.v8.full.v4.json-ld'))
+    bp = process_jsonld_file(file_path)
     assert bp is not None
     assert len(bp.statements) > 1000
     print(len(bp.statements))
@@ -94,7 +96,7 @@ def test_migration_events():
 
 
 def test_compositional_grounding():
-    fname = os.path.join(path_this, 'hume.compositional.output.json-ld')
+    fname = _get_data_file('hume.compositional.output.json-ld')
     bp = process_jsonld_file(fname, grounding_mode='compositional')
     assert bp
     assert bp.statements

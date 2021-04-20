@@ -208,7 +208,7 @@ comp_assembly_json = [{
 
 def test_assembly_cycle():
     stmts = stmts_from_json_file(
-        os.path.join(HERE, 'compositional_refinement_cycle_test.json'))
+        os.path.join(HERE, 'data', 'compositional_refinement_cycle_test.json'))
     # 874 is a refinement of -534
     pipeline = AssemblyPipeline(comp_assembly_json)
     assembled_stmts = pipeline.run(stmts)
@@ -217,7 +217,7 @@ def test_assembly_cycle():
 
 def test_compositional_refinement_polarity_bug():
     stmts = stmts_from_json_file(
-        os.path.join(HERE, 'test_missing_refinement.json'))
+        os.path.join(HERE, 'data', 'test_missing_refinement.json'))
     pipeline = AssemblyPipeline(comp_assembly_json)
     assembled_stmts = pipeline.run(stmts)
     assert assembled_stmts[0].supported_by == [assembled_stmts[1]]

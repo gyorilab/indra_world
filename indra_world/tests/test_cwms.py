@@ -1,21 +1,21 @@
 import unittest
-from os.path import join, dirname, abspath
+import os
 from nose.plugins.attrib import attr
 
 from indra.statements import *
 from indra_world.sources.cwms import *
 
-# Path to the CWMS test/dummy data folder
-path_this = dirname(abspath(__file__))
-data_folder = join(path_this, 'cwms_tests_data')
+path_here = os.path.dirname(os.path.abspath(__file__))
 
-example1_txt = join(data_folder, 'example_2_sentence_1.txt')
 
-example2_txt = join(data_folder, 'example_2_sentence_3.txt')
+def _get_data_file(fname):
+    return os.path.join(path_here, 'data', 'cwms', fname)
 
-example3_txt = join(data_folder, 'example_2_sentence_4.txt')
 
-ekb_processing_test_file = join(data_folder, 'ekb_processing_test.ekb')
+example1_txt = _get_data_file('example_2_sentence_1.txt')
+example2_txt = _get_data_file('example_2_sentence_3.txt')
+example3_txt = _get_data_file('example_2_sentence_4.txt')
+ekb_processing_test_file = _get_data_file('ekb_processing_test.ekb')
 
 
 def load_text(fname):
@@ -176,7 +176,7 @@ def test_ekb_process():
 
 
 def test_process_increase_event_ekb():
-    fname = join(data_folder, 'cwms_increase.ekb')
+    fname = _get_data_file('cwms_increase.ekb')
     cp = process_ekb_file(fname, extract_filter={'event'})
     assert len(cp.statements) == 1
     stmt = cp.statements[0]
@@ -192,7 +192,7 @@ def test_process_increase_event_ekb():
 
 
 def test_process_cause_decrease_event_ekb():
-    fname = join(data_folder, 'cause_decrease_event.ekb')
+    fname = _get_data_file('cause_decrease_event.ekb')
     cp = process_ekb_file(fname)
     assert len(cp.statements) == 1, cp.statements
     stmt = cp.statements[0]
@@ -201,7 +201,7 @@ def test_process_cause_decrease_event_ekb():
 
 
 def test_process_cause_increase_event_ekb():
-    fname = join(data_folder, 'cause_increase_event.ekb')
+    fname = _get_data_file('cause_increase_event.ekb')
     cp = process_ekb_file(fname)
     assert len(cp.statements) == 1, cp.statements
     stmt = cp.statements[0]
@@ -210,7 +210,7 @@ def test_process_cause_increase_event_ekb():
 
 
 def test_process_correlation():
-    fname = join(data_folder, 'association.ekb')
+    fname = _get_data_file('association.ekb')
     cp = process_ekb_file(fname, extract_filter={'association'})
     assert len(cp.statements) == 1, cp.statements
     stmt = cp.statements[0]
@@ -221,7 +221,7 @@ def test_process_correlation():
 
 
 def test_process_migration1():
-    fname = join(data_folder, 'migration_sentence1.ekb')
+    fname = _get_data_file('migration_sentence1.ekb')
     cp = process_ekb_file(fname, extract_filter={'migration'})
     assert len(cp.statements) == 1
     stmt = cp.statements[0]
@@ -240,7 +240,7 @@ def test_process_migration1():
 
 
 def test_process_migration2():
-    fname = join(data_folder, 'migration_sentence2.ekb')
+    fname = _get_data_file('migration_sentence2.ekb')
     cp = process_ekb_file(fname, extract_filter={'migration'})
     assert len(cp.statements) == 1
     stmt = cp.statements[0]
