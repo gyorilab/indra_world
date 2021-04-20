@@ -2,7 +2,7 @@ __all__ = ['process_jsonld_file', 'process_jsonld']
 
 import json
 import logging
-from indra.sources.hume import processor
+from . import processor
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ def process_jsonld_file(fname, extract_filter=None,
 
     Returns
     -------
-    indra.sources.hume.HumeProcessor
+    indra_world.sources.hume.HumeProcessor
         A HumeProcessor instance, which contains a list of INDRA Statements
         as its statements attribute.
     """
@@ -57,7 +57,7 @@ def process_jsonld(jsonld, extract_filter=None,
 
     Returns
     -------
-    indra.sources.hume.HumeProcessor
+    indra_world.sources.hume.HumeProcessor
         A HumeProcessor instance, which contains a list of INDRA Statements
         as its statements attribute.
     """

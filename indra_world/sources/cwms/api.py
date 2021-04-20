@@ -1,6 +1,5 @@
 import logging
-from indra.sources.cwms.processor import CWMSProcessor, \
-    CWMSProcessorCompositional
+from .processor import CWMSProcessor, CWMSProcessorCompositional
 from indra.sources.trips import client
 
 logger = logging.getLogger(__name__)

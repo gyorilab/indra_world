@@ -1,9 +1,11 @@
 from io import StringIO
 import copy
+import json
 import pandas
 import requests
 from indra.belief import SimpleScorer, BayesianScorer
 from indra.pipeline import register_pipeline
+from indra_world.resources import get_resource_file
 
 
 default_priors = {'hume': [13, 7], 'cwms': [13, 7], 'sofia': [13, 7]}
@@ -40,6 +42,9 @@ def get_eidos_bayesian_scorer(prior_counts=None):
 @register_pipeline
 def get_eidos_scorer():
     """Return a SimpleScorer based on Eidos curated precision estimates."""
+    with open(get_resource_file('default_belief_probs.json'), 'r') as fh:
+        prior_probs = json.load(fh)
+
     table = load_eidos_curation_table()
 
     # Get the overall precision
@@ -50,7 +55,8 @@ def get_eidos_scorer():
     # in an ad-hoc manner
     syst_error = 0.05
     rand_error = 1 - precision - syst_error
-    prior_probs = {'rand': {'eidos': rand_error}, 'syst': {'eidos': syst_error}}
+    prior_probs['rand']['eidos'] = rand_error
+    prior_probs['syst']['eidos'] = syst_error
 
     # Get a dict of rule-specific errors.
     subtype_probs = {'eidos':

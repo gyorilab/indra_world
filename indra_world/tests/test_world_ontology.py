@@ -1,6 +1,6 @@
 import copy
-from indra.ontology.world import world_ontology
-from indra.ontology.world.ontology import WorldOntology
+from indra_world.ontology import world_ontology
+from indra_world.ontology.ontology import WorldOntology
 
 
 def test_hm_opposite_polarity():

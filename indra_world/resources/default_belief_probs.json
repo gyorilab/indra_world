@@ -1,0 +1,14 @@
+{
+  "syst": {
+    "hume": 0.05,
+    "sofia": 0.05,
+    "cwms": 0.05,
+    "eidos": 0.05
+  },
+  "rand": {
+    "hume": 0.3,
+    "sofia": 0.3,
+    "cwms": 0.3,
+    "eidos": 0.3
+  }
+}

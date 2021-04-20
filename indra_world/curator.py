@@ -1,6 +1,6 @@
 import yaml
 import logging
-from indra.belief.wm_scorer import get_eidos_bayesian_scorer
+from indra_world.belief import get_eidos_bayesian_scorer
 from indra.sources.eidos import reground_texts
 from indra.tools import assemble_corpus as ac
 from indra.belief import BeliefEngine
