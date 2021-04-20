@@ -6,6 +6,7 @@ from indra_world.curator import LiveCurator
 from indra.statements import *
 from indra.tools import assemble_corpus as ac
 from indra_world.ontology import world_ontology
+from indra_world.belief import get_eidos_scorer
 
 os.environ['IGNORE_AWS'] = "TRUE"
 
@@ -13,6 +14,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 
 with open(os.path.join(HERE, 'test_curations.json'), 'r') as fh:
     curations = json.load(fh)
+
+scorer = get_eidos_scorer()
 
 
 def _make_curator(curation_idx):
@@ -35,7 +38,8 @@ def _make_curator(curation_idx):
     stmt = Influence(subj_event, obj_event, evidence=evidence)
     stmt.uuid = cur['statement_id']
 
-    assembled_stmts = ac.run_preassembly([stmt])
+    assembled_stmts = ac.run_preassembly([stmt],
+                                         belief_scorer=scorer)
 
     corpus = Corpus('dart-20200313-interventions-grounding',
                     statements=assembled_stmts, raw_statements=[stmt])
