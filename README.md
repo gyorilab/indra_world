@@ -1,6 +1,6 @@
 ## INDRA World
 
-<img align="left" src="https://raw.githubusercontent.com/indralab/indra_world/master/doc/indra_world_logo.png" width="300" height="158" />
+<img align="left" src="https://raw.githubusercontent.com/indralab/indra_world/master/doc/indra_world_logo.png" width="300" height="160" />
 INDRA World is a generalization of INDRA (originally developed for biology) for
 automatically collecting, assembling, and modeling the web of causal relations
 that drive interconnected events in regional and global systems.
