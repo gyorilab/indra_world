@@ -47,6 +47,9 @@ class ServiceController:
     def get_projects(self):
         return self.db.get_projects()
 
+    def get_project_records(self, project_id):
+        return self.db.get_records_for_project(project_id)
+
     def add_dart_record(self, record, date=None):
         if date is None:
             date = datetime.datetime.utcnow().isoformat()

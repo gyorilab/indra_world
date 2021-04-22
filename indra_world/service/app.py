@@ -36,6 +36,11 @@ dart_record_model = api.model(
     }
 )
 
+project_model = api.model(
+    'Project',
+    {'project_id': fields.String(example='project1', required=True)}
+)
+
 project_records_model = api.model(
     'ProjectRecords',
     {'project_id': fields.String(example='project1'),
@@ -43,12 +48,11 @@ project_records_model = api.model(
      }
 )
 
-
 new_project_model = api.model(
     'NewProject',
-    {'project_id': fields.String(example='project1'),
-     'project_name': fields.String(example='Project 1'),
-     'corpus_id': fields.String(example='corpus1')
+    {'project_id': fields.String(example='project1', required=True),
+     'project_name': fields.String(example='Project 1', required=True),
+     'corpus_id': fields.String(example='corpus1', required=False)
      }
 )
 
@@ -128,6 +132,20 @@ class GetProjects(Resource):
     def get(self):
         projects = sc.get_projects()
         return projects
+
+
+@assembly_ns.expect(project_model)
+@assembly_ns.route('/get_project_records')
+class GetProjectRecords(Resource):
+    @api.doc(False)
+    def options(self):
+        return {}
+
+    def get(self):
+        project_id = request.json.get('project_id')
+        records = sc.get_project_records(project_id)
+        return records
+
 
 # download_curations
 # submit_curations
