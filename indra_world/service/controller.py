@@ -1,5 +1,5 @@
 import datetime
-from indra_world.sources.dart import process_reader_output, download_records
+from indra_world.sources.dart import process_reader_output, DartClient
 from indra_world.assembly.incremental_assembler import \
     IncrementalAssembler
 from indra_world.resources import get_resource_file
@@ -16,10 +16,20 @@ expected_readers = {'eidos', 'hume', 'sofia'}
 
 
 class ServiceController:
-    def __init__(self, db_url):
+    def __init__(self, db_url, dart_url=None, local_storage=None):
         self.db = DbManager(db_url)
         self.assemblers = {}
         self.assembly_triggers = {}
+        if not dart_url and not local_storage:
+            self.dart_client = DartClient(storage_mode='web',
+                                          local_storage=local_storage)
+        elif dart_url:
+            self.dart_client = DartClient(storage_mode='web',
+                                          dart_url=dart_url,
+                                          local_storage=local_storage)
+        else:
+            self.dart_client = DartClient(storage_mode='local',
+                                          local_storage=local_storage)
 
     def new_project(self, project_id, name, corpus_id=None):
         res = self.db.add_project(project_id, name)
@@ -59,12 +69,10 @@ class ServiceController:
                                        storage_key=record['storage_key'],
                                        date=date)
 
-    def process_dart_record(self, record, local_storage=None,
-                            grounding_mode='compositional',
+    def process_dart_record(self, record, grounding_mode='compositional',
                             extract_filter='influence'):
-        reader_outputs = download_records([record], local_storage=local_storage)
-        content = reader_outputs[record['identity']][record['document_id']]
-        return self.add_reader_output(content, record,
+        reader_output = self.dart_client.get_output_from_record(record)
+        return self.add_reader_output(reader_output, record,
                                       grounding_mode=grounding_mode,
                                       extract_filter=extract_filter)
 
