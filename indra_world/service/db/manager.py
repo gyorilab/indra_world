@@ -91,6 +91,11 @@ class DbManager:
         doc_ids = sorted(set(r[0] for r in q.all()))
         return doc_ids
 
+    def get_projects(self):
+        q = self.query(wms_schema.Projects)
+        projects = [{'id': p.id, 'name': p.name} for p in q.all()]
+        return projects
+
     def add_corpus(self, corpus_id, metadata):
         op = insert(wms_schema.Corpora).values(id=corpus_id,
                                                meta_data=metadata)

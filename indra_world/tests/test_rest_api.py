@@ -83,3 +83,65 @@ def test_notify_duplicate(mock_get):
                         document_id=doc_id,
                         storage_key=storage_key
                     ))
+
+
+def test_get_projects():
+    sc.db = DbManager(url='sqlite:///:memory:')
+    sc.db.create_all()
+    _call_api('post', 'assembly/new_project',
+              json=dict(
+                  project_id='p1',
+                  project_name='Project 1'
+              ))
+    res = _call_api('get', 'assembly/get_projects', json={})
+    assert res
+
+
+@patch('indra_world.sources.dart.client.get_content_by_storage_key')
+def test_get_project_records(mock_get):
+    mock_get.return_value = _get_eidos_output()
+    sc.db = DbManager(url='sqlite:///:memory:')
+    sc.db.create_all()
+    _call_api('post', 'assembly/new_project',
+              json=dict(
+                  project_id='p1',
+                  project_name='Project 1'
+              ))
+    doc_id = '70a62e43-f881-47b1-8367-a3cca9450c03'
+    storage_key = 'bcd04c45-3cfc-456f-a31e-59e875aefabf.json'
+    record = {'identity': 'eidos',
+              'version': '1.0',
+              'document_id': doc_id,
+              'storage_key': storage_key}
+    res = _call_api('post', 'dart/notify', json=record)
+    res = _call_api('post', 'assembly/add_project_records',
+                    json=dict(
+                        project_id='p1',
+                        records=[record]
+                    ))
+    res = _call_api('get', 'assembly/get_project_records',
+                    json=dict(project_id='p1'))
+    assert res == [storage_key]
+
+
+def test_curations():
+    sc.db = DbManager(url='sqlite:///:memory:')
+    sc.db.create_all()
+
+    _call_api('post', 'assembly/new_project',
+              json=dict(
+                  project_id='p1',
+                  project_name='Project 1'
+              ))
+    curation = {'project_id': 'p1',
+                'statement_id': '12345',
+                'update_type': 'discard_statement'}
+    _call_api('post', 'assembly/submit_curations',
+              json=dict(
+                  project_id='p1',
+                  curations={'12345': curation}
+              ))
+    res = _call_api('get', 'assembly/get_project_curations',
+                    json=dict(project_id='p1'))
+    assert len(res) == 1
+    assert res[0] == curation

@@ -44,6 +44,12 @@ class ServiceController:
     def unload_project(self, project_id):
         self.assemblers.pop(project_id, None)
 
+    def get_projects(self):
+        return self.db.get_projects()
+
+    def get_project_records(self, project_id):
+        return self.db.get_records_for_project(project_id)
+
     def add_dart_record(self, record, date=None):
         if date is None:
             date = datetime.datetime.utcnow().isoformat()
@@ -101,6 +107,9 @@ class ServiceController:
 
     def add_curation(self, project_id, curation):
         return self.db.add_curation_for_project(project_id, curation)
+
+    def get_project_curations(self, project_id):
+        return self.db.get_curations_for_project(project_id)
 
     def add_project_records(self, project_id, record_keys):
         return self.db.add_records_for_project(project_id, record_keys)
