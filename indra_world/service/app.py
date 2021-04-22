@@ -25,6 +25,8 @@ assembly_ns = api.namespace('Assembly endpoints',
                             path='/assembly')
 
 # Models
+dict_model = api.model('dict', {})
+
 dart_record_model = api.model(
     'DartRecord',
     {'identity': fields.String(example='eidos'),
@@ -45,6 +47,22 @@ project_records_model = api.model(
     'ProjectRecords',
     {'project_id': fields.String(example='project1'),
      'records': fields.List(fields.Nested(dart_record_model))
+     }
+)
+
+curation_model = api.model(
+    'Curation',
+    {
+        'project_id': fields.String(example='project1'),
+        'statement_id': fields.String(example='12345'),
+        'update_type': fields.String(example='discard_statement')
+    }
+)
+
+submit_curations_model = api.model(
+    'SubmitCurations',
+    {'project_id': fields.String(example='project1'),
+     'curations': fields.List(fields.Nested(curation_model))
      }
 )
 
@@ -147,8 +165,33 @@ class GetProjectRecords(Resource):
         return records
 
 
-# download_curations
-# submit_curations
+@assembly_ns.expect(submit_curations_model)
+@assembly_ns.route('/submit_curations')
+class SubmitCurations(Resource):
+    @api.doc(False)
+    def options(self):
+        return {}
+
+    def post(self):
+        # TODO: previously, each curation contained a project ID as an attribute
+        # we need to check if it's possible that curations are submitted for
+        # multiple projects at once.
+        project_id = request.json.get('project_id')
+        curations = request.json.get('curations')
+        for stmt_id, curation in curations.items():
+            sc.add_curation(project_id, curation)
+
+
+@assembly_ns.route('/get_project_curations')
+class GetProjectCurations(Resource):
+    @api.doc(False)
+    def options(self):
+        return {}
+
+    def get(self):
+        project_id = request.json.get('project_id')
+        curations = sc.get_project_curations(project_id)
+        return curations
 
 
 if __name__ == '__main__':

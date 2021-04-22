@@ -122,3 +122,26 @@ def test_get_project_records(mock_get):
     res = _call_api('get', 'assembly/get_project_records',
                     json=dict(project_id='p1'))
     assert res == [storage_key]
+
+
+def test_curations():
+    sc.db = DbManager(url='sqlite:///:memory:')
+    sc.db.create_all()
+
+    _call_api('post', 'assembly/new_project',
+              json=dict(
+                  project_id='p1',
+                  project_name='Project 1'
+              ))
+    curation = {'project_id': 'p1',
+                'statement_id': '12345',
+                'update_type': 'discard_statement'}
+    _call_api('post', 'assembly/submit_curations',
+              json=dict(
+                  project_id='p1',
+                  curations={'12345': curation}
+              ))
+    res = _call_api('get', 'assembly/get_project_curations',
+                    json=dict(project_id='p1'))
+    assert len(res) == 1
+    assert res[0] == curation
