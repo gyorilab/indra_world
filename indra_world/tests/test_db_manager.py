@@ -78,3 +78,15 @@ def test_add_no_stmts_for_record():
                                  indra_version='1.0')
     stmts = db.get_statements()
     assert len(stmts) == 2
+
+
+def test_get_projects():
+    db = _get_db()
+    projects = db.get_projects()
+    assert not projects
+    db.add_project('p1', 'Project 1')
+    db.add_project('p2', 'Project 2')
+    projects = db.get_projects()
+    assert len(projects) == 2
+    assert {p['id'] for p in projects} == {'p1', 'p2'}
+    assert {p['name'] for p in projects} == {'Project 1', 'Project 2'}

@@ -119,6 +119,16 @@ class AddProjectRecords(Resource):
         return delta.to_json()
 
 
+@assembly_ns.route('/get_projects')
+class GetProjects(Resource):
+    @api.doc(False)
+    def options(self):
+        return {}
+
+    def get(self):
+        projects = sc.get_projects()
+        return projects
+
 # download_curations
 # submit_curations
 

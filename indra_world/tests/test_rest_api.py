@@ -83,3 +83,15 @@ def test_notify_duplicate(mock_get):
                         document_id=doc_id,
                         storage_key=storage_key
                     ))
+
+
+def test_get_projects():
+    sc.db = DbManager(url='sqlite:///:memory:')
+    sc.db.create_all()
+    _call_api('post', 'assembly/new_project',
+              json=dict(
+                  project_id='p1',
+                  project_name='Project 1'
+              ))
+    res = _call_api('get', 'assembly/get_projects', json={})
+    assert res

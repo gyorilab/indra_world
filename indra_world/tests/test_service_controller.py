@@ -122,3 +122,11 @@ def test_duplicate_record():
     assert res.get('rowcount') == 1
     res = sc.add_dart_record(rec, '2020')
     assert res is None
+
+
+def test_get_projects():
+    sc = _get_controller()
+    sc.new_project('p1', 'Project 1')
+    projects = sc.get_projects()
+    assert len(projects) == 1
+    assert projects[0] == {'id': 'p1', 'name': 'Project 1'}

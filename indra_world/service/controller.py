@@ -44,6 +44,9 @@ class ServiceController:
     def unload_project(self, project_id):
         self.assemblers.pop(project_id, None)
 
+    def get_projects(self):
+        return self.db.get_projects()
+
     def add_dart_record(self, record, date=None):
         if date is None:
             date = datetime.datetime.utcnow().isoformat()
