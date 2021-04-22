@@ -59,10 +59,17 @@ curation_model = api.model(
     }
 )
 
+curation_model_wrapped = api.model(
+    'CurationWrapped',
+    {
+        '12345': fields.Nested(curation_model)
+    }
+)
+
 submit_curations_model = api.model(
     'SubmitCurations',
     {'project_id': fields.String(example='project1'),
-     'curations': fields.List(fields.Nested(curation_model))
+     'curations': fields.List(fields.Nested(curation_model_wrapped))
      }
 )
 
@@ -182,6 +189,7 @@ class SubmitCurations(Resource):
             sc.add_curation(project_id, curation)
 
 
+@assembly_ns.expect(project_model)
 @assembly_ns.route('/get_project_curations')
 class GetProjectCurations(Resource):
     @api.doc(False)
