@@ -1,11 +1,9 @@
 """A client for accessing reader output from the DART system."""
-__all__ = ['get_reader_outputs', 'get_reader_output_records',
-           'get_content_by_storage_key', 'download_records',
-           'store_reader_output', 'get_reader_versions',
-           'get_local_storage_path', 'prioritize_records']
+__all__ = ['DartClient', 'prioritize_records']
 import os
 import tqdm
 import json
+import glob
 import logging
 import requests
 import itertools
@@ -17,124 +15,212 @@ from indra.config import get_config
 logger = logging.getLogger(__name__)
 
 
-dart_uname = get_config('DART_WM_USERNAME')
-dart_pwd = get_config('DART_WM_PASSWORD')
-# The URL is configurable since it is subject to change per use case
-dart_base_url = get_config('DART_WM_URL')
-if dart_base_url is None:
-    dart_base_url = ('https://wm-ingest-pipeline-rest-1.prod.dart'
-                     '.worldmodelers.com/dart/api/v1/readers')
-meta_endpoint = dart_base_url + '/query'
-downl_endpoint = dart_base_url + '/download/'
+default_dart_url = ('https://wm-ingest-pipeline-rest-1.prod.dart'
+                    '.worldmodelers.com/dart/api/v1/readers')
 
 
-def get_content_by_storage_key(storage_key):
-    """Return content from DART based on its storage key.
+class DartClient:
+    def __init__(self, storage_mode='web', dart_url=None, dart_uname=None,
+                 dart_pwd=None, local_storage=None):
+        self.storage_mode = storage_mode
+        self.local_storage = local_storage
+        if self.storage_mode == 'web':
+            if dart_url:
+                self.dart_url = dart_url
+            else:
+                dart_config_url = get_config('DART_WM_URL')
+                self.dart_url = dart_config_url if dart_config_url else \
+                    default_dart_url
 
-    Parameters
-    ----------
-    storage_key : str
-        A DART storage key.
+            self.dart_uname = get_config('DART_WM_USERNAME')
+            self.dart_pwd = get_config('DART_WM_PASSWORD')
+            if not dart_uname or not dart_pwd:
+                logger.warning('DART is used in web mode but username or '
+                               'password were not provided or set in the '
+                               'DART_WM_USERNAME and DART_WM_PASSWORD '
+                               'configurations.')
+        else:
+            self.dart_url = None
+            if not self.local_storage:
+                raise ValueError('DART client initialized in local mode '
+                                 'without a local storage path.')
+        if not os.path.exists(self.local_storage):
+            logger.info('The local storage path %s for the DART client '
+                        'doesn\'t exist and will now be created' %
+                        self.local_storage)
+            try:
+                os.makedirs(self.local_storage)
+            except Exception as e:
+                logger.error('Could not create DART client local storage: %s'
+                             % e)
 
-    Returns
-    -------
-    dict
-        The content corresponding to the storage key.
-    """
-    res = requests.get(url=downl_endpoint + storage_key,
-                       auth=(dart_uname, dart_pwd))
-    res.raise_for_status()
-    return res.text
+    def get_outputs_from_records(self, records):
+        """Return reader outputs corresponding to a list of records.
 
+        Parameters
+        ----------
+        records : list of dict
+            A list of records returned from the reader output query.
+        local_storage : Optional[str]
+            The path to a local folder in which the downloaded reader
+            outputs should be stored. If not given, the outputs are
+            just returned, not stored.
 
-def get_reader_outputs(readers=None, versions=None, document_ids=None,
-                       timestamp=None, local_storage=None):
-    """Return reader outputs by querying the DART API.
+        Returns
+        -------
+        dict(str, dict)
+            A two-level dict of reader output keyed by reader and then
+            document id.
+        """
+        # Loop document keys and get documents
+        reader_outputs = defaultdict(dict)
+        for record in tqdm.tqdm(records):
+            reader_outputs[record['identity']][record['document_id']] = \
+                self.get_output_from_record(record)
+        reader_outputs = dict(reader_outputs)
+        return reader_outputs
 
-    Parameters
-    ----------
-    readers : list
-        A list of reader names
-    versions : list
-        A list of versions to match with the reader name(s)
-    document_ids : list
-        A list of document identifiers
-    timestamp : dict("on"|"before"|"after",str)
-        The timestamp string must of format "yyyy-mm-dd" or "yyyy-mm-dd
-        hh:mm:ss" (only for "before" and "after").
-    local_storage : Optional[str]
-        The path to a local folder in which the downloaded reader
-        outputs should be stored. If not given, the outputs are
-        just returned, not stored.
-
-    Returns
-    -------
-    dict(str, dict)
-        A two-level dict of reader output keyed by reader and then
-        document id.
-    """
-    records = get_reader_output_records(readers=readers, versions=versions,
-                                        document_ids=document_ids,
-                                        timestamp=timestamp)
-    logger.info('Got %d document storage keys. Fetching output...' %
-                len(records))
-    reader_outputs = download_records(records, local_storage)
-    return reader_outputs
-
-
-def download_records(records, local_storage=None):
-    """Return reader outputs corresponding to a list of records.
-
-    Parameters
-    ----------
-    records : list of dict
-        A list of records returned from the reader output query.
-    local_storage : Optional[str]
-        The path to a local folder in which the downloaded reader
-        outputs should be stored. If not given, the outputs are
-        just returned, not stored.
-
-    Returns
-    -------
-    dict(str, dict)
-        A two-level dict of reader output keyed by reader and then
-        document id.
-    """
-    # Loop document keys and get documents
-    reader_outputs = defaultdict(dict)
-    for record in tqdm.tqdm(records):
+    def get_output_from_record(self, record):
         storage_key = record['storage_key']
-        try:
-            output = None
-            if local_storage:
-                fname = get_local_storage_path(local_storage, record)
-                if os.path.exists(fname):
-                    with open(fname, 'r') as fh:
-                        output = fh.read()
-            if output is None:
-                output = get_content_by_storage_key(storage_key)
-                if local_storage:
-                    store_reader_output(local_storage, record, output)
-            reader_outputs[record['identity']][record['document_id']] = output
-        except Exception as e:
-            logger.warning('Error downloading %s' % storage_key)
-    reader_outputs = dict(reader_outputs)
-    return reader_outputs
+        fname = self.get_local_storage_path(self.local_storage, record)
+        output = None
+        if os.path.exists(fname):
+            with open(fname, 'r') as fh:
+                output = fh.read()
+        elif self.storage_mode == 'web':
+            try:
+                output = self.download_output(storage_key)
+            except Exception as e:
+                logger.warning('Error downloading %s: %s' %
+                               (storage_key, e))
+            try:
+                if self.local_storage:
+                    with open(fname, 'w') as fh:
+                        fh.write(output)
+            except Exception as e:
+                logger.warning('Error storing %s: %s' %
+                               (storage_key, e))
+        else:
+            logger.info('Record with storage key %s doesn\'t exist '
+                        'in local storage.' % storage_key)
+        return output
 
+    def download_output(self, storage_key):
+        """Return content from DART based on its storage key.
 
-def store_reader_output(path, record, output):
-    """Save a reader output in a standardized form locally."""
-    fname = get_local_storage_path(path, record)
-    with open(fname, 'w') as fh:
-        fh.write(output)
+        Parameters
+        ----------
+        storage_key : str
+            A DART storage key.
 
+        Returns
+        -------
+        dict
+            The content corresponding to the storage key.
+        """
+        url = self.dart_url + '/download/%s' % storage_key
+        res = requests.get(url=url, auth=(self.dart_uname, self.dart_pwd))
+        res.raise_for_status()
+        return res.text
 
-def get_local_storage_path(path, record):
-    folder = os.path.join(path, record['identity'], record['version'])
-    if not os.path.exists(folder):
-        os.makedirs(folder)
-    fname = os.path.join(folder, record['document_id'])
-    return fname
+    def get_local_storage_path(self, record):
+        folder = os.path.join(self.local_storage, record['identity'],
+                              record['version'])
+        if not os.path.exists(folder):
+            os.makedirs(folder)
+        fname = os.path.join(folder, record['document_id'])
+        return fname
+
+    def get_reader_output_records(self, readers=None, versions=None,
+                                  document_ids=None, timestamp=None):
+        """Return reader output metadata records by querying the DART API
+
+        Query json structure:
+            {"readers": ["MyAwesomeTool", "SomeOtherAwesomeTool"],
+            "versions": ["3.1.4", "1.3.3.7"],
+            "document_ids": ["qwerty1234", "poiuyt0987"],
+            "timestamp": {"before": "yyyy-mm-dd"|"yyyy-mm-dd hh:mm:ss",
+            "after": "yyyy-mm-dd"|"yyyy-mm-dd hh:mm:ss",
+            "on": "yyyy-mm-dd"}}
+
+        Parameters
+        ----------
+        readers : list
+            A list of reader names
+        versions : list
+            A list of versions to match with the reader name(s)
+        document_ids : list
+            A list of document identifiers
+        timestamp : dict("on"|"before"|"after",str)
+            The timestamp string must of format "yyyy-mm-dd" or "yyyy-mm-dd
+            hh:mm:ss" (only for "before" and "after").
+
+        Returns
+        -------
+        dict
+            The JSON payload of the response from the DART API
+        """
+        if self.storage_mode == 'web':
+            query_data = _jsonify_query_data(readers, versions, document_ids,
+                                             timestamp)
+            if not query_data:
+                return {}
+            full_query_data = {'metadata': query_data}
+            url = self.dart_url + '/query'
+            res = requests.post(url, data=full_query_data,
+                                auth=(self.dart_uname, self.dart_pwd))
+            res.raise_for_status()
+            rj = res.json()
+
+            # This handles both empty list and dict
+            if not rj or 'records' not in rj:
+                records = []
+            else:
+                records = rj['records']
+        else:
+            records = []
+            if readers:
+                if versions:
+                    for reader, version in itertools.product(readers, versions):
+                        path = os.path.join(self.local_storage, reader,
+                                            version, '*')
+                        for file in glob.glob(path):
+                            doc_id = os.path.basename(file)
+                            record = {
+                                'identity': reader,
+                                'version': version,
+                                'doc_id': doc_id,
+                                'storage_key': file
+                            }
+                            records.append(record)
+                else:
+                    for reader in readers:
+                        path = os.path.join(self.local_storage, reader, '*')
+                        version_paths = glob.glob(path)
+                        for version_path in version_paths:
+                            version = os.path.basename(version_path)
+                            path  = glob.glob(version_path, '*')
+                            for file in glob.glob(path):
+                                doc_id = os.path.basename(file)
+                                record = {
+                                    'identity': reader,
+                                    'version': version,
+                                    'doc_id': doc_id,
+                                    'storage_key': file
+                                }
+                                records.append(record)
+                if document_ids:
+                    records = [r for r in records
+                               if r['doc_id'] in document_ids]
+            else:
+                raise ValueError('Must provide readers for searching in local '
+                                 'mode.')
+        return records
+
+    def get_reader_versions(self, reader):
+        """Return the available versions for a given reader."""
+        records = self.get_reader_output_records([reader])
+        return {record['version'] for record in records}
 
 
 def prioritize_records(records, priorities=None):
@@ -175,60 +261,6 @@ def prioritize_records(records, priorities=None):
                                str(group_records))
                 prioritized_records.append(group_records[0])
     return prioritized_records
-
-
-def get_reader_output_records(readers=None, versions=None, document_ids=None,
-                              timestamp=None):
-    """Return reader output metadata records by querying the DART API
-
-    Query json structure:
-        {"readers": ["MyAwesomeTool", "SomeOtherAwesomeTool"],
-        "versions": ["3.1.4", "1.3.3.7"],
-        "document_ids": ["qwerty1234", "poiuyt0987"],
-        "timestamp": {"before": "yyyy-mm-dd"|"yyyy-mm-dd hh:mm:ss",
-        "after": "yyyy-mm-dd"|"yyyy-mm-dd hh:mm:ss",
-        "on": "yyyy-mm-dd"}}
-
-    Parameters
-    ----------
-    readers : list
-        A list of reader names
-    versions : list
-        A list of versions to match with the reader name(s)
-    document_ids : list
-        A list of document identifiers
-    timestamp : dict("on"|"before"|"after",str)
-        The timestamp string must of format "yyyy-mm-dd" or "yyyy-mm-dd
-        hh:mm:ss" (only for "before" and "after").
-
-    Returns
-    -------
-    dict
-        The JSON payload of the response from the DART API
-    """
-    if not dart_uname:
-        raise ValueError('DART_WM_USERNAME is not configured.')
-    if not dart_pwd:
-        raise ValueError('DART_WM_PASSWORD is not configured.')
-    query_data = _jsonify_query_data(readers, versions, document_ids, timestamp)
-    if not query_data:
-        return {}
-    full_query_data = {'metadata': query_data}
-    res = requests.post(meta_endpoint, data=full_query_data,
-                        auth=(dart_uname, dart_pwd))
-    res.raise_for_status()
-    rj = res.json()
-
-    # This handles both empty list and dict
-    if not rj or 'records' not in rj:
-        return []
-    return rj['records']
-
-
-def get_reader_versions(reader):
-    """Return the available versions for a given reader."""
-    records = get_reader_output_records([reader])
-    return {record['version'] for record in records}
 
 
 def _check_lists(lst):
