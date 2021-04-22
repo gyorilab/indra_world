@@ -13,10 +13,8 @@ logger = logging.getLogger(__name__)
 
 class CorpusManager:
     def __init__(self, db_url, dart_records, corpus_id, metadata,
-                 dart_url=None, local_storage=None):
-        self.sc = ServiceController(db_url=db_url,
-                                    dart_url=dart_url,
-                                    local_storage=local_storage)
+                 dart_client=None):
+        self.sc = ServiceController(db_url=db_url, dart_client=dart_client)
         self.corpus_id = corpus_id
         self.dart_records = dart_records
         self.metadata = metadata

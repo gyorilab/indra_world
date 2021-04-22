@@ -16,20 +16,14 @@ expected_readers = {'eidos', 'hume', 'sofia'}
 
 
 class ServiceController:
-    def __init__(self, db_url, dart_url=None, local_storage=None):
+    def __init__(self, db_url, dart_client=None):
         self.db = DbManager(db_url)
         self.assemblers = {}
         self.assembly_triggers = {}
-        if not dart_url and not local_storage:
-            self.dart_client = DartClient(storage_mode='web',
-                                          local_storage=local_storage)
-        elif dart_url:
-            self.dart_client = DartClient(storage_mode='web',
-                                          dart_url=dart_url,
-                                          local_storage=local_storage)
+        if dart_client:
+            self.dart_client = dart_client
         else:
-            self.dart_client = DartClient(storage_mode='local',
-                                          local_storage=local_storage)
+            self.dart_client = DartClient(storage_mode='web')
 
     def new_project(self, project_id, name, corpus_id=None):
         res = self.db.add_project(project_id, name)

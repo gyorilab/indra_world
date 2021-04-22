@@ -9,11 +9,12 @@ from wtforms.fields.html5 import DateField
 from flask_bootstrap import Bootstrap
 
 from indra.config import get_config
-import indra_world.sources.dart.client as dart_client
+from indra_world.sources.dart import DartClient, prioritize_records
 from indra_world.service.corpus_manager import CorpusManager
 
 
 DB_URL = get_config('INDRA_WM_SERVICE_DB', failure_ok=False)
+dart_client = DartClient()
 
 
 logger = logging.getLogger('indra_wm_service.assembly_dashboard')
@@ -83,7 +84,7 @@ def run_assembly():
     if not records:
         return jsonify({})
 
-    records = dart_client.prioritize_records(records, reader_priorities)
+    records = prioritize_records(records, reader_priorities)
 
     num_docs = len({rec['document_id'] for rec in records})
 

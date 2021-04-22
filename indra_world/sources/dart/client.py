@@ -23,7 +23,8 @@ class DartClient:
     def __init__(self, storage_mode='web', dart_url=None, dart_uname=None,
                  dart_pwd=None, local_storage=None):
         self.storage_mode = storage_mode
-        self.local_storage = local_storage
+        self.local_storage = local_storage if local_storage else \
+            get_config('INDRA_WM_CACHE')
         if self.storage_mode == 'web':
             if dart_url:
                 self.dart_url = dart_url
