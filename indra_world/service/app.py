@@ -10,7 +10,7 @@ if not get_config('DART_WM_URL'):
     dart_client = DartClient(storage_mode='local')
 else:
     dart_client = DartClient(storage_mode='web')
-sc = ServiceController(db_url)
+sc = ServiceController(db_url, dart_client=dart_client)
 
 
 app = Flask(__name__)

@@ -90,6 +90,8 @@ class DartClient:
             except Exception as e:
                 logger.error('Could not create DART client local storage: %s'
                              % e)
+        logger.info('Running DART client in %s mode with local storage at %s' %
+                    (self.storage_mode, self.local_storage))
 
     def get_outputs_from_records(self, records):
         """Return reader outputs corresponding to a list of records.
