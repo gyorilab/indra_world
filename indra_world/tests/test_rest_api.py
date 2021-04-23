@@ -42,7 +42,6 @@ def test_notify():
     sc.db.create_all()
     _orig = sc.dart_client.get_output_from_record
     sc.dart_client.get_output_from_record = lambda x: _get_eidos_output()
-    sc.dart_client.get_output_from_record = _orig
 
     # Call the service, which will send a request to the server.
     doc_id = '70a62e43-f881-47b1-8367-a3cca9450c03'
@@ -63,6 +62,7 @@ def test_notify():
 
     stmts = sc.db.get_statements_for_document(document_id=doc_id)
     assert len(stmts) == 1, stmts
+    sc.dart_client.get_output_from_record = _orig
 
 
 @raises(ValueError)
@@ -71,7 +71,6 @@ def test_notify_duplicate():
     sc.db.create_all()
     _orig = sc.dart_client.get_output_from_record
     sc.dart_client.get_output_from_record = lambda x: _get_eidos_output()
-    sc.dart_client.get_output_from_record = _orig
 
     # Call the service, which will send a request to the server.
     doc_id = '70a62e43-f881-47b1-8367-a3cca9450c03'
@@ -91,6 +90,7 @@ def test_notify_duplicate():
                         document_id=doc_id,
                         storage_key=storage_key
                     ))
+    sc.dart_client.get_output_from_record = _orig
 
 
 def test_get_projects():
@@ -110,7 +110,6 @@ def test_get_project_records():
     sc.db.create_all()
     _orig = sc.dart_client.get_output_from_record
     sc.dart_client.get_output_from_record = lambda x: _get_eidos_output()
-    sc.dart_client.get_output_from_record = _orig
     _call_api('post', 'assembly/new_project',
               json=dict(
                   project_id='p1',
@@ -131,6 +130,7 @@ def test_get_project_records():
     res = _call_api('get', 'assembly/get_project_records',
                     json=dict(project_id='p1'))
     assert res == [storage_key]
+    sc.dart_client.get_output_from_record = _orig
 
 
 def test_curations():
