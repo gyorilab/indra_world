@@ -1,18 +1,24 @@
 import os
 from copy import deepcopy
 from .test_incremental_assembler import s1, s2
+from indra_world.sources.dart import DartClient
 from indra_world.service.controller import ServiceController
+
+HERE = os.path.dirname(os.path.abspath(__file__))
 
 
 def _get_eidos_output():
-    fname = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                         'eidos_compositional.jsonld')
+    fname = os.path.join(HERE, 'eidos_compositional.jsonld')
     with open(fname, 'r') as fh:
         return fh.read()
 
 
 def _get_controller():
-    sc = ServiceController(db_url='sqlite:///:memory:')
+    local_storage = os.path.join(HERE, 'dart')
+    dart_client = DartClient(storage_mode='local',
+                             local_storage=local_storage)
+    sc = ServiceController(db_url='sqlite:///:memory:',
+                           dart_client=dart_client)
     sc.db.create_all()
     return sc
 

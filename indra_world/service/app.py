@@ -2,10 +2,15 @@ from indra.config import get_config
 from flask import Flask, request, abort
 from flask_restx import Api, Resource, fields
 from .controller import ServiceController
+from ..sources.dart import DartClient
+
 
 db_url = get_config('INDRA_WM_SERVICE_DB', failure_ok=False)
-local_storage = get_config('INDRA_WM_CACHE')
-sc = ServiceController(db_url)
+if not get_config('DART_WM_URL'):
+    dart_client = DartClient(storage_mode='local')
+else:
+    dart_client = DartClient(storage_mode='web')
+sc = ServiceController(db_url, dart_client=dart_client)
 
 
 app = Flask(__name__)
@@ -109,7 +114,7 @@ class Notify(Resource):
         if res is None:
             abort(400, 'The record could not be added, possibly because '
                        'it\'s a duplicate.')
-        sc.process_dart_record(record, local_storage=local_storage)
+        sc.process_dart_record(record)
         return 'OK'
 
 

@@ -84,8 +84,7 @@ def test_prioritize():
 
 @attr('nonpublic', 'notravis')
 def test_api():
-    health_ep = dart_client.dart_base_url + '/health'
-    dart_uname = get_config('DART_WM_USERNAME', failure_ok=False)
-    dart_pwd = get_config('DART_WM_PASSWORD', failure_ok=False)
-    res = requests.get(health_ep, auth=(dart_uname, dart_pwd))
+    client = dart_client.DartClient()
+    url = client.dart_url + '/health'
+    res = requests.get(url, auth=(client.dart_uname, client.dart_pwd))
     assert res.status_code == 200

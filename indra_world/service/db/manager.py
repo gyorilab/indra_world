@@ -15,6 +15,7 @@ class DbManager:
     for various operations."""
     def __init__(self, url):
         self.url = make_url(url)
+        logger.info('Starting DB manager with URL: %s' % str(self.url))
         self.engine = create_engine(self.url)
         self.session = None
 

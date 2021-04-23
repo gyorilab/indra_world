@@ -1,11 +1,19 @@
+import os
 import json
 from nose.tools import raises
 from datetime import datetime
-from unittest.mock import patch
 from indra_world.service.app import api
 from indra_world.service.app import sc
+from indra_world.sources.dart import DartClient
 from indra_world.service.db.manager import DbManager
 from .test_service_controller import _get_eidos_output
+
+# Set up the DART client for the service controller
+HERE = os.path.dirname(os.path.abspath(__file__))
+local_storage = os.path.join(HERE, 'dart')
+dart_client = DartClient(storage_mode='local',
+                         local_storage=local_storage)
+sc.dart_client = dart_client
 
 
 def _call_api(method, route, *args, **kwargs):
@@ -29,12 +37,11 @@ def test_health():
     assert res == {'state': 'healthy', 'version': '1.0.0'}
 
 
-@patch('indra_world.sources.dart.client.get_content_by_storage_key')
-def test_notify(mock_get):
+def test_notify():
     sc.db = DbManager(url='sqlite:///:memory:')
     sc.db.create_all()
-    # Configure the mock to return a response with an OK status code.
-    mock_get.return_value = _get_eidos_output()
+    _orig = sc.dart_client.get_output_from_record
+    sc.dart_client.get_output_from_record = lambda x: _get_eidos_output()
 
     # Call the service, which will send a request to the server.
     doc_id = '70a62e43-f881-47b1-8367-a3cca9450c03'
@@ -55,15 +62,15 @@ def test_notify(mock_get):
 
     stmts = sc.db.get_statements_for_document(document_id=doc_id)
     assert len(stmts) == 1, stmts
+    sc.dart_client.get_output_from_record = _orig
 
 
-@patch('indra_world.sources.dart.client.get_content_by_storage_key')
 @raises(ValueError)
-def test_notify_duplicate(mock_get):
+def test_notify_duplicate():
     sc.db = DbManager(url='sqlite:///:memory:')
     sc.db.create_all()
-    # Configure the mock to return a response with an OK status code.
-    mock_get.return_value = _get_eidos_output()
+    _orig = sc.dart_client.get_output_from_record
+    sc.dart_client.get_output_from_record = lambda x: _get_eidos_output()
 
     # Call the service, which will send a request to the server.
     doc_id = '70a62e43-f881-47b1-8367-a3cca9450c03'
@@ -83,6 +90,7 @@ def test_notify_duplicate(mock_get):
                         document_id=doc_id,
                         storage_key=storage_key
                     ))
+    sc.dart_client.get_output_from_record = _orig
 
 
 def test_get_projects():
@@ -97,11 +105,11 @@ def test_get_projects():
     assert res
 
 
-@patch('indra_world.sources.dart.client.get_content_by_storage_key')
-def test_get_project_records(mock_get):
-    mock_get.return_value = _get_eidos_output()
+def test_get_project_records():
     sc.db = DbManager(url='sqlite:///:memory:')
     sc.db.create_all()
+    _orig = sc.dart_client.get_output_from_record
+    sc.dart_client.get_output_from_record = lambda x: _get_eidos_output()
     _call_api('post', 'assembly/new_project',
               json=dict(
                   project_id='p1',
@@ -122,6 +130,7 @@ def test_get_project_records(mock_get):
     res = _call_api('get', 'assembly/get_project_records',
                     json=dict(project_id='p1'))
     assert res == [storage_key]
+    sc.dart_client.get_output_from_record = _orig
 
 
 def test_curations():
