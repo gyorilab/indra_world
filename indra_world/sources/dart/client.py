@@ -83,7 +83,7 @@ class DartClient:
 
     def get_output_from_record(self, record):
         storage_key = record['storage_key']
-        fname = self.get_local_storage_path(self.local_storage, record)
+        fname = self.get_local_storage_path(record)
         output = None
         if os.path.exists(fname):
             with open(fname, 'r') as fh:
@@ -94,6 +94,7 @@ class DartClient:
             except Exception as e:
                 logger.warning('Error downloading %s: %s' %
                                (storage_key, e))
+                return None
             try:
                 if self.local_storage:
                     with open(fname, 'w') as fh:
@@ -200,7 +201,7 @@ class DartClient:
                         version_paths = glob.glob(path)
                         for version_path in version_paths:
                             version = os.path.basename(version_path)
-                            path  = glob.glob(version_path, '*')
+                            path = glob.glob(version_path, '*')
                             for file in glob.glob(path):
                                 doc_id = os.path.basename(file)
                                 record = {
