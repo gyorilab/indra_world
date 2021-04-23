@@ -20,11 +20,40 @@ default_dart_url = ('https://wm-ingest-pipeline-rest-1.prod.dart'
 
 
 class DartClient:
+    """A client for the DART web service with optional local storage.
+
+    Parameters
+    ----------
+    storage_mode : Optional[str]
+        If `web`, the configured DART URL and credentials are used to
+        communicate with the DART web service. If `local`, a local storage
+        is used to access and store reader outputs.
+    dart_url : Optional[str]
+        The DART service URL. If given, it overrides the DART_WM_URL
+        configuration value.
+    dart_uname : Optional[str]
+        The DART service user name. If given, it overrides the DART_WM_USERNAME
+        configuration value.
+    dart_pwd : Optional[str]
+        The DART service password. If given, it overrides the DART_WM_PASSWORD
+        configuration value.
+    local_storage : Optional[str]
+        A path that points to a folder for local storage. If the storage_mode
+        is `web`, this local_storage is used as a local cache. If the
+        storage_mode is `local`, it is used as the primary location to access
+        reader outputs. If given, it overrides the INDRA_WM_CACHE configuration
+        value.
+    """
     def __init__(self, storage_mode='web', dart_url=None, dart_uname=None,
                  dart_pwd=None, local_storage=None):
         self.storage_mode = storage_mode
+        # We set the local storage in either mode, since even in web mode
+        # it is used as a cache
         self.local_storage = local_storage if local_storage else \
             get_config('INDRA_WM_CACHE')
+        # In web mode, we try to get a URL, a username and a password. In order
+        # of priority, we first take arguments provided directly, otherwise
+        # we take configuration values.
         if self.storage_mode == 'web':
             if dart_url:
                 self.dart_url = dart_url
@@ -32,19 +61,26 @@ class DartClient:
                 dart_config_url = get_config('DART_WM_URL')
                 self.dart_url = dart_config_url if dart_config_url else \
                     default_dart_url
-
-            self.dart_uname = get_config('DART_WM_USERNAME')
-            self.dart_pwd = get_config('DART_WM_PASSWORD')
-            if not dart_uname or not dart_pwd:
+            if dart_uname:
+                self.dart_uname = dart_uname
+            else:
+                self.dart_uname = get_config('DART_WM_USERNAME')
+            if dart_pwd:
+                self.dart_pwd = dart_pwd
+            else:
+                self.dart_pwd = get_config('DART_WM_PASSWORD')
+            if not self.dart_uname or not self.dart_pwd:
                 logger.warning('DART is used in web mode but username or '
                                'password were not provided or set in the '
                                'DART_WM_USERNAME and DART_WM_PASSWORD '
                                'configurations.')
+        # In local mode, we need to have a local storage set
         else:
             self.dart_url = None
             if not self.local_storage:
                 raise ValueError('DART client initialized in local mode '
                                  'without a local storage path.')
+        # If the local storage doesn't exist, we try create the folder
         if not os.path.exists(self.local_storage):
             logger.info('The local storage path %s for the DART client '
                         'doesn\'t exist and will now be created' %
@@ -62,10 +98,6 @@ class DartClient:
         ----------
         records : list of dict
             A list of records returned from the reader output query.
-        local_storage : Optional[str]
-            The path to a local folder in which the downloaded reader
-            outputs should be stored. If not given, the outputs are
-            just returned, not stored.
 
         Returns
         -------
@@ -82,6 +114,18 @@ class DartClient:
         return reader_outputs
 
     def get_output_from_record(self, record):
+        """Return reader output corresponding to a single record.
+
+        Parameters
+        ----------
+        record : dict
+            A single DART record.
+
+        Returns
+        -------
+        str
+            The reader output corresponding to the given record.
+        """
         storage_key = record['storage_key']
         fname = self.get_local_storage_path(record)
         output = None
@@ -108,7 +152,7 @@ class DartClient:
         return output
 
     def download_output(self, storage_key):
-        """Return content from DART based on its storage key.
+        """Return content from the DART web service based on its storage key.
 
         Parameters
         ----------
@@ -117,7 +161,7 @@ class DartClient:
 
         Returns
         -------
-        dict
+        str
             The content corresponding to the storage key.
         """
         url = self.dart_url + '/download/%s' % storage_key
@@ -126,6 +170,7 @@ class DartClient:
         return res.text
 
     def get_local_storage_path(self, record):
+        """Return the local storage path for a DART record."""
         folder = os.path.join(self.local_storage, record['identity'],
                               record['version'])
         if not os.path.exists(folder):
