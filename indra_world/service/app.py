@@ -1,9 +1,11 @@
+import logging
 from indra.config import get_config
 from flask import Flask, request, abort
 from flask_restx import Api, Resource, fields
 from .controller import ServiceController
 from ..sources.dart import DartClient
 
+logger = logging.getLogger('indra_world.service.app')
 
 db_url = get_config('INDRA_WM_SERVICE_DB', failure_ok=False)
 if not get_config('DART_WM_URL'):
@@ -110,6 +112,7 @@ class Notify(Resource):
     def post(self):
         record = {k: request.json[k] for k in ['identity', 'version',
                                                'document_id', 'storage_key']}
+        logger.info('Got notification for DART record: %s' % str(record))
         res = sc.add_dart_record(record)
         if res is None:
             abort(400, 'The record could not be added, possibly because '
@@ -131,6 +134,8 @@ class NewProject(Resource):
             abort(400, 'The project_id parameter is missing or empty.')
         project_name = request.json.get('project_name')
         corpus_id = request.json.get('corpus_id')
+        logger.info('Got new project request: %s, %s, %s' %
+                    (project_id, project_name, corpus_id))
         sc.new_project(project_id, project_name, corpus_id=corpus_id)
 
 
@@ -148,6 +153,8 @@ class AddProjectRecords(Resource):
         records = request.json.get('records')
         record_keys = [rec['storage_key'] for rec in records]
         sc.add_project_records(project_id, record_keys)
+        logger.info('Got assembly request for project %s with %d records' %
+                    (project_id, len(record_keys)))
         delta = sc.assemble_new_records(project_id,
                                         new_record_keys=record_keys)
         return delta.to_json()
@@ -190,6 +197,8 @@ class SubmitCurations(Resource):
         # multiple projects at once.
         project_id = request.json.get('project_id')
         curations = request.json.get('curations')
+        logger.info('Got %d curations for project %s' %
+                    (len(curations), project_id))
         for stmt_id, curation in curations.items():
             sc.add_curation(project_id, curation)
 
