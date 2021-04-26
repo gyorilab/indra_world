@@ -90,7 +90,6 @@ def test_notify_duplicate():
                         document_id=doc_id,
                         storage_key=storage_key
                     ))
-<<<<<<< HEAD
     sc.dart_client.get_output_from_record = _orig
 
 
@@ -155,7 +154,7 @@ def test_curations():
                     json=dict(project_id='p1'))
     assert len(res) == 1
     assert res[0] == curation
-=======
+
 
 """
 FIXME: IMPLEMENT THIS ENDPOINT
@@ -211,3 +210,4 @@ def test_merge_deltas():
     assert set(stmts[0].obj.delta.adjectives) == {'d'}, \
         stmts[0].obj.delta
 
+"""
