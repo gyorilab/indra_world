@@ -1,0 +1,821 @@
+{
+  "@context": {
+    "Argument": "https://w3id.org/wm/cag/argument",
+    "Grounding": "https://w3id.org/wm/cag/grounding",
+    "Interval": "https://w3id.org/wm/cag/interval",
+    "Extraction": "https://w3id.org/wm/cag/extraction",
+    "Provenance": "https://w3id.org/wm/cag/provenance",
+    "Groundings": "https://w3id.org/wm/cag/groundings",
+    "State": "https://w3id.org/wm/cag/state",
+    "Dependency": "https://w3id.org/wm/cag/dependency",
+    "Corpus": "https://w3id.org/wm/cag/corpus",
+    "Trigger": "https://w3id.org/wm/cag/trigger",
+    "Sentence": "https://w3id.org/wm/cag/sentence",
+    "Word": "https://w3id.org/wm/cag/word",
+    "Document": "https://w3id.org/wm/cag/document"
+  },
+  "@type": "Corpus",
+  "documents": [
+    {
+      "@type": "Document",
+      "@id": "_:Document_1",
+      "text": "virus increases death",
+      "sentences": [
+        {
+          "text": "virus increases death .",
+          "words": [
+            {
+              "endOffset": 5,
+              "chunk": "B-NP",
+              "lemma": "virus",
+              "tag": "NN",
+              "text": "virus",
+              "norm": "O",
+              "entity": "O",
+              "startOffset": 0,
+              "@type": "Word",
+              "@id": "_:Word_1"
+            },
+            {
+              "endOffset": 15,
+              "chunk": "B-VP",
+              "lemma": "increase",
+              "tag": "VBZ",
+              "text": "increases",
+              "norm": "O",
+              "entity": "O",
+              "startOffset": 6,
+              "@type": "Word",
+              "@id": "_:Word_2"
+            },
+            {
+              "endOffset": 21,
+              "chunk": "B-NP",
+              "lemma": "death",
+              "tag": "NN",
+              "text": "death",
+              "norm": "O",
+              "entity": "O",
+              "startOffset": 16,
+              "@type": "Word",
+              "@id": "_:Word_3"
+            },
+            {
+              "endOffset": 21,
+              "chunk": "O",
+              "lemma": ".",
+              "tag": ".",
+              "text": ".",
+              "norm": "O",
+              "entity": "O",
+              "startOffset": 21,
+              "@type": "Word",
+              "@id": "_:Word_4"
+            }
+          ],
+          "@type": "Sentence",
+          "dependencies": [
+            {
+              "@type": "Dependency",
+              "source": {
+                "@id": "_:Word_2"
+              },
+              "destination": {
+                "@id": "_:Word_1"
+              },
+              "relation": "nsubj"
+            },
+            {
+              "@type": "Dependency",
+              "source": {
+                "@id": "_:Word_2"
+              },
+              "destination": {
+                "@id": "_:Word_3"
+              },
+              "relation": "dobj"
+            },
+            {
+              "@type": "Dependency",
+              "source": {
+                "@id": "_:Word_2"
+              },
+              "destination": {
+                "@id": "_:Word_4"
+              },
+              "relation": "punct"
+            }
+          ],
+          "@id": "_:Sentence_1"
+        }
+      ]
+    }
+  ],
+  "extractions": [
+    {
+      "subtype": "entity",
+      "rule": "simple-np",
+      "text": "virus",
+      "canonicalName": "virus",
+      "labels": [
+        "Concept",
+        "Entity"
+      ],
+      "provenance": [
+        {
+          "documentCharPositions": [
+            {
+              "@type": "Interval",
+              "start": 0,
+              "end": 4
+            }
+          ],
+          "document": {
+            "@id": "_:Document_1"
+          },
+          "sentenceWordPositions": [
+            {
+              "@type": "Interval",
+              "start": 1,
+              "end": 1
+            }
+          ],
+          "@type": "Provenance",
+          "sentence": {
+            "@id": "_:Sentence_1"
+          }
+        }
+      ],
+      "@type": "Extraction",
+      "type": "concept",
+      "groundings": [
+        {
+          "@type": "Groundings",
+          "name": "interventions",
+          "version": "359829afbe9bb5ba9af990121c1bd936a52e7a2e",
+          "versionDate": "2019-02-24T01:21:07Z"
+        },
+        {
+          "name": "mitre12",
+          "versionDate": "2019-01-16T20:38:37Z",
+          "version": "c60184fd04a89ebdea7ccf633b83e6bc6623a207",
+          "values": [
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "MITRE12/Incidence of HIV",
+              "value": 0.727842390537262
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "MITRE12/Incidence of tuberculosis",
+              "value": 0.7015458345413208
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "MITRE12/Incidence of malaria",
+              "value": 0.6912872791290283
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "MITRE12/Percentage of livestock with Contagious Bovine Pleuropneumonia (CBPP) that are vaccinated",
+              "value": 0.6857370734214783
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "MITRE12/Tuberculosis case detection rate",
+              "value": 0.668717086315155
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "MITRE12/Immunization, measles",
+              "value": 0.6486819386482239
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "MITRE12/Percentage of livestock with Contagious Bovine Pleuropneumonia (CBPP) that are reported",
+              "value": 0.6346638202667236
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "MITRE12/Prevalence of HIV, male",
+              "value": 0.6097878217697144
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "MITRE12/Percentage of livestock with Contagious Caprine Pleuropneumonia (CCPP) that are reported",
+              "value": 0.5994969010353088
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "MITRE12/Prevalence of HIV, female",
+              "value": 0.5893207788467407
+            }
+          ],
+          "@type": "Groundings"
+        },
+        {
+          "name": "un",
+          "versionDate": "2019-01-05T06:06:38Z",
+          "version": "dd7a44ceac00dc514d0c5926b25235018deb5670",
+          "values": [
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "UN/entities/human/health/disease",
+              "value": 0.8782575726509094
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "UN/events/human/health_intervention",
+              "value": 0.7446697950363159
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "UN/entities/natural/pest",
+              "value": 0.49428126215934753
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "UN/entities/natural/biology/fauna",
+              "value": 0.43358731269836426
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "UN/entities/natural/livestock",
+              "value": 0.4259445369243622
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "UN/entities/natural/crop_technology/pesticide",
+              "value": 0.3326917886734009
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "UN/events/human/famine",
+              "value": 0.3124338388442993
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "UN/events/nature_impact/pollution/land_pollution",
+              "value": 0.3103119134902954
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "UN/events/human/death",
+              "value": 0.29584410786628723
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "UN/entities/human/health/nutrient",
+              "value": 0.2906578779220581
+            }
+          ],
+          "@type": "Groundings"
+        },
+        {
+          "name": "who",
+          "versionDate": "2018-11-21T22:10:05Z",
+          "version": "94f46343f7428aac6160e24788850a8fe6e8c5e7",
+          "values": [
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "WHO/Risk Factors/Infections/",
+              "value": 0.8058280348777771
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "WHO/Health Status/Morbidity/New cases of IHR-notifiable diseases and other notifiable diseases",
+              "value": 0.803066074848175
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "WHO/Health Status/Morbidity/New cases of vaccine-preventable diseases",
+              "value": 0.7878113389015198
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "WHO/Service Coverage/HIV/",
+              "value": 0.7845928072929382
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "WHO/Health Status/Morbidity/HIV prevalence rate",
+              "value": 0.7845928072929382
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "WHO/Service Coverage/Tuberculosis/",
+              "value": 0.7299985289573669
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "WHO/Health Status/Morbidity/HIV incidence rate",
+              "value": 0.727842390537262
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "WHO/Service Coverage/Malaria/",
+              "value": 0.7121856808662415
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "WHO/Service Coverage/HIV\\/TB/",
+              "value": 0.7073205709457397
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "WHO/Service Coverage/HIV/HIV viral load suppression",
+              "value": 0.7016578316688538
+            }
+          ],
+          "@type": "Groundings"
+        },
+        {
+          "name": "wm_flattened",
+          "versionDate": "2019-12-12T17:02:39Z",
+          "version": "87c0acf615936fa8ee078bfc81e1f5b39a3d35e2",
+          "values": [
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "wm/concept/causal_factor/health_and_life/disease/human_disease",
+              "value": 0.8554153442382812
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "wm/concept/causal_factor/health_and_life/disease/",
+              "value": 0.7878113389015198
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "wm/concept/causal_factor/agriculture/livestock_disease",
+              "value": 0.6832302212715149
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "wm/concept/causal_factor/interventions/provision_of_goods_and_services/communicable_disease_outbreak_control",
+              "value": 0.6544716954231262
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "wm/concept/causal_factor/agriculture/plant_disease/",
+              "value": 0.5929838418960571
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "wm/concept/causal_factor/crisis_and_disaster/environmental_disasters/insect_infestation",
+              "value": 0.5071804523468018
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "wm/concept/causal_factor/agriculture/plant_disease/pest_infestation",
+              "value": 0.49325042963027954
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "wm/concept/causal_factor/health_and_life/nutrition/malnutrition",
+              "value": 0.4711819887161255
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "wm/concept/causal_factor/interventions/provision_of_goods_and_services/therapeutic_feeding",
+              "value": 0.4697585999965668
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "wm/concept/causal_factor/health_and_life/treatment/health_treatment",
+              "value": 0.4554077684879303
+            }
+          ],
+          "@type": "Groundings"
+        }
+      ],
+      "@id": "_:Extraction_1"
+    },
+    {
+      "subtype": "causation",
+      "rule": "ported_syntax_1_verb-Causal",
+      "text": "virus increases death",
+      "canonicalName": "virus increase death",
+      "labels": [
+        "Causal",
+        "DirectedRelation",
+        "EntityLinker",
+        "Event"
+      ],
+      "provenance": [
+        {
+          "documentCharPositions": [
+            {
+              "@type": "Interval",
+              "start": 0,
+              "end": 20
+            }
+          ],
+          "document": {
+            "@id": "_:Document_1"
+          },
+          "sentenceWordPositions": [
+            {
+              "@type": "Interval",
+              "start": 1,
+              "end": 3
+            }
+          ],
+          "@type": "Provenance",
+          "sentence": {
+            "@id": "_:Sentence_1"
+          }
+        }
+      ],
+      "@type": "Extraction",
+      "type": "relation",
+      "groundings": [
+        {
+          "@type": "Groundings",
+          "name": "interventions",
+          "version": "359829afbe9bb5ba9af990121c1bd936a52e7a2e",
+          "versionDate": "2019-02-24T01:21:07Z"
+        },
+        {
+          "@type": "Groundings",
+          "name": "mitre12",
+          "version": "c60184fd04a89ebdea7ccf633b83e6bc6623a207",
+          "versionDate": "2019-01-16T20:38:37Z"
+        },
+        {
+          "@type": "Groundings",
+          "name": "un",
+          "version": "dd7a44ceac00dc514d0c5926b25235018deb5670",
+          "versionDate": "2019-01-05T06:06:38Z"
+        },
+        {
+          "@type": "Groundings",
+          "name": "who",
+          "version": "94f46343f7428aac6160e24788850a8fe6e8c5e7",
+          "versionDate": "2018-11-21T22:10:05Z"
+        },
+        {
+          "@type": "Groundings",
+          "name": "wm_flattened",
+          "version": "87c0acf615936fa8ee078bfc81e1f5b39a3d35e2",
+          "versionDate": "2019-12-12T17:02:39Z"
+        }
+      ],
+      "arguments": [
+        {
+          "@type": "Argument",
+          "type": "source",
+          "value": {
+            "@id": "_:Extraction_1"
+          }
+        },
+        {
+          "@type": "Argument",
+          "type": "destination",
+          "value": {
+            "@id": "_:Extraction_3"
+          }
+        }
+      ],
+      "@id": "_:Extraction_2",
+      "trigger": {
+        "@type": "Trigger",
+        "text": "increases",
+        "provenance": [
+          {
+            "documentCharPositions": [
+              {
+                "@type": "Interval",
+                "start": 6,
+                "end": 14
+              }
+            ],
+            "document": {
+              "@id": "_:Document_1"
+            },
+            "sentenceWordPositions": [
+              {
+                "@type": "Interval",
+                "start": 2,
+                "end": 2
+              }
+            ],
+            "@type": "Provenance",
+            "sentence": {
+              "@id": "_:Sentence_1"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "subtype": "entity",
+      "rule": "simple-np++Increase_ported_syntax_1_verb",
+      "text": "death",
+      "canonicalName": "death",
+      "labels": [
+        "Concept",
+        "Entity"
+      ],
+      "provenance": [
+        {
+          "documentCharPositions": [
+            {
+              "@type": "Interval",
+              "start": 16,
+              "end": 20
+            }
+          ],
+          "document": {
+            "@id": "_:Document_1"
+          },
+          "sentenceWordPositions": [
+            {
+              "@type": "Interval",
+              "start": 3,
+              "end": 3
+            }
+          ],
+          "@type": "Provenance",
+          "sentence": {
+            "@id": "_:Sentence_1"
+          }
+        }
+      ],
+      "@type": "Extraction",
+      "type": "concept",
+      "groundings": [
+        {
+          "@type": "Groundings",
+          "name": "interventions",
+          "version": "359829afbe9bb5ba9af990121c1bd936a52e7a2e",
+          "versionDate": "2019-02-24T01:21:07Z"
+        },
+        {
+          "name": "mitre12",
+          "versionDate": "2019-01-16T20:38:37Z",
+          "version": "c60184fd04a89ebdea7ccf633b83e6bc6623a207",
+          "values": [
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "MITRE12/Battle-related deaths",
+              "value": 1.0000001192092896
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "MITRE12/Cause of death, by injury",
+              "value": 0.7359697222709656
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "MITRE12/Cause of death, by non-communicable diseases",
+              "value": 0.7176145315170288
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "MITRE12/Lifetime risk of maternal death",
+              "value": 0.7058844566345215
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "MITRE12/Death rate, crude",
+              "value": 0.699097216129303
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "MITRE12/Cause of death, by communicable diseases and maternal, prenatal and nutrition conditions",
+              "value": 0.5035970211029053
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "MITRE12/Intentional homicides",
+              "value": 0.43626669049263
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "MITRE12/Probability of dying at age 5-14 years",
+              "value": 0.4249480962753296
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "MITRE12/Mortality rate, infant",
+              "value": 0.4154547452926636
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "MITRE12/Suicide mortality rate",
+              "value": 0.3954431712627411
+            }
+          ],
+          "@type": "Groundings"
+        },
+        {
+          "name": "un",
+          "versionDate": "2019-01-05T06:06:38Z",
+          "version": "dd7a44ceac00dc514d0c5926b25235018deb5670",
+          "values": [
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "UN/events/human/death",
+              "value": 0.6293327808380127
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "UN/events/human/famine",
+              "value": 0.3671197295188904
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "UN/events/natural_disaster/",
+              "value": 0.2796548902988434
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "UN/entities/human/health/disease",
+              "value": 0.245988667011261
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "UN/events/human/conflict",
+              "value": 0.24348171055316925
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "UN/events/crisis",
+              "value": 0.23525847494602203
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "UN/events/natural_disaster/flooding",
+              "value": 0.21046726405620575
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "UN/events/human/human_migration",
+              "value": 0.20943349599838257
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "UN/events/human/political/political_instability",
+              "value": 0.19279702007770538
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "UN/events/natural_disaster/storm",
+              "value": 0.19201599061489105
+            }
+          ],
+          "@type": "Groundings"
+        },
+        {
+          "name": "who",
+          "versionDate": "2018-11-21T22:10:05Z",
+          "version": "94f46343f7428aac6160e24788850a8fe6e8c5e7",
+          "values": [
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "WHO/Health Systems/Quality and safety of care/Maternal death reviews",
+              "value": 0.7140540480613708
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "WHO/Health Systems/Health information/Death registration coverage",
+              "value": 0.5980656147003174
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "WHO/Health Status/Mortality by cause/",
+              "value": 0.43673157691955566
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "WHO/Health Status/Mortality by age and sex/Life expectancy at birth",
+              "value": 0.4230351448059082
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "WHO/Health Status/Mortality by age and sex/Infant mortality rate",
+              "value": 0.4154547452926636
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "WHO/Health Status/Mortality by age and sex/Adult mortality rate between 15 and 60 years of age",
+              "value": 0.36865299940109253
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "WHO/Risk Factors/Nutrition/Incidence of low birth weight among newborns",
+              "value": 0.3545622229576111
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "WHO/Health Status/Mortality by age and sex/",
+              "value": 0.34533926844596863
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "WHO/Service Coverage/Reproductive, maternal, newborn, child and adolescent/",
+              "value": 0.33988362550735474
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "WHO/Health Status/Mortality by cause/Mortality between 30 and 70 years of age from cardiovascular diseases, cancer, diabetes or chronic respiratory diseases",
+              "value": 0.328909695148468
+            }
+          ],
+          "@type": "Groundings"
+        },
+        {
+          "name": "wm_flattened",
+          "versionDate": "2019-12-12T17:02:39Z",
+          "version": "87c0acf615936fa8ee078bfc81e1f5b39a3d35e2",
+          "values": [
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "wm/concept/causal_factor/health_and_life/death",
+              "value": 0.7651488780975342
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "wm/concept/causal_factor/health_and_life/",
+              "value": 0.38210949301719666
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "wm/concept/causal_factor/social_and_political/criminal/abduction",
+              "value": 0.33528342843055725
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "wm/concept/causal_factor/health_and_life/birth",
+              "value": 0.32914650440216064
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "wm/concept/causal_factor/social_and_political/criminal/crime",
+              "value": 0.31105107069015503
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "wm/concept/causal_factor/health_and_life/disease/human_disease",
+              "value": 0.28751900792121887
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "wm/concept/causal_factor/interventions/provision_of_goods_and_services/family_reunification_of_separated_children",
+              "value": 0.2811719477176666
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "wm/concept/causal_factor/crisis_and_disaster/environmental_disasters/natural_disaster/",
+              "value": 0.2796548902988434
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "wm/concept/causal_factor/health_and_life/disease/",
+              "value": 0.2779748737812042
+            },
+            {
+              "@type": "Grounding",
+              "ontologyConcept": "wm/concept/causal_factor/crisis_and_disaster/famine",
+              "value": 0.2571552097797394
+            }
+          ],
+          "@type": "Groundings"
+        }
+      ],
+      "states": [
+        {
+          "@type": "State",
+          "type": "INC",
+          "text": "increases",
+          "provenance": [
+            {
+              "documentCharPositions": [
+                {
+                  "@type": "Interval",
+                  "start": 6,
+                  "end": 14
+                }
+              ],
+              "document": {
+                "@id": "_:Document_1"
+              },
+              "sentenceWordPositions": [
+                {
+                  "@type": "Interval",
+                  "start": 2,
+                  "end": 2
+                }
+              ],
+              "@type": "Provenance",
+              "sentence": {
+                "@id": "_:Sentence_1"
+              }
+            }
+          ]
+        }
+      ],
+      "@id": "_:Extraction_3"
+    }
+  ]
+}
