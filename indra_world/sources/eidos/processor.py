@@ -103,7 +103,7 @@ class EidosWorldProcessor(EidosProcessor):
 
     def extract_entity_states(self, states):
         states = super().extract_entity_states(states)
-        states.update(self.extract_entity_time_loc_states())
+        states.update(self.extract_entity_time_loc_states(states))
         return states
 
     def extract_entity_time_loc_states(self, states):
