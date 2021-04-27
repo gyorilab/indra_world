@@ -14,7 +14,7 @@ path_here = os.path.dirname(os.path.abspath(__file__))
 
 
 def _get_data_file(fname):
-    return os.path.join(path_here, 'data', 'cwms', fname)
+    return os.path.join(path_here, 'data', 'eidos', fname)
 
 
 test_jsonld = _get_data_file('eidos_test.jsonld')
