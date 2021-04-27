@@ -1,10 +1,10 @@
 import yaml
 import logging
-from indra.sources.eidos import reground_texts
 from indra.tools import assemble_corpus as ac
 from indra.belief import BeliefEngine
 from . import file_defaults, default_key_base, InvalidCorpusError, CACHE
 from .corpus import Corpus
+from indra_world.sources.eidos.api import reground_texts
 from indra_world.belief import get_eidos_bayesian_scorer
 from indra_world.assembly.operations import merge_deltas
 

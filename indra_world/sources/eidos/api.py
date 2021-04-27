@@ -1,5 +1,5 @@
 __all__ = ['process_text', 'process_json', 'process_json_str',
-           'process_json_file']
+           'process_json_file', 'reground_texts']
 
 import json
 import logging
