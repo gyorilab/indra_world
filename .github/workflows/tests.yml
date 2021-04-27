@@ -21,9 +21,17 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -e .[tests]
+        wget -nv https://bigmech.s3.amazonaws.com/travis/eidos.jar
+        wget -nv https://bigmech.s3.amazonaws.com/travis/geonames%2Bworedas.zip
+        mkdir -p /home/runner/work/indra_world/indra_world/cache/geonames/index
+        mv geonames+woredas.zip /home/runner/work/indra_world/indra_world/cache/geonames/index
+        cd /home/runner/work/indra_world/indra_world/cache/geonames/index
+        unzip geonames+woredas.zip
     - name: Run unit tests
       run: |
         export NOSEATTR="!notravis"
         export INDRA_WM_CACHE="."
         export INDRA_WM_SERVICE_DB='sqlite:///:memory:'
+        export EIDOSPATH=`pwd`/eidos.jar
+        export CLASSPATH=$EIDOSPATH
         nosetests indra_world/tests -a $NOSEATTR -v --with-coverage --cover-inclusive --cover-package=indra_world
