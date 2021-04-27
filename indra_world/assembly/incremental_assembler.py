@@ -2,9 +2,9 @@ from copy import deepcopy
 import networkx
 from collections import defaultdict
 from indra.belief import extend_refinements_graph
-from indra.belief.wm_scorer import get_eidos_scorer
-from indra.ontology.world import load_world_ontology
 from indra.preassembler.refinement import RefinementConfirmationFilter
+from indra_world.belief import get_eidos_scorer
+from indra_world.ontology import load_world_ontology
 from indra_world.assembly.operations import CompositionalRefinementFilter
 from indra_world.assembly.operations import \
     location_matches_compositional, location_refinement_compositional

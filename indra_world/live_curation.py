@@ -7,8 +7,8 @@ import argparse
 from os import path
 from pathlib import Path
 from flask import Flask, request, jsonify, abort, Response
-from indra.statements import stmts_from_json_file, stmts_to_json
-from indra.ontology.world.ontology import world_ontology
+from indra.statements import stmts_from_json_file
+from indra_world.ontology import world_ontology
 
 from . import InvalidCorpusError, CACHE
 from .corpus import Corpus
