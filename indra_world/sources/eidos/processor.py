@@ -2,7 +2,7 @@ import logging
 import datetime
 from indra.statements import Event, QualitativeDelta, WorldContext, \
     TimeContext, RefContext
-from indra.sources.eidos.processor import EidosProcessor
+from indra.sources.eidos.processor import EidosProcessor, EidosDocument
 
 
 logger = logging.getLogger(__name__)
@@ -11,6 +11,8 @@ logger = logging.getLogger(__name__)
 class EidosWorldProcessor(EidosProcessor):
     def __init__(self, json_dict, grounding_ns):
         super().__init__(json_dict=json_dict)
+        self.doc = EidosWorldDocument(json_dict)
+        self.statements = []
         self.grounding_ns = grounding_ns
 
     def get_event(self, event):
@@ -102,9 +104,9 @@ class EidosWorldProcessor(EidosProcessor):
         return tc
 
     def extract_entity_states(self, states):
-        states = super().extract_entity_states(states)
-        states.update(self.extract_entity_time_loc_states(states))
-        return states
+        states_processed = super().extract_entity_states(states)
+        states_processed.update(self.extract_entity_time_loc_states(states))
+        return states_processed
 
     def extract_entity_time_loc_states(self, states):
         if states is None:
@@ -123,6 +125,8 @@ class EidosWorldProcessor(EidosProcessor):
                     geo_context = self.geo_context_from_ref(state)
         return {'time_context': time_context, 'geo_context': geo_context}
 
+
+class EidosWorldDocument(EidosDocument):
     def _preprocess_extractions(self):
         super()._preprocess_extractions()
 

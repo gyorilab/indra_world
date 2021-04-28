@@ -5,7 +5,7 @@ import json
 import logging
 from indra.sources.eidos import client as eidos_client
 from indra.sources.eidos.api import eidos_reader, _run_eidos_on_text
-from .processor import EidosProcessor, EidosProcessorCompositional
+from .processor import EidosWorldProcessor, EidosProcessorCompositional
 
 logger = logging.getLogger(__name__)
 
@@ -166,7 +166,7 @@ def process_json(json_dict, grounding_ns=None, extract_filter=None,
     grounding_mode = default_grounding_mode if not grounding_mode \
         else grounding_mode
     if grounding_mode == 'flat':
-        ep = EidosProcessor(json_dict, grounding_ns=grounding_ns)
+        ep = EidosWorldProcessor(json_dict, grounding_ns=grounding_ns)
     elif grounding_mode == 'compositional':
         ep = EidosProcessorCompositional(json_dict, grounding_ns=grounding_ns)
     else:

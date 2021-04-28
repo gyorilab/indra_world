@@ -3,6 +3,7 @@ import json
 import requests
 import datetime
 from nose.plugins.attrib import attr
+from indra.sources.eidos.reader import EidosReader
 from indra.statements import Influence, Event, Association
 from indra.assemblers.pysb import PysbAssembler
 from indra.assemblers.cx import CxAssembler
@@ -237,7 +238,7 @@ def test_geoloc_obj():
 # Grounding not available on Travis.
 @attr('notravis')
 def test_reground_texts():
-    er = eidos.reader.EidosReader()
+    er = EidosReader()
     er.initialize_reader()
     groundings = er.reground_texts(['rainfall', 'hunger'])
     assert groundings[0][0][0] == \
