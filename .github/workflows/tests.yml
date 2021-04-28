@@ -17,13 +17,27 @@ jobs:
       uses: actions/setup-python@v1
       with:
         python-version: 3.6
+    - name: Setup java
+      uses: actions/setup-java@v1
+      with:
+        java-version: 8
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -e .[tests]
+        pip install cython
+        pip install -e .[tests,eidos_offline]
+        wget -nv https://bigmech.s3.amazonaws.com/travis/eidos.jar
+        wget -nv https://bigmech.s3.amazonaws.com/travis/geonames%2Bworedas.zip
+        mkdir -p /home/runner/work/indra_world/indra_world/cache/geonames/index
+        mv geonames+woredas.zip /home/runner/work/indra_world/indra_world/cache/geonames/index
+        cd /home/runner/work/indra_world/indra_world/cache/geonames/index
+        unzip geonames+woredas.zip
     - name: Run unit tests
       run: |
         export NOSEATTR="!notravis"
         export INDRA_WM_CACHE="."
         export INDRA_WM_SERVICE_DB='sqlite:///:memory:'
-        nosetests indra_world/tests -a $NOSEATTR -v --with-coverage --cover-inclusive --cover-package=indra_world
+        nosetests indra_world/tests -a $NOSEATTR -v --exclude='.*eidos.*' --with-coverage --cover-inclusive --cover-package=indra_world
+        export EIDOSPATH=`pwd`/eidos.jar
+        export CLASSPATH=$EIDOSPATH
+        nosetests -v -a $NOSEATTR indra_world/tests/test_eidos.py

@@ -5,8 +5,7 @@ import json
 import pickle
 import logging
 from indra.statements import Statement
-from indra.sources import eidos
-from indra_world.sources import hume, sofia, cwms
+from indra_world.sources import eidos, hume, sofia, cwms
 
 
 logger = logging.getLogger(__name__)

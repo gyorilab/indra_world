@@ -23,10 +23,10 @@ import statistics
 from datetime import datetime
 from collections import defaultdict
 import indra.tools.assemble_corpus as ac
-from indra.sources.eidos.client import reground_texts
 from indra.pipeline import register_pipeline
 from indra.statements import Influence, Association, Event
 from indra.statements.concept import get_sorted_compositional_groundings
+from indra_world.sources.eidos.client import reground_texts
 
 from .matches import *
 from .refinement import *
