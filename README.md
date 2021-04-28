@@ -1,4 +1,4 @@
-## INDRA World
+# INDRA World
 
 <img align="left" src="https://raw.githubusercontent.com/indralab/indra_world/master/doc/indra_world_logo.png" width="300" height="160" />
 INDRA World is a generalization of INDRA (originally developed for biology) for
@@ -22,4 +22,13 @@ INDRA World as a service that integrates with other systems and supports
 managing project-specific statement sets and incremental assembly with new
 reader outputs.
 
-Documentation: https://indra-world.readthedocs.io/en/latest/.
+## Installation
+
+INDRA World can be installed directly from Github as
+
+    $ pip install git+https://github.com/indralab/indra_world.git
+
+## Documentation
+
+Detailed documentation is available at:
+https://indra-world.readthedocs.io/en/latest/.
