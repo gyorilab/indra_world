@@ -92,17 +92,6 @@ class EidosWorldProcessor(EidosProcessor):
             return rc
         return None
 
-    @staticmethod
-    def time_context_from_dct(dct):
-        """Return a time context object given a DCT entry."""
-        time_text = dct.get('text')
-        start = _get_time_stamp(dct.get('start'))
-        end = _get_time_stamp(dct.get('end'))
-        duration = _get_duration(start, end)
-        tc = TimeContext(text=time_text, start=start, end=end,
-                         duration=duration)
-        return tc
-
     def extract_entity_states(self, states):
         states_processed = super().extract_entity_states(states)
         states_processed.update(self.extract_entity_time_loc_states(states))
@@ -127,6 +116,11 @@ class EidosWorldProcessor(EidosProcessor):
 
 
 class EidosWorldDocument(EidosDocument):
+    def __init__(self, json_dict):
+        self.timexes = {}
+        self.geolocs = {}
+        super().__init__(json_dict)
+
     def _preprocess_extractions(self):
         super()._preprocess_extractions()
 
@@ -150,6 +144,17 @@ class EidosWorldDocument(EidosDocument):
                     for geoloc in geolocs:
                         rc = ref_context_from_geoloc(geoloc)
                         self.geolocs[geoloc['@id']] = rc
+
+    @staticmethod
+    def time_context_from_dct(dct):
+        """Return a time context object given a DCT entry."""
+        time_text = dct.get('text')
+        start = _get_time_stamp(dct.get('start'))
+        end = _get_time_stamp(dct.get('end'))
+        duration = _get_duration(start, end)
+        tc = TimeContext(text=time_text, start=start, end=end,
+                         duration=duration)
+        return tc
 
 
 class EidosProcessorCompositional(EidosWorldProcessor):
