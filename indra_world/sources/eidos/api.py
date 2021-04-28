@@ -3,7 +3,7 @@ __all__ = ['process_text', 'process_json', 'process_json_str',
 
 import json
 import logging
-from indra.sources.eidos import client as eidos_client
+from indra_world.sources.eidos import client as eidos_client
 from indra.sources.eidos.api import eidos_reader, _run_eidos_on_text
 from .processor import EidosWorldProcessor, EidosProcessorCompositional
 
