@@ -11,6 +11,7 @@ INDRA World
 
    service.rst
    modules.rst
+   modules/index
 
 
 Indices and tables
