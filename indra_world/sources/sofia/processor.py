@@ -144,6 +144,17 @@ class SofiaProcessor(object):
         return event
 
     def get_event_compositional(self, event_entry):
+        """Get an Event with compositional grounding
+
+        Parameters
+        ----------
+        event_entry : dict[str, str]
+            The event to process
+
+        Returns
+        -------
+        Event
+        """
         # Get get compositional grounding
         comp_name, comp_grnd = self.get_compositional_grounding(event_entry)
         if comp_name is not None and \
@@ -236,6 +247,19 @@ class SofiaProcessor(object):
         return processed_event_dict
 
     def get_compositional_grounding(self, event_entry):
+        """Get the compositional grounding for an event
+
+        Parameters
+        ----------
+        event_entry : dict[str, str]
+            The event to get the compositional grounding for
+
+        Returns
+        -------
+        tuple[str, tuple[str, ...]]
+            The name of the grounding and a tuple of representing the
+            compositional grounding
+        """
         # According to the Sofia team:
         # Process is the "Event_Type" of event
         # Theme is the "Entity_Type" of patient of event, a wm-concept
