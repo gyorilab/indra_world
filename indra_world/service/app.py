@@ -155,6 +155,22 @@ class Notify(Resource):
         return {}
 
     def post(self):
+        """Add and process DART record.
+
+        Parameters
+        ----------
+        identity : str
+            Name of the reader.
+
+        version : str
+            Reader version.
+
+        document_id : str
+            ID of a document to process.
+
+        storage_key : str
+            Key to store the record with.
+        """
         record = {k: request.json[k] for k in ['identity', 'version',
                                                'document_id', 'storage_key']}
         logger.info('Got notification for DART record: %s' % str(record))
@@ -174,6 +190,19 @@ class NewProject(Resource):
         return {}
 
     def post(self):
+        """Create new project.
+
+        Parameters
+        ----------
+        project_id : str
+            ID of a new project.
+
+        project_name : str
+            Name of a new project.
+
+        corpus_id : str
+            ID of a corpus.
+        """
         project_id = request.json.get('project_id')
         if not project_id:
             abort(400, 'The project_id parameter is missing or empty.')
@@ -192,6 +221,21 @@ class AddProjectRecords(Resource):
         return {}
 
     def post(self):
+        """Add project records and assemble them.
+
+        Parameters
+        ----------
+        project_id : str
+            ID of a project to add records.
+
+        records : list[dict]
+            A list of records to add, each should have a 'storage_key'.
+
+        Returns
+        -------
+        delta_json : json
+            A JSON representation of AssemblyDelta.
+        """
         project_id = request.json.get('project_id')
         if not project_id:
             abort(400, 'The project_id parameter is missing or empty.')
@@ -212,6 +256,7 @@ class GetProjects(Resource):
         return {}
 
     def get(self):
+        """Get a list of all projects."""
         projects = sc.get_projects()
         return projects
 
@@ -224,6 +269,18 @@ class GetProjectRecords(Resource):
         return {}
 
     def get(self):
+        """Get records for a project.
+
+        Paremeters
+        ----------
+        project_id : str
+            ID of a project.
+
+        Returns
+        -------
+        records : list[dict]
+            A list of records for the project.
+        """
         project_id = request.json.get('project_id')
         records = sc.get_project_records(project_id)
         return records
@@ -237,6 +294,15 @@ class SubmitCurations(Resource):
         return {}
 
     def post(self):
+        """Submit curations.
+
+        Parameters
+        ----------
+        project_id : str
+            ID of a project.
+        curations : list[dict]
+            A list of curations to submit.
+        """
         # TODO: previously, each curation contained a project ID as an attribute
         # we need to check if it's possible that curations are submitted for
         # multiple projects at once.
@@ -256,6 +322,18 @@ class GetProjectCurations(Resource):
         return {}
 
     def get(self):
+        """Get project curations.
+
+        Parameters
+        ----------
+        project_id : str
+            ID of a project.
+
+        Returns
+        -------
+        curations : list[dict]
+            A list of curations for the project.
+        """
         project_id = request.json.get('project_id')
         curations = sc.get_project_curations(project_id)
         return curations
