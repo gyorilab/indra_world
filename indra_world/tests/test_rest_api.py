@@ -2,6 +2,7 @@ import os
 import json
 from nose.tools import raises
 from datetime import datetime
+from indra.statements import stmts_from_json, Influence, Event
 from indra_world.service.app import api
 from indra_world.service.app import sc
 from indra_world.sources.dart import DartClient
@@ -154,6 +155,117 @@ def test_curations():
                     json=dict(project_id='p1'))
     assert len(res) == 1
     assert res[0] == curation
+
+
+def test_cwms_process_text():
+    sc.db = DbManager(url='sqlite:///:memory:')
+    sc.db.create_all()
+
+    res_json = _call_api('post', 'sources/cwms/process_text',
+                         json={'text': 'Hunger causes displacement.'})
+    stmts_json = res_json.get('statements')
+    stmts = stmts_from_json(stmts_json)
+    assert len(stmts) == 1
+
+
+def test_hume_process_jsonld():
+    from indra_world.tests.test_hume import test_file_new_simple
+    sc.db = DbManager(url='sqlite:///:memory:')
+    sc.db.create_all()
+
+    with open(test_file_new_simple, 'r') as fh:
+        test_jsonld = fh.read()
+    res_json = _call_api('post', 'sources/hume/process_jsonld',
+                         json={'jsonld': test_jsonld})
+    stmts_json = res_json.get('statements')
+    stmts = stmts_from_json(stmts_json)
+    assert len(stmts) == 1
+
+def test_eidos_json():
+    from indra_world.tests.test_eidos import test_jsonld, _get_data_file
+    sc.db = DbManager(url='sqlite:///:memory:')
+    sc.db.create_all()
+
+    with open(test_jsonld, 'r') as fh:
+        jsonld = fh.read()
+    res_json = _call_api('post', 'sources/eidos/process_jsonld',
+                         json={'jsonld': jsonld})
+    stmts_json = res_json.get('statements')
+    stmts = stmts_from_json(stmts_json)
+    assert len(stmts) == 1
+    stmt = stmts[0]
+    assert len(stmt.subj.concept.db_refs) > 2
+    assert len(stmt.obj.concept.db_refs) > 2
+
+    # Grounding NS
+    res_json = _call_api('post', 'sources/eidos/process_jsonld',
+                         json={'jsonld': jsonld, 'grounding_ns': ['UN']})
+    stmts_json = res_json.get('statements')
+    stmts = stmts_from_json(stmts_json)
+    assert len(stmts) == 1
+    stmt = stmts[0]
+    assert set(stmt.subj.concept.db_refs.keys()) == {'TEXT', 'UN'}
+    assert set(stmt.obj.concept.db_refs.keys()) == {'TEXT', 'UN'}
+
+    # Extract filter
+    res_json = _call_api('post', 'sources/eidos/process_jsonld',
+                         json={'jsonld': jsonld,
+                               'extract_filter': ['influence']})
+    stmts_json = res_json.get('statements')
+    stmts = stmts_from_json(stmts_json)
+    assert len(stmts) == 1
+    res_json = _call_api('post', 'sources/eidos/process_jsonld',
+                         json={'jsonld': jsonld,
+                               'extract_filter': ['event']})
+    stmts_json = res_json.get('statements')
+    stmts = stmts_from_json(stmts_json)
+    assert len(stmts) == 0
+
+    # Grounding mode
+    with open(_get_data_file('eidos_compositional.jsonld'), 'r') as fh:
+        jsonld = fh.read()
+    res_json = _call_api('post', 'sources/eidos/process_jsonld',
+                         json={'jsonld': jsonld,
+                               'grounding_mode': 'compositional'})
+    stmts_json = res_json.get('statements')
+    stmts = stmts_from_json(stmts_json)
+    assert len(stmts) == 1                             
+
+
+def test_sofia_json():
+    from indra_world.tests.test_sofia import _get_data_file
+    sc.db = DbManager(url='sqlite:///:memory:')
+    sc.db.create_all()
+
+    with open(_get_data_file('sofia_test.json'), 'r') as fh:
+        test_json = fh.read()
+    res_json = _call_api('post', 'sources/sofia/process_json',
+                         json={'json': test_json})
+    stmts_json = res_json.get('statements')
+    stmts = stmts_from_json(stmts_json)
+    assert len(stmts) == 2
+    assert isinstance(stmts[0], Influence)
+    assert isinstance(stmts[1], Event)
+
+    # Extract filter
+    res_json = _call_api('post', 'sources/sofia/process_json',
+                         json={'json': test_json,
+                               'extract_filter': ['influence']})
+    stmts_json = res_json.get('statements')
+    stmts = stmts_from_json(stmts_json)
+    assert len(stmts) == 1
+    assert isinstance(stmts[0], Influence)
+
+    # Grounding mode
+    with open(_get_data_file('sofia_test_comp_no_causal.json'), 'r') as fh:
+        test_json = fh.read()
+    res_json = _call_api('post', 'sources/sofia/process_json',
+                         json={'json': test_json,
+                               'grounding_mode': 'compositional'})
+    stmts_json = res_json.get('statements')
+    stmts = stmts_from_json(stmts_json)
+    assert len(stmts) == 2
+    assert isinstance(stmts[0], Event)    
 
 
 """
