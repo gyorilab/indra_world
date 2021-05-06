@@ -7,10 +7,13 @@ from indra_world.assembly.operations import location_matches_compositional
 
 e1 = Event(Concept('x',
                    db_refs={'WM': [[('wm/concept/agriculture', 1.0),
-                                    None, None, None]]}))
+                                    None, None, None]],
+                            'TEXT': 'some_text1'
+                            }))
 e2 = Event(Concept('y',
                    db_refs={'WM': [[('wm/concept/agriculture/crop', 1.0),
-                                    None, None, None]]}))
+                                    None, None, None]],
+                            'TEXT': 'some_text2'}))
 e3 = Event(Concept('z',
                    db_refs={'WM': [[('wm/concept/crisis_or_disaster', 1.0),
                                     None, None, None]]}))
@@ -101,11 +104,18 @@ def test_post_processing_all_stmts():
     stmts = copy.deepcopy([s1, s2])
     ia = IncrementalAssembler(stmts)
     stmts_out = ia.get_statements()
+    # Check that we normalized concept names
     assert stmts_out[0].subj.concept.name == 'agriculture'
+    # Check that we added flattened groundings
     flat_grounding = [{'grounding': 'wm/concept/agriculture',
                        'name': 'agriculture', 'score': 1.0}]
     assert stmts_out[0].subj.concept.db_refs['WM_FLAT'] == \
         flat_grounding, flat_grounding
+    # Check that we added annotations
+    assert 'agents' in stmts_out[0].evidence[0].annotations
+    assert stmts_out[0].evidence[0].annotations['agents'] == {
+        'raw_text': ['some_text1', 'some_text2']
+    }, stmts_out[0].evidence[0].annotations['agents']
 
 
 def test_post_processing_new_stmts():
@@ -115,3 +125,9 @@ def test_post_processing_new_stmts():
     assert len(delta.new_stmts) == 1
     stmt = list(delta.new_stmts.values())[0]
     assert stmt.subj.concept.name == 'crop'
+
+    # Check that we added annotations
+    assert 'agents' in stmt.evidence[0].annotations
+    assert stmt.evidence[0].annotations['agents'] == {
+        'raw_text': ['some_text2', 'some_text2']
+    }, stmt.evidence[0].annotations['agents']

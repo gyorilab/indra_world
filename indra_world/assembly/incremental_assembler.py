@@ -160,6 +160,7 @@ class IncrementalAssembler:
         """Build hash-based statement and evidence data structures to
         deduplicate."""
         for stmt in self.prepared_stmts:
+            self.annotate_evidences(stmt)
             stmt_hash = stmt.get_hash(matches_fun=self.matches_fun)
             evs = stmt.evidence
             if stmt_hash not in self.stmts_by_hash:
@@ -215,6 +216,7 @@ class IncrementalAssembler:
         # We fist organize statements by hash
         stmts_by_hash = defaultdict(list)
         for stmt in stmts:
+            self.annotate_evidences(stmt)
             stmts_by_hash[
                 stmt.get_hash(matches_fun=self.matches_fun)].append(stmt)
         stmts_by_hash = dict(stmts_by_hash)
@@ -292,6 +294,17 @@ class IncrementalAssembler:
         ap = AssemblyPipeline(steps=self.post_processing_steps)
         stmts = ap.run(stmts)
         return stmts
+
+    @staticmethod
+    def annotate_evidences(stmt):
+        """Add annotations to evidences of a given statement."""
+        for ev in stmt.evidence:
+            raw_text = [None if ag is None else ag.db_refs.get('TEXT')
+                        for ag in stmt.agent_list(deep_sorted=True)]
+            if 'agents' in ev.annotations:
+                ev.annotations['agents']['raw_text'] = raw_text
+            else:
+                ev.annotations['agents'] = {'raw_text': raw_text}
 
 
 class AssemblyDelta:
