@@ -28,8 +28,8 @@ Controller (:py:mod:`indra_world.service.controller`)
 .. automodule:: indra_world.service.controller
     :members:
 
-Controller (:py:mod:`indra_world.service.corpus_manager`)
----------------------------------------------------------
+Corpus Manager (:py:mod:`indra_world.service.corpus_manager`)
+-------------------------------------------------------------
 
 .. automodule:: indra_world.service.corpus_manager
     :members:
