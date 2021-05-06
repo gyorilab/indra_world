@@ -7,3 +7,4 @@ INDRA World Modules Reference
    :maxdepth: 4
 
    assembly/index
+   ontology/index
