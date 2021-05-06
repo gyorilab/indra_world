@@ -161,9 +161,8 @@ def test_cwms_process_text():
     sc.db = DbManager(url='sqlite:///:memory:')
     sc.db.create_all()
 
-    res = _call_api('post', '/cwms/process_text',
-                    json={'text': 'Hunger causes displacement.'})
-    res_json = json.loads(res)
+    res_json = _call_api('post', '/cwms/process_text',
+                         json={'text': 'Hunger causes displacement.'})
     stmts_json = res_json.get('statements')
     stmts = stmts_from_json(stmts_json)
     assert len(stmts) == 1
@@ -176,9 +175,8 @@ def test_hume_process_jsonld():
 
     with open(test_file_new_simple, 'r') as fh:
         test_jsonld = fh.read()
-    res = _call_api('post', '/hume/process_jsonld',
-                    json={'jsonld': test_jsonld})
-    res_json = json.loads(res)
+    res_json = _call_api('post', '/hume/process_jsonld',
+                         json={'jsonld': test_jsonld})
     stmts_json = res_json.get('statements')
     stmts = stmts_from_json(stmts_json)
     assert len(stmts) == 1
@@ -190,9 +188,8 @@ def test_eidos_json():
 
     with open(test_file, 'r') as fh:
         test_jsonld = fh.read()
-    res = _call_api('post', '/eidos/process_jsonld',
-                    json={'jsonld': test_jsonld})
-    res_json = json.loads(res)
+    res_json = _call_api('post', '/eidos/process_jsonld',
+                         json={'jsonld': test_jsonld})
     stmts_json = res_json.get('statements')
     stmts = stmts_from_json(stmts_json)
     assert len(stmts) == 1
