@@ -30,11 +30,18 @@ class IncrementalAssembler:
     ----------
     prepared_stmts : list[indra.statements.Statement]
         A list of prepared INDRA Statements.
-    refinement_filters : list[indra.preassembler.refinement.RefinementFilter]
+    refinement_filters : Optional[list[indra.preassembler.refinement.RefinementFilter]]
         A list of refinement filter classes to be used for refinement
-        finding.
+        finding. Default: the standard set of compositional refinement filters.
+    matches_fun : Optional[function]
+        A custom matches function for determining matching statements and
+        calculating hashes. Default: matches function that takes
+        compositional grounding and location into account.
     curations : list[dict]
         A list of user curations to be integrated into the assembly results.
+    post_processing_steps : list[dict]
+        Steps that can be used in an INDRA AssemblyPipeline to do
+        post-processing on statements.
 
     Attributes
     ----------
