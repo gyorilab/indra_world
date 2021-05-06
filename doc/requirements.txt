@@ -3,3 +3,8 @@ sphinx_rtd_theme
 pyyaml
 git+https://github.com/sorgerlab/indra.git
 openpyxl
+flask
+sqlalchemy
+flask_wtf
+flask_bootstrap
+flask_restx
