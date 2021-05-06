@@ -47,8 +47,8 @@ class IncrementalAssembler:
 
         self.curations = curations if curations else []
         self.post_processing_steps = [
-                {'function': 'add_flattened_grounding_compositional',
-                 'function': 'standardize_names_compositional'}
+                {'function': 'add_flattened_grounding_compositional'},
+                {'function': 'standardize_names_compositional'},
             ] \
             if post_processing_steps is None else post_processing_steps
 
