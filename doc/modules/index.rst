@@ -11,4 +11,5 @@ INDRA World Modules Reference
    dashboard/index
    ontology/index
    service/index
+   sources/index
    belief
