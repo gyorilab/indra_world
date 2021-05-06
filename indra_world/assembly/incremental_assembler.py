@@ -21,13 +21,15 @@ eidos_scorer = get_eidos_scorer()
 class IncrementalAssembler:
     def __init__(self, prepared_stmts,
                  refinement_filters=None,
-                 matches_fun=location_matches_compositional):
+                 matches_fun=location_matches_compositional,
+                 curations=None):
         self.matches_fun = matches_fun
         # These are preassembly data structures
         self.stmts_by_hash = {}
         self.evs_by_stmt_hash = {}
         self.refinement_edges = set()
         self.prepared_stmts = prepared_stmts
+        self.known_corrects = set()
 
         if not refinement_filters:
             crf = CompositionalRefinementFilter(ontology=world_ontology)
@@ -37,13 +39,60 @@ class IncrementalAssembler:
         else:
             self.refinement_filters = refinement_filters
 
+        self.curations = curations if curations else []
+
         self.deduplicate()
+        self.apply_curations()
         self.get_refinements()
         self.refinements_graph = \
             self.build_refinements_graph(self.stmts_by_hash,
                                          self.refinement_edges)
         self.belief_scorer = eidos_scorer
         self.beliefs = self.get_beliefs()
+
+    def apply_curations(self):
+        hashes_by_uuid = {stmt.uuid: sh
+                          for sh, stmt in self.stmts_by_hash.items()}
+        for curation in self.curations:
+            stmt_hash = hashes_by_uuid.get(curation['statement_id'])
+            if not stmt_hash:
+                continue
+            stmt = self.stmts_by_hash[stmt_hash]
+            # Remove the statement
+            if curation['update_type'] == 'discard_statement':
+                self.stmts_by_hash.pop(stmt_hash, None)
+                self.evs_by_stmt_hash.pop(stmt_hash, None)
+                # TODO: update belief model here
+            # Vet the statement
+            elif curation['update_type'] == 'vet_statement':
+                self.known_corrects.add(stmt_hash)
+                # TODO: update belief model here
+            # Flip the polarity
+            elif curation['update_type'] == 'factor_polarity':
+                role, new_pol = parse_factor_polarity_curation(curation)
+                if role == 'subj':
+                    stmt.subj.delta.polarity = new_pol
+                elif role == 'obj':
+                    stmt.obj.delta.polarity = new_pol
+                else:
+                    continue
+            # Flip subject/object
+            elif curation['update_type'] == 'reverse_relation':
+                tmp = stmt.subj
+                stmt.subj = stmt.obj
+                stmt.obj = tmp
+                # TODO: update evidence annotations
+            # Change grounding
+            elif curation['update_type'] == 'factor_grounding':
+                role, txt, grounding = parse_factor_grounding_curation(curation)
+                # FIXME: It is not clear how compositional groundings will be
+                # represented in curations. This implementation assumes a single
+                # grounding entry to which we assign a score of 1.0
+                if role == 'subj':
+                    stmt.subj.concept.db_refs['WM'][0] = (grounding, 1.0)
+                elif role == 'obj':
+                    stmt.obj.concept.db_refs['WM'][0] = (grounding, 1.0)
+
 
     def deduplicate(self):
         for stmt in self.prepared_stmts:
@@ -160,3 +209,31 @@ class AssemblyDelta:
             'new_refinements': list(self.new_refinements),
             'beliefs': self.beliefs
         }
+
+
+def parse_factor_polarity_curation(cur):
+    bef_subj = cur['before']['subj']
+    bef_obj = cur['before']['obj']
+    aft_subj = cur['after']['subj']
+    aft_obj = cur['after']['obj']
+
+    if bef_subj['polarity'] != aft_subj['polarity']:
+        return 'subj', aft_subj['polarity']
+    elif bef_obj['polarity'] != aft_obj['polarity']:
+        return 'obj', aft_obj['polarity']
+    else:
+        return None, None
+
+
+def parse_factor_grounding_curation(cur):
+    bef_subj = cur['before']['subj']
+    bef_obj = cur['before']['obj']
+    aft_subj = cur['after']['subj']
+    aft_obj = cur['after']['obj']
+
+    if bef_subj['concept'] != aft_subj['concept']:
+        return 'subj', aft_subj['factor'], aft_subj['concept']
+    elif bef_obj['concept'] != aft_obj['concept']:
+        return 'obj', aft_obj['factor'], aft_obj['concept']
+    else:
+        return None, None, None
