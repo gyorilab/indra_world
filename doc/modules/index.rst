@@ -8,3 +8,4 @@ INDRA World Modules Reference
 
    assembly/index
    ontology/index
+   service/index
