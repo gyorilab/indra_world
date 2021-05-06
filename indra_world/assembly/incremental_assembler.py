@@ -1,14 +1,19 @@
+import logging
 from copy import deepcopy
 import networkx
 from collections import defaultdict
+from indra.pipeline import AssemblyPipeline
 from indra.belief import extend_refinements_graph
 from indra.preassembler.refinement import RefinementConfirmationFilter
 from indra_world.belief import get_eidos_scorer
 from indra_world.ontology import load_world_ontology
 from indra_world.assembly.operations import CompositionalRefinementFilter
 from indra_world.assembly.operations import \
-    location_matches_compositional, location_refinement_compositional
+    location_matches_compositional, location_refinement_compositional, \
+    add_flattened_grounding_compositional, standardize_names_compositional
 
+
+logger = logging.getLogger(__name__)
 
 comp_onto_url = 'https://raw.githubusercontent.com/WorldModelers/Ontologies/' \
                 'master/CompositionalOntology_v2.1_metadata.yml'
@@ -19,15 +24,43 @@ eidos_scorer = get_eidos_scorer()
 
 
 class IncrementalAssembler:
+    """Assemble a set of prepared statements and allow incremental extensions.
+
+    Parameters
+    ----------
+    prepared_stmts : list[indra.statements.Statement]
+        A list of prepared INDRA Statements.
+    refinement_filters : Optional[list[indra.preassembler.refinement.RefinementFilter]]
+        A list of refinement filter classes to be used for refinement
+        finding. Default: the standard set of compositional refinement filters.
+    matches_fun : Optional[function]
+        A custom matches function for determining matching statements and
+        calculating hashes. Default: matches function that takes
+        compositional grounding and location into account.
+    curations : list[dict]
+        A list of user curations to be integrated into the assembly results.
+    post_processing_steps : list[dict]
+        Steps that can be used in an INDRA AssemblyPipeline to do
+        post-processing on statements.
+
+    Attributes
+    ----------
+    refinement_edges : set
+        A set of tuples of statement hashes representing refinement links
+        between statements.
+    """
     def __init__(self, prepared_stmts,
                  refinement_filters=None,
-                 matches_fun=location_matches_compositional):
+                 matches_fun=location_matches_compositional,
+                 curations=None,
+                 post_processing_steps=None):
         self.matches_fun = matches_fun
         # These are preassembly data structures
         self.stmts_by_hash = {}
         self.evs_by_stmt_hash = {}
         self.refinement_edges = set()
         self.prepared_stmts = prepared_stmts
+        self.known_corrects = set()
 
         if not refinement_filters:
             crf = CompositionalRefinementFilter(ontology=world_ontology)
@@ -37,7 +70,15 @@ class IncrementalAssembler:
         else:
             self.refinement_filters = refinement_filters
 
+        self.curations = curations if curations else []
+        self.post_processing_steps = [
+                {'function': 'add_flattened_grounding_compositional'},
+                {'function': 'standardize_names_compositional'},
+            ] \
+            if post_processing_steps is None else post_processing_steps
+
         self.deduplicate()
+        self.apply_curations()
         self.get_refinements()
         self.refinements_graph = \
             self.build_refinements_graph(self.stmts_by_hash,
@@ -45,7 +86,79 @@ class IncrementalAssembler:
         self.belief_scorer = eidos_scorer
         self.beliefs = self.get_beliefs()
 
+    def apply_curations(self):
+        """Apply the set of curations to the de-duplicated statements."""
+        hashes_by_uuid = {stmt.uuid: sh
+                          for sh, stmt in self.stmts_by_hash.items()}
+        for curation in self.curations:
+            stmt_hash = hashes_by_uuid.get(curation['statement_id'])
+            if not stmt_hash:
+                continue
+            stmt = self.stmts_by_hash[stmt_hash]
+            # Remove the statement
+            if curation['update_type'] == 'discard_statement':
+                self.stmts_by_hash.pop(stmt_hash, None)
+                self.evs_by_stmt_hash.pop(stmt_hash, None)
+                # TODO: update belief model here
+            # Vet the statement
+            elif curation['update_type'] == 'vet_statement':
+                self.known_corrects.add(stmt_hash)
+                # TODO: update belief model here
+            # Flip the polarity
+            elif curation['update_type'] == 'factor_polarity':
+                role, new_pol = parse_factor_polarity_curation(curation)
+                if role == 'subj':
+                    stmt.subj.delta.polarity = new_pol
+                elif role == 'obj':
+                    stmt.obj.delta.polarity = new_pol
+                else:
+                    continue
+
+            # Flip subject/object
+            elif curation['update_type'] == 'reverse_relation':
+                tmp = stmt.subj
+                stmt.subj = stmt.obj
+                stmt.obj = tmp
+                # TODO: update evidence annotations
+            # Change grounding
+            elif curation['update_type'] == 'factor_grounding':
+                role, txt, grounding = parse_factor_grounding_curation(curation)
+                # FIXME: It is not clear how compositional groundings will be
+                # represented in curations. This implementation assumes a single
+                # grounding entry to which we assign a score of 1.0
+                if role == 'subj':
+                    stmt.subj.concept.db_refs['WM'][0] = (grounding, 1.0)
+                elif role == 'obj':
+                    stmt.obj.concept.db_refs['WM'][0] = (grounding, 1.0)
+            else:
+                logger.warning('Unknown curation type: %s' %
+                               curation['update_type'])
+
+            # We now update statement data structures in case the statement
+            # changed in a meaningful way
+            if curation['update_type'] in {'factor_polarity',
+                                           'reverse_relation',
+                                           'factor_grounding'}:
+                # First, calculate the new hash
+                new_hash = stmt.get_hash(matches_fun=self.matches_fun,
+                                         refresh=True)
+                # If we don't have a statement yet with this new hash, we
+                # move the statement and evidences from the old to the new hash
+                if new_hash not in self.stmts_by_hash:
+                    self.stmts_by_hash[new_hash] = \
+                        self.stmts_by_hash.pop(stmt_hash)
+                    self.evs_by_stmt_hash[new_hash] = \
+                        self.evs_by_stmt_hash.pop(stmt_hash)
+                # If there is already a statement with the new hash, we leave
+                # that as is in stmts_by_hash, and then extend evs_by_stmt_hash
+                # with the evidences of the curated statement.
+                else:
+                    self.evs_by_stmt_hash[new_hash] += \
+                        self.evs_by_stmt_hash.pop(stmt_hash)
+
     def deduplicate(self):
+        """Build hash-based statement and evidence data structures to
+        deduplicate."""
         for stmt in self.prepared_stmts:
             stmt_hash = stmt.get_hash(matches_fun=self.matches_fun)
             evs = stmt.evidence
@@ -61,6 +174,8 @@ class IncrementalAssembler:
             self.evs_by_stmt_hash[stmt_hash] += evs
 
     def get_refinements(self):
+        """Calculate refinement relationships between de-duplicated statements.
+        """
         for filter in self.refinement_filters:
             filter.initialize(self.stmts_by_hash)
         for sh, stmt in self.stmts_by_hash.items():
@@ -72,15 +187,31 @@ class IncrementalAssembler:
             refinement_edges = {(ref, sh) for ref in refinements}
             self.refinement_edges |= refinement_edges
 
-    def build_refinements_graph(self, stmts_by_hash, refinement_edges):
+    @staticmethod
+    def build_refinements_graph(stmts_by_hash, refinement_edges):
+        """Return a refinements graph based on statements and refinement edges.
+        """
         g = networkx.DiGraph()
-        nodes = [(sh, {'stmt': stmt})
-                 for sh, stmt in stmts_by_hash.items()]
+        nodes = [(sh, {'stmt': stmt}) for sh, stmt in stmts_by_hash.items()]
         g.add_nodes_from(nodes)
         g.add_edges_from(refinement_edges)
         return g
 
     def add_statements(self, stmts):
+        """Add new statements for incremental assembly.
+
+        Parameters
+        ----------
+        stmts : list[indra.statements.Statement]
+            A list of new prepared statements to be incrementally assembled
+            into the set of existing statements.
+
+        Returns
+        -------
+        AssemblyDelta
+            An AssemblyDelta object representing the changes to the assembly
+            as a result of the new added statements.
+        """
         # We fist organize statements by hash
         stmts_by_hash = defaultdict(list)
         for stmt in stmts:
@@ -101,6 +232,12 @@ class IncrementalAssembler:
                     new_evidences[sh].append(ev)
                     self.evs_by_stmt_hash[sh].append(ev)
         new_evidences = dict(new_evidences)
+        # Here we run some post-processing steps on the new statements
+        ap = AssemblyPipeline(steps=self.post_processing_steps)
+        # NOTE: the assumption here is that the processing steps modify the
+        # statement objects directly, this could be modified to return
+        # statements that are then set in the hash-keyed dict
+        ap.run(list(new_stmts.values()))
 
         # Next we extend refinements and re-calculate beliefs
         for filter in self.refinement_filters:
@@ -122,29 +259,58 @@ class IncrementalAssembler:
                              beliefs)
 
     def get_all_supporting_evidence(self, sh):
+        """Return direct and incirect evidence for a statement hash."""
         all_evs = set(self.evs_by_stmt_hash[sh])
         for supp in networkx.descendants(self.refinements_graph, sh):
             all_evs |= set(self.evs_by_stmt_hash[supp])
         return all_evs
 
     def get_beliefs(self):
+        """Calculate and return beliefs for all statements."""
         self.beliefs = {}
         for sh, evs in self.evs_by_stmt_hash.items():
-            self.beliefs[sh] = self.belief_scorer.score_evidence_list(
-                self.get_all_supporting_evidence(sh))
+            if sh in self.known_corrects:
+                self.beliefs[sh] = 1
+                # TODO: should we propagate this belief to all the less
+                # specific statements? One option is to add those statements'
+                # hashes to the known_corrects list and then at this point
+                # we won't need any special handling.
+            else:
+                self.beliefs[sh] = self.belief_scorer.score_evidence_list(
+                    self.get_all_supporting_evidence(sh))
         return self.beliefs
 
     def get_statements(self):
+        """Return a flat list of statements with their evidences."""
         stmts = []
         for sh, stmt in deepcopy(self.stmts_by_hash).items():
             stmt.evidence = self.evs_by_stmt_hash.get(sh, [])
             stmt.belief = self.beliefs[sh]
             stmts.append(stmt)
         # TODO: add refinement edges as supports/supported_by?
+        # Here we run some post-processing steps on the statements
+        ap = AssemblyPipeline(steps=self.post_processing_steps)
+        stmts = ap.run(stmts)
         return stmts
 
 
 class AssemblyDelta:
+    """Represents changes to the assembly structure as a result of new
+    statements added to a set of existing statements.
+
+    Attributes
+    ----------
+    new_stmts : dict[str, indra.statements.Statement]
+        A dict of new statement keyed by hash.
+    new_evidences : dict[str, indra.statements.Evidence]
+        A dict of new evidences for existing or new statements keyed
+        by statement hash.
+    new_refinements: list[tuple]
+        A list of statement hash pairs representing new refinement links.
+    beliefs : dict[str, float]
+        A dict of belief scores keyed by all statement hashes (both old and
+        new).
+    """
     def __init__(self, new_stmts, new_evidences, new_refinements, beliefs):
         self.new_stmts = new_stmts
         self.new_evidences = new_evidences
@@ -152,6 +318,7 @@ class AssemblyDelta:
         self.beliefs = beliefs
 
     def to_json(self):
+        """Return a JSON representation of the assembly delta."""
         return {
             'new_stmts': {sh: stmt.to_json()
                           for sh, stmt in self.new_stmts.items()},
@@ -160,3 +327,33 @@ class AssemblyDelta:
             'new_refinements': list(self.new_refinements),
             'beliefs': self.beliefs
         }
+
+
+def parse_factor_polarity_curation(cur):
+    """Parse details from a curation that changes an event's polarity."""
+    bef_subj = cur['before']['subj']
+    bef_obj = cur['before']['obj']
+    aft_subj = cur['after']['subj']
+    aft_obj = cur['after']['obj']
+
+    if bef_subj['polarity'] != aft_subj['polarity']:
+        return 'subj', aft_subj['polarity']
+    elif bef_obj['polarity'] != aft_obj['polarity']:
+        return 'obj', aft_obj['polarity']
+    else:
+        return None, None
+
+
+def parse_factor_grounding_curation(cur):
+    """Parse details from a curation that changes a concept's grounding."""
+    bef_subj = cur['before']['subj']
+    bef_obj = cur['before']['obj']
+    aft_subj = cur['after']['subj']
+    aft_obj = cur['after']['obj']
+
+    if bef_subj['concept'] != aft_subj['concept']:
+        return 'subj', aft_subj['factor'], aft_subj['concept']
+    elif bef_obj['concept'] != aft_obj['concept']:
+        return 'obj', aft_obj['factor'], aft_obj['concept']
+    else:
+        return None, None, None

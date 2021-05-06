@@ -1,3 +1,5 @@
+import copy
+
 from indra.statements import Influence, Event, Concept, Evidence
 from indra_world.assembly.incremental_assembler import \
     IncrementalAssembler, AssemblyDelta
@@ -93,3 +95,23 @@ def test_incremental_assembler_add_statement_new_refinement():
     assert set(ia.get_all_supporting_evidence(s1h)) == {ev1, ev2, ev4}
     assert set(ia.get_all_supporting_evidence(s2h)) == {ev2, ev4}
     assert set(ia.get_all_supporting_evidence(s4h)) == {ev4}
+
+
+def test_post_processing_all_stmts():
+    stmts = copy.deepcopy([s1, s2])
+    ia = IncrementalAssembler(stmts)
+    stmts_out = ia.get_statements()
+    assert stmts_out[0].subj.concept.name == 'agriculture'
+    flat_grounding = [{'grounding': 'wm/concept/agriculture',
+                       'name': 'agriculture', 'score': 1.0}]
+    assert stmts_out[0].subj.concept.db_refs['WM_FLAT'] == \
+        flat_grounding, flat_grounding
+
+
+def test_post_processing_new_stmts():
+    stmts = copy.deepcopy([s1, s2])
+    ia = IncrementalAssembler([stmts[0]])
+    delta = ia.add_statements([stmts[1]])
+    assert len(delta.new_stmts) == 1
+    stmt = list(delta.new_stmts.values())[0]
+    assert stmt.subj.concept.name == 'crop'
