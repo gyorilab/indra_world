@@ -161,7 +161,7 @@ def test_cwms_process_text():
     sc.db = DbManager(url='sqlite:///:memory:')
     sc.db.create_all()
 
-    res_json = _call_api('post', '/cwms/process_text',
+    res_json = _call_api('post', 'sources/cwms/process_text',
                          json={'text': 'Hunger causes displacement.'})
     stmts_json = res_json.get('statements')
     stmts = stmts_from_json(stmts_json)
@@ -175,7 +175,7 @@ def test_hume_process_jsonld():
 
     with open(test_file_new_simple, 'r') as fh:
         test_jsonld = fh.read()
-    res_json = _call_api('post', '/hume/process_jsonld',
+    res_json = _call_api('post', 'sources/hume/process_jsonld',
                          json={'jsonld': test_jsonld})
     stmts_json = res_json.get('statements')
     stmts = stmts_from_json(stmts_json)
@@ -188,7 +188,7 @@ def test_eidos_json():
 
     with open(test_jsonld, 'r') as fh:
         jsonld = fh.read()
-    res_json = _call_api('post', '/eidos/process_jsonld',
+    res_json = _call_api('post', 'sources/eidos/process_jsonld',
                          json={'jsonld': jsonld})
     stmts_json = res_json.get('statements')
     stmts = stmts_from_json(stmts_json)
@@ -198,7 +198,7 @@ def test_eidos_json():
     assert len(stmt.obj.concept.db_refs) > 2
 
     # Grounding NS
-    res_json = _call_api('post', '/eidos/process_jsonld',
+    res_json = _call_api('post', 'sources/eidos/process_jsonld',
                          json={'jsonld': jsonld, 'grounding_ns': ['UN']})
     stmts_json = res_json.get('statements')
     stmts = stmts_from_json(stmts_json)
@@ -208,13 +208,13 @@ def test_eidos_json():
     assert set(stmt.obj.concept.db_refs.keys()) == {'TEXT', 'UN'}
 
     # Extract filter
-    res_json = _call_api('post', '/eidos/process_jsonld',
+    res_json = _call_api('post', 'sources/eidos/process_jsonld',
                          json={'jsonld': jsonld,
                                'extract_filter': ['influence']})
     stmts_json = res_json.get('statements')
     stmts = stmts_from_json(stmts_json)
     assert len(stmts) == 1
-    res_json = _call_api('post', '/eidos/process_jsonld',
+    res_json = _call_api('post', 'sources/eidos/process_jsonld',
                          json={'jsonld': jsonld,
                                'extract_filter': ['event']})
     stmts_json = res_json.get('statements')
@@ -224,7 +224,7 @@ def test_eidos_json():
     # Grounding mode
     with open(_get_data_file('eidos_compositional.jsonld'), 'r') as fh:
         jsonld = fh.read()
-    res_json = _call_api('post', '/eidos/process_jsonld',
+    res_json = _call_api('post', 'sources/eidos/process_jsonld',
                          json={'jsonld': jsonld,
                                'grounding_mode': 'compositional'})
     stmts_json = res_json.get('statements')
@@ -239,7 +239,7 @@ def test_sofia_json():
 
     with open(_get_data_file('sofia_test.json'), 'r') as fh:
         test_json = fh.read()
-    res_json = _call_api('post', '/sofia/process_json',
+    res_json = _call_api('post', 'sources/sofia/process_json',
                          json={'json': test_json})
     stmts_json = res_json.get('statements')
     stmts = stmts_from_json(stmts_json)
@@ -248,7 +248,7 @@ def test_sofia_json():
     assert isinstance(stmts[1], Event)
 
     # Extract filter
-    res_json = _call_api('post', '/sofia/process_json',
+    res_json = _call_api('post', 'sources/sofia/process_json',
                          json={'json': test_json,
                                'extract_filter': ['influence']})
     stmts_json = res_json.get('statements')
@@ -259,7 +259,7 @@ def test_sofia_json():
     # Grounding mode
     with open(_get_data_file('sofia_test_comp_no_causal.json'), 'r') as fh:
         test_json = fh.read()
-    res_json = _call_api('post', '/sofia/process_json',
+    res_json = _call_api('post', 'sources/sofia/process_json',
                          json={'json': test_json,
                                'grounding_mode': 'compositional'})
     stmts_json = res_json.get('statements')

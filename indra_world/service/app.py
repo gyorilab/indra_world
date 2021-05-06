@@ -35,7 +35,7 @@ assembly_ns = api.namespace('Assembly endpoints',
                             path='/assembly')
 sources_ns = api.namespace('Sources endpoints',
                            'Sources endpoints',
-                           path='/')
+                           path='/sources')
 
 # Models
 dict_model = api.model('dict', {})
