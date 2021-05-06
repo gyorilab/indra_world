@@ -33,8 +33,8 @@ dart_ns = api.namespace('DART endpoints',
 assembly_ns = api.namespace('Assembly endpoints',
                             'Assembly endpoints',
                             path='/assembly')
-readers_ns = api.namespace('Readers endpoints',
-                           'Readers endpoints',
+sources_ns = api.namespace('Sources endpoints',
+                           'Sources endpoints',
                            path='/')
 
 # Models
@@ -340,8 +340,8 @@ class GetProjectCurations(Resource):
 
 
 # Hume
-@readers_ns.expect(jsonld_model)
-@readers_ns.route('/hume/process_jsonld')
+@sources_ns.expect(jsonld_model)
+@sources_ns.route('/hume/process_jsonld')
 class HumeProcessJsonld(Resource):
     @api.doc(False)
     def options(self):
@@ -368,8 +368,8 @@ class HumeProcessJsonld(Resource):
 
 
 # CWMS
-@readers_ns.expect(wm_text_model)
-@readers_ns.route('/cwms/process_text')
+@sources_ns.expect(wm_text_model)
+@sources_ns.route('/cwms/process_text')
 class CwmsProcessText(Resource):
     @api.doc(False)
     def options(self):
@@ -395,8 +395,8 @@ class CwmsProcessText(Resource):
 
 
 # Hide docs until webservice is available
-@readers_ns.expect(eidos_text_model)
-@readers_ns.route('/eidos/process_text', doc=False)
+@sources_ns.expect(eidos_text_model)
+@sources_ns.route('/eidos/process_text', doc=False)
 class EidosProcessText(Resource):
     @api.doc(False)
     def options(self):
@@ -450,8 +450,8 @@ class EidosProcessText(Resource):
         return _stmts_from_proc(ep)
 
 
-@readers_ns.expect(jsonld_model)
-@readers_ns.route('/eidos/process_jsonld')
+@sources_ns.expect(jsonld_model)
+@sources_ns.route('/eidos/process_jsonld')
 class EidosProcessJsonld(Resource):
     @api.doc(False)
     def options(self):
@@ -498,8 +498,8 @@ class EidosProcessJsonld(Resource):
         return _stmts_from_proc(ep)
 
 
-@readers_ns.expect(sofia_json_model)
-@readers_ns.route('/sofia/process_json')
+@sources_ns.expect(sofia_json_model)
+@sources_ns.route('/sofia/process_json')
 class SofiaProcessJson(Resource):
     @api.doc(False)
     def options(self):
