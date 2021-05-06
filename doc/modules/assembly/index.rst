@@ -1,5 +1,5 @@
-Assembly (:py:mod:`indra_world.assembly`)
-===========================================
+Assembly Module (:py:mod:`indra_world.assembly`)
+================================================
 
 .. automodule:: indra_world.assembly
     :members:
