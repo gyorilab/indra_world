@@ -10,7 +10,6 @@ INDRA World
    :maxdepth: 3
 
    service.rst
-   modules.rst
    modules/index
 
 
