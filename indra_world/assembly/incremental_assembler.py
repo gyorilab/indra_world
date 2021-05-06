@@ -1,3 +1,4 @@
+import logging
 from copy import deepcopy
 import networkx
 from collections import defaultdict
@@ -9,6 +10,8 @@ from indra_world.assembly.operations import CompositionalRefinementFilter
 from indra_world.assembly.operations import \
     location_matches_compositional, location_refinement_compositional
 
+
+logger = logging.getLogger(__name__)
 
 comp_onto_url = 'https://raw.githubusercontent.com/WorldModelers/Ontologies/' \
                 'master/CompositionalOntology_v2.1_metadata.yml'
@@ -76,6 +79,7 @@ class IncrementalAssembler:
                     stmt.obj.delta.polarity = new_pol
                 else:
                     continue
+
             # Flip subject/object
             elif curation['update_type'] == 'reverse_relation':
                 tmp = stmt.subj
@@ -92,6 +96,31 @@ class IncrementalAssembler:
                     stmt.subj.concept.db_refs['WM'][0] = (grounding, 1.0)
                 elif role == 'obj':
                     stmt.obj.concept.db_refs['WM'][0] = (grounding, 1.0)
+            else:
+                logger.warning('Unknown curation type: %s' %
+                               curation['update_type'])
+
+            # We now update statement data structures in case the statement
+            # changed in a meaningful way
+            if curation['update_type'] in {'factor_polarity',
+                                           'reverse_relation',
+                                           'factor_grounding'}:
+                # First, calculate the new hash
+                new_hash = stmt.get_hash(matches_fun=self.matches_fun,
+                                         refresh=True)
+                # If we don't have a statement yet with this new hash, we
+                # move the statement and evidences from the old to the new hash
+                if new_hash not in self.stmts_by_hash:
+                    self.stmts_by_hash[new_hash] = \
+                        self.stmts_by_hash.pop(stmt_hash)
+                    self.evs_by_stmt_hash[new_hash] = \
+                        self.evs_by_stmt_hash.pop(stmt_hash)
+                # If there is already a statement with the new hash, we leave
+                # that as is in stmts_by_hash, and then extend evs_by_stmt_hash
+                # with the evidences of the curated statement.
+                else:
+                    self.evs_by_stmt_hash[new_hash] += \
+                        self.evs_by_stmt_hash.pop(stmt_hash)
 
     def deduplicate(self):
         for stmt in self.prepared_stmts:
