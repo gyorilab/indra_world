@@ -1,11 +1,13 @@
 World Modelers INDRA service stack
 ==================================
 
+
 .. _wm-service-endpoints:
 
 Using the API
 -------------
 The API is documented at `wm.indra.bio <http://wm.indra.bio/>`_.
+
 
 .. _wm-service-s3:
 
@@ -155,5 +157,3 @@ The file content should look like this:
 
 Replace :code:`<aws_access_key_id>` and :code:`<aws_secret_access_key>` with
 your aws access and secret keys.
-
-
