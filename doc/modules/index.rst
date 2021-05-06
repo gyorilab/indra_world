@@ -8,6 +8,7 @@ INDRA World Modules Reference
 
    assemblers/index
    assembly/index
+   dashboard/index
    ontology/index
    service/index
    belief
