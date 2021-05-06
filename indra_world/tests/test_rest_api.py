@@ -2,6 +2,7 @@ import os
 import json
 from nose.tools import raises
 from datetime import datetime
+from indra.statements import stmts_from_json
 from indra_world.service.app import api
 from indra_world.service.app import sc
 from indra_world.sources.dart import DartClient
@@ -154,6 +155,47 @@ def test_curations():
                     json=dict(project_id='p1'))
     assert len(res) == 1
     assert res[0] == curation
+
+
+def test_cwms_process_text():
+    sc.db = DbManager(url='sqlite:///:memory:')
+    sc.db.create_all()
+
+    res = _call_api('post', '/cwms/process_text',
+                    json={'text': 'Hunger causes displacement.'})
+    res_json = json.loads(res)
+    stmts_json = res_json.get('statements')
+    stmts = stmts_from_json(stmts_json)
+    assert len(stmts) == 1
+
+
+def test_hume_process_jsonld():
+    from indra_world.tests.test_hume import test_file_new_simple
+    sc.db = DbManager(url='sqlite:///:memory:')
+    sc.db.create_all()
+
+    with open(test_file_new_simple, 'r') as fh:
+        test_jsonld = fh.read()
+    res = _call_api('post', '/hume/process_jsonld',
+                    json={'jsonld': test_jsonld})
+    res_json = json.loads(res)
+    stmts_json = res_json.get('statements')
+    stmts = stmts_from_json(stmts_json)
+    assert len(stmts) == 1
+
+def test_eidos_json():
+    from indra_world.tests.test_eidos import test_jsonld as test_file
+    sc.db = DbManager(url='sqlite:///:memory:')
+    sc.db.create_all()
+
+    with open(test_file, 'r') as fh:
+        test_jsonld = fh.read()
+    res = _call_api('post', '/eidos/process_jsonld',
+                    json={'jsonld': test_jsonld})
+    res_json = json.loads(res)
+    stmts_json = res_json.get('statements')
+    stmts = stmts_from_json(stmts_json)
+    assert len(stmts) == 1
 
 
 """
