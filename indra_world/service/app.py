@@ -1,9 +1,12 @@
 import logging
+import json
 from indra.config import get_config
+from indra.statements import stmts_to_json
 from flask import Flask, request, abort
 from flask_restx import Api, Resource, fields
 from .controller import ServiceController
 from ..sources.dart import DartClient
+from ..sources import hume, cwms, sofia, eidos
 
 logger = logging.getLogger('indra_world.service.app')
 
@@ -30,6 +33,9 @@ dart_ns = api.namespace('DART endpoints',
 assembly_ns = api.namespace('Assembly endpoints',
                             'Assembly endpoints',
                             path='/assembly')
+readers_ns = api.namespace('Readers endpoints',
+                           'Readers endpoints',
+                           path='/')
 
 # Models
 dict_model = api.model('dict', {})
@@ -87,6 +93,45 @@ new_project_model = api.model(
      'corpus_id': fields.String(example='corpus1', required=False)
      }
 )
+
+wm_text_model = api.model(
+    'WMText',
+    {'text': fields.String(example='Rainfall causes floods.')})
+
+jsonld_model = api.model(
+    'jsonld',
+    {'jsonld': fields.String(example='{}')})
+
+eidos_text_model = api.inherit('EidosText', wm_text_model, {
+    'webservice': fields.String,
+    'grounding_ns': fields.List(fields.String(example=['WM']), required=False),
+    'extract_filter': fields.List(fields.String(example=['Influence']),
+                                  required=False),
+    'grounding_mode': fields.String(example='flat', required=False)
+})
+
+eidos_jsonld_model = api.inherit('EidosJson', jsonld_model, {
+    'grounding_ns': fields.List(fields.String(example=['WM']), required=False),
+    'extract_filter': fields.List(fields.String(example=['Influence']),
+                                  required=False),
+    'grounding_mode': fields.String(example='flat', required=False)    
+})
+
+sofia_json_model = api.model(
+    'json',
+    {'json': fields.String(example='{}'),
+     'extract_filter': fields.List(fields.String(example=['Influence']),
+                                   required=False),
+     'grounding_mode': fields.String(example='flat', required=False)  
+    })
+
+def _stmts_from_proc(proc):
+    if proc and proc.statements:
+        stmts = stmts_to_json(proc.statements)
+        res = {'statements': stmts}
+    else:
+        res = {'statements': []}
+    return res
 
 
 # Endpoints to implement
@@ -214,6 +259,205 @@ class GetProjectCurations(Resource):
         project_id = request.json.get('project_id')
         curations = sc.get_project_curations(project_id)
         return curations
+
+
+# Hume
+@readers_ns.expect(jsonld_model)
+@readers_ns.route('/hume/process_jsonld')
+class HumeProcessJsonld(Resource):
+    @api.doc(False)
+    def options(self):
+        return {}
+
+    def post(self):
+        """Process Hume JSON-LD and return INDRA Statements.
+
+        Parameters
+        ----------
+        jsonld : str
+            The JSON-LD string to be processed.
+
+        Returns
+        -------
+        statements : list[indra.statements.Statement.to_json()]
+            A list of extracted INDRA Statements.
+        """
+        args = request.json
+        jsonld_str = args.get('jsonld')
+        jsonld = json.loads(jsonld_str)
+        hp = hume.process_jsonld(jsonld)
+        return _stmts_from_proc(hp)
+
+
+# CWMS
+@readers_ns.expect(wm_text_model)
+@readers_ns.route('/cwms/process_text')
+class CwmsProcessText(Resource):
+    @api.doc(False)
+    def options(self):
+        return {}
+
+    def post(self):
+        """Process text with CWMS and return INDRA Statements.
+
+        Parameters
+        ----------
+        text : str
+            Text to process
+
+        Returns
+        -------
+        statements : list[indra.statements.Statement.to_json()]
+            A list of extracted INDRA Statements.
+        """
+        args = request.json
+        text = args.get('text')
+        cp = cwms.process_text(text)
+        return _stmts_from_proc(cp)
+
+
+# Hide docs until webservice is available
+@readers_ns.expect(eidos_text_model)
+@readers_ns.route('/eidos/process_text', doc=False)
+class EidosProcessText(Resource):
+    @api.doc(False)
+    def options(self):
+        return {}
+
+    def post(self):
+        """Process text with EIDOS and return INDRA Statements.
+
+        Parameters
+        ----------
+        text : str
+            The text to be processed.
+
+        webservice : Optional[str]
+            An Eidos reader web service URL to send the request to.
+            If None, the reading is assumed to be done with the Eidos JAR
+            rather than via a web service. Default: None
+
+        grounding_ns : Optional[list]
+            A list of name spaces for which INDRA should represent groundings, 
+            when given. If not specified or None, all grounding name spaces are
+            propagated. If an empty list, no groundings are propagated.
+            Example: ['UN', 'WM'], Default: None
+
+        extract_filter : Optional[list]
+            A list of relation types to extract. Valid values in the list are
+            'influence', 'association', 'event'. If not given, all relation
+            types are extracted. This argument can be used if, for instance,
+            only Influence statements are of interest. Default: None
+
+        grounding_mode : Optional[str]
+            Selects whether 'flat' or 'compositional' groundings should be
+            extracted. Default: 'flat'.
+
+        Returns
+        -------
+        statements : list[indra.statements.Statement.to_json()]
+            A list of extracted INDRA Statements.
+        """
+        args = request.json
+        text = args.get('text')
+        webservice = args.get('webservice')
+        if not webservice:
+            abort(400, 'No web service address provided.')
+        grounding_ns = args.get('grounding_ns')
+        extract_filter = args.get('extract_filter')
+        grounding_mode = args.get('grounding_mode')
+        ep = eidos.process_text(
+            text, webservice=webservice, grounding_ns=grounding_ns,
+            extract_filter=extract_filter, grounding_mode=grounding_mode)
+        return _stmts_from_proc(ep)
+
+
+@readers_ns.expect(jsonld_model)
+@readers_ns.route('/eidos/process_jsonld')
+class EidosProcessJsonld(Resource):
+    @api.doc(False)
+    def options(self):
+        return {}
+
+    def post(self):
+        """Process an EIDOS JSON-LD and return INDRA Statements.
+
+        Parameters
+        ----------
+        jsonld : str
+            The JSON-LD string to be processed.
+
+        grounding_ns : Optional[list]
+            A list of name spaces for which INDRA should represent groundings, 
+            when given. If not specified or None, all grounding name spaces are
+            propagated. If an empty list, no groundings are propagated.
+            Example: ['UN', 'WM'], Default: None
+
+        extract_filter : Optional[list]
+            A list of relation types to extract. Valid values in the list are
+            'influence', 'association', 'event'. If not given, all relation
+            types are extracted. This argument can be used if, for instance,
+            only Influence statements are of interest. Default: None
+
+        grounding_mode : Optional[str]
+            Selects whether 'flat' or 'compositional' groundings should be
+            extracted. Default: 'flat'.
+
+        Returns
+        -------
+        statements : list[indra.statements.Statement.to_json()]
+            A list of extracted INDRA Statements.
+        """
+        args = request.json
+        eidos_json = args.get('jsonld')
+        grounding_ns = args.get('grounding_ns')
+        extract_filter = args.get('extract_filter')
+        grounding_mode = args.get('grounding_mode')
+        jj = json.loads(eidos_json)
+        ep = eidos.process_json(
+            jj, grounding_ns=grounding_ns, extract_filter=extract_filter,
+            grounding_mode=grounding_mode)
+        return _stmts_from_proc(ep)
+
+
+@readers_ns.expect(sofia_json_model)
+@readers_ns.route('/sofia/process_json')
+class SofiaProcessJson(Resource):
+    @api.doc(False)
+    def options(self):
+        return {}
+
+    def post(self):
+        """Process a Sofia JSON and return INDRA Statements.
+
+        Parameters
+        ----------
+        json : str
+            The JSON string to be processed.
+
+        extract_filter : Optional[list]
+            A list of relation types to extract. Valid values in the list are
+            'influence', 'association', 'event'. If not given, all relation
+            types are extracted. This argument can be used if, for instance,
+            only Influence statements are of interest. Default: None
+
+        grounding_mode : Optional[str]
+            Selects whether 'flat' or 'compositional' groundings should be
+            extracted. Default: 'flat'.
+
+        Returns
+        -------
+        statements : list[indra.statements.Statement.to_json()]
+            A list of extracted INDRA Statements.
+        """
+        args = request.json
+        sofia_json = args.get('json')
+        extract_filter = args.get('extract_filter')
+        grounding_mode = args.get('grounding_mode')
+        jj = json.loads(sofia_json)
+        ep = sofia.process_json(
+            jj, extract_filter=extract_filter, grounding_mode=grounding_mode)
+        return _stmts_from_proc(ep)
 
 
 if __name__ == '__main__':
