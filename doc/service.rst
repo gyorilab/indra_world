@@ -11,7 +11,7 @@ The API is documented at `wm.indra.bio <http://wm.indra.bio/>`_.
 
 INDRA assemblies on S3
 ----------------------
-Access to the INDRA-assembled corpora requires credentails to the shared
+Access to the INDRA-assembled corpora requires credentials to the shared
 World Modelers S3 bucket "world-modelers". Each INDRA-assembled corpus is
 available within this bucket, under the "indra_models" key base. Each corpus
 is identified by a string identifier ("corpus_id" in the requests above).
