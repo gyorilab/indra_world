@@ -7,3 +7,4 @@ INDRA World Sources (:py:mod:`indra_world.sources`)
    cwms
    dart
    eidos
+   hume
