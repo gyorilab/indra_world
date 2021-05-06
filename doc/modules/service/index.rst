@@ -1,7 +1,7 @@
 Indra World Service (:py:mod:`indra_world.service`)
 ===================================================
 
-_Note:_ This is the documentation of the codebase use in the INDRA World
+_Note:_ This is the documentation of the codebase used in the INDRA World
 service. Documentation of the service API can be found
 `here <http://wm.indra.bio/>`_.
 
