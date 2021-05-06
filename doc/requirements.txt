@@ -1,4 +1,5 @@
 sphinx
 sphinx_rtd_theme
 pyyaml
-indra
+git+https://github.com/sorgerlab/indra.git
+openpyxl
