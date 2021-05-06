@@ -8,3 +8,4 @@ INDRA World Sources (:py:mod:`indra_world.sources`)
    dart
    eidos
    hume
+   sofia
