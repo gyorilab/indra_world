@@ -93,7 +93,6 @@ class IncrementalAssembler:
                 elif role == 'obj':
                     stmt.obj.concept.db_refs['WM'][0] = (grounding, 1.0)
 
-
     def deduplicate(self):
         for stmt in self.prepared_stmts:
             stmt_hash = stmt.get_hash(matches_fun=self.matches_fun)
@@ -123,8 +122,7 @@ class IncrementalAssembler:
 
     def build_refinements_graph(self, stmts_by_hash, refinement_edges):
         g = networkx.DiGraph()
-        nodes = [(sh, {'stmt': stmt})
-                 for sh, stmt in stmts_by_hash.items()]
+        nodes = [(sh, {'stmt': stmt}) for sh, stmt in stmts_by_hash.items()]
         g.add_nodes_from(nodes)
         g.add_edges_from(refinement_edges)
         return g
@@ -179,8 +177,15 @@ class IncrementalAssembler:
     def get_beliefs(self):
         self.beliefs = {}
         for sh, evs in self.evs_by_stmt_hash.items():
-            self.beliefs[sh] = self.belief_scorer.score_evidence_list(
-                self.get_all_supporting_evidence(sh))
+            if sh in self.known_corrects:
+                self.beliefs[sh] = 1
+                # TODO: should we propagate this belief to all the less
+                # specific statements? One option is to add those statements'
+                # hashes to the known_corrects list and then at this point
+                # we won't need any special handling.
+            else:
+                self.beliefs[sh] = self.belief_scorer.score_evidence_list(
+                    self.get_all_supporting_evidence(sh))
         return self.beliefs
 
     def get_statements(self):
