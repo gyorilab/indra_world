@@ -24,6 +24,24 @@ eidos_scorer = get_eidos_scorer()
 
 
 class IncrementalAssembler:
+    """Assemble a set of prepared statements and allow incremental extensions.
+
+    Parameters
+    ----------
+    prepared_stmts : list[indra.statements.Statement]
+        A list of prepared INDRA Statements.
+    refinement_filters : list[indra.preassembler.refinement.RefinementFilter]
+        A list of refinement filter classes to be used for refinement
+        finding.
+    curations : list[dict]
+        A list of user curations to be integrated into the assembly results.
+
+    Attributes
+    ----------
+    refinement_edges : set
+        A set of tuples of statement hashes representing refinement links
+        between statements.
+    """
     def __init__(self, prepared_stmts,
                  refinement_filters=None,
                  matches_fun=location_matches_compositional,
@@ -62,6 +80,7 @@ class IncrementalAssembler:
         self.beliefs = self.get_beliefs()
 
     def apply_curations(self):
+        """Apply the set of curations to the de-duplicated statements."""
         hashes_by_uuid = {stmt.uuid: sh
                           for sh, stmt in self.stmts_by_hash.items()}
         for curation in self.curations:
@@ -131,6 +150,8 @@ class IncrementalAssembler:
                         self.evs_by_stmt_hash.pop(stmt_hash)
 
     def deduplicate(self):
+        """Build hash-based statement and evidence data structures to
+        deduplicate."""
         for stmt in self.prepared_stmts:
             stmt_hash = stmt.get_hash(matches_fun=self.matches_fun)
             evs = stmt.evidence
@@ -146,6 +167,8 @@ class IncrementalAssembler:
             self.evs_by_stmt_hash[stmt_hash] += evs
 
     def get_refinements(self):
+        """Calculate refinement relationships between de-duplicated statements.
+        """
         for filter in self.refinement_filters:
             filter.initialize(self.stmts_by_hash)
         for sh, stmt in self.stmts_by_hash.items():
@@ -157,7 +180,10 @@ class IncrementalAssembler:
             refinement_edges = {(ref, sh) for ref in refinements}
             self.refinement_edges |= refinement_edges
 
-    def build_refinements_graph(self, stmts_by_hash, refinement_edges):
+    @staticmethod
+    def build_refinements_graph(stmts_by_hash, refinement_edges):
+        """Return a refinements graph based on statements and refinement edges.
+        """
         g = networkx.DiGraph()
         nodes = [(sh, {'stmt': stmt}) for sh, stmt in stmts_by_hash.items()]
         g.add_nodes_from(nodes)
@@ -165,6 +191,20 @@ class IncrementalAssembler:
         return g
 
     def add_statements(self, stmts):
+        """Add new statements for incremental assembly.
+
+        Parameters
+        ----------
+        stmts : list[indra.statements.Statement]
+            A list of new prepared statements to be incrementally assembled
+            into the set of existing statements.
+
+        Returns
+        -------
+        AssemblyDelta
+            An AssemblyDelta object representing the changes to the assembly
+            as a result of the new added statements.
+        """
         # We fist organize statements by hash
         stmts_by_hash = defaultdict(list)
         for stmt in stmts:
@@ -212,12 +252,14 @@ class IncrementalAssembler:
                              beliefs)
 
     def get_all_supporting_evidence(self, sh):
+        """Return direct and incirect evidence for a statement hash."""
         all_evs = set(self.evs_by_stmt_hash[sh])
         for supp in networkx.descendants(self.refinements_graph, sh):
             all_evs |= set(self.evs_by_stmt_hash[supp])
         return all_evs
 
     def get_beliefs(self):
+        """Calculate and return beliefs for all statements."""
         self.beliefs = {}
         for sh, evs in self.evs_by_stmt_hash.items():
             if sh in self.known_corrects:
@@ -232,6 +274,7 @@ class IncrementalAssembler:
         return self.beliefs
 
     def get_statements(self):
+        """Return a flat list of statements with their evidences."""
         stmts = []
         for sh, stmt in deepcopy(self.stmts_by_hash).items():
             stmt.evidence = self.evs_by_stmt_hash.get(sh, [])
@@ -245,6 +288,22 @@ class IncrementalAssembler:
 
 
 class AssemblyDelta:
+    """Represents changes to the assembly structure as a result of new
+    statements added to a set of existing statements.
+
+    Attributes
+    ----------
+    new_stmts : dict[str, indra.statements.Statement]
+        A dict of new statement keyed by hash.
+    new_evidences : dict[str, indra.statements.Evidence]
+        A dict of new evidences for existing or new statements keyed
+        by statement hash.
+    new_refinements: list[tuple]
+        A list of statement hash pairs representing new refinement links.
+    beliefs : dict[str, float]
+        A dict of belief scores keyed by all statement hashes (both old and
+        new).
+    """
     def __init__(self, new_stmts, new_evidences, new_refinements, beliefs):
         self.new_stmts = new_stmts
         self.new_evidences = new_evidences
@@ -252,6 +311,7 @@ class AssemblyDelta:
         self.beliefs = beliefs
 
     def to_json(self):
+        """Return a JSON representation of the assembly delta."""
         return {
             'new_stmts': {sh: stmt.to_json()
                           for sh, stmt in self.new_stmts.items()},
@@ -263,6 +323,7 @@ class AssemblyDelta:
 
 
 def parse_factor_polarity_curation(cur):
+    """Parse details from a curation that changes an event's polarity."""
     bef_subj = cur['before']['subj']
     bef_obj = cur['before']['obj']
     aft_subj = cur['after']['subj']
@@ -277,6 +338,7 @@ def parse_factor_polarity_curation(cur):
 
 
 def parse_factor_grounding_curation(cur):
+    """Parse details from a curation that changes a concept's grounding."""
     bef_subj = cur['before']['subj']
     bef_obj = cur['before']['obj']
     aft_subj = cur['after']['subj']
