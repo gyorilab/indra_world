@@ -2,13 +2,15 @@ import logging
 from copy import deepcopy
 import networkx
 from collections import defaultdict
+from indra.pipeline import AssemblyPipeline
 from indra.belief import extend_refinements_graph
 from indra.preassembler.refinement import RefinementConfirmationFilter
 from indra_world.belief import get_eidos_scorer
 from indra_world.ontology import load_world_ontology
 from indra_world.assembly.operations import CompositionalRefinementFilter
 from indra_world.assembly.operations import \
-    location_matches_compositional, location_refinement_compositional
+    location_matches_compositional, location_refinement_compositional, \
+    add_flattened_grounding_compositional, standardize_names_compositional
 
 
 logger = logging.getLogger(__name__)
@@ -25,7 +27,8 @@ class IncrementalAssembler:
     def __init__(self, prepared_stmts,
                  refinement_filters=None,
                  matches_fun=location_matches_compositional,
-                 curations=None):
+                 curations=None,
+                 post_processing_steps=None):
         self.matches_fun = matches_fun
         # These are preassembly data structures
         self.stmts_by_hash = {}
@@ -43,6 +46,9 @@ class IncrementalAssembler:
             self.refinement_filters = refinement_filters
 
         self.curations = curations if curations else []
+        self.post_processing_steps = [add_flattened_grounding_compositional,
+                                      standardize_names_compositional] \
+            if post_processing_steps is None else post_processing_steps
 
         self.deduplicate()
         self.apply_curations()
@@ -177,6 +183,12 @@ class IncrementalAssembler:
                     new_evidences[sh].append(ev)
                     self.evs_by_stmt_hash[sh].append(ev)
         new_evidences = dict(new_evidences)
+        # Here we run some post-processing steps on the new statements
+        ap = AssemblyPipeline(steps=self.post_processing_steps)
+        # NOTE: the assumption here is that the processing steps modify the
+        # statement objects directly, this could be modified to return
+        # statements that are then set in the hash-keyed dict
+        ap.run(list(new_stmts.values()))
 
         # Next we extend refinements and re-calculate beliefs
         for filter in self.refinement_filters:
@@ -224,6 +236,9 @@ class IncrementalAssembler:
             stmt.belief = self.beliefs[sh]
             stmts.append(stmt)
         # TODO: add refinement edges as supports/supported_by?
+        # Here we run some post-processing steps on the statements
+        ap = AssemblyPipeline(steps=self.post_processing_steps)
+        stmts = ap.run(stmts)
         return stmts
 
 
