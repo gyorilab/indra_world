@@ -5,3 +5,4 @@ INDRA World Sources (:py:mod:`indra_world.sources`)
    :maxdepth: 3
 
    cwms
+   dart
