@@ -1,13 +1,38 @@
 World Modelers INDRA service stack
 ==================================
 
-
 .. _wm-service-endpoints:
 
-Using the API
--------------
-The API is documented at `wm.indra.bio <http://wm.indra.bio/>`_.
+Using the INDRA World API
+-------------------------
+The API is deployed and documented at `wm.indra.bio <http://wm.indra.bio/>`_.
 
+.. _wm-service-local-setup:
+
+Setting up the INDRA World API locally
+--------------------------------------
+These instructions describe setting up and using the INDRA service stack
+for World Modelers applications.
+
+First, you need to build the INDRA World Docker image as follows:
+
+.. code-block:: sh
+
+    git clone https://github.com/indralab/indra_world.git
+    cd indra_world/docker
+    docker build --tag indra_world:latest .
+
+Then, in the same folder, do:
+
+.. code-block:: sh
+
+    docker-compose up -d
+
+to run the INDRA world service as well as an associated postgres container
+with the relational database used by the service. The `docker-compose` file
+reads secret configuration values for accessing various resources from two
+files: `indra_world.env` and `indra_world_db.env`. These files are not part
+of the public code and need to be added manually.
 
 .. _wm-service-s3:
 
@@ -80,80 +105,3 @@ for each corpus are as follows
   This is the basis of surfacing reader-specific curations in the
   download_curation endpoint (see above).
 
-
-.. _wm-service-local-setup:
-
-Setting up the services locally
--------------------------------
-These instructions describe setting up and using the INDRA service stack
-for World Modelers applications, in particular, as a back-end for the
-CauseMos UI.
-
-The instructions below run each Docker container with the :code:`-d` option
-which will run containers in the background. You can list running containers
-with their ids using :code:`docker ps` and stop a container with
-:code:`docker stop <container id>`.
-
-Setting up the Eidos service
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Clone the Eidos repo and cd to the Docker folder
-
-.. code-block:: sh
-
-    git clone https://github.com/clulab/eidos.git
-    cd eidos/Docker
-
-Build the Eidos docker image
-
-.. code-block:: sh
-
-    docker build -f DockerfileRunProd . -t eidos-webservice
-
-Run the Eidos web service and expose it on port 9000
-
-.. code-block:: sh
-
-    docker run -id -p 9000:9000 eidos-webservice
-
-
-Setting up the general INDRA service
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Pull the INDRA docker image from DockerHub
-
-.. code-block:: sh
-
-    docker pull labsyspharm/indra
-
-Run the INDRA web service and expose it on port 8000
-
-.. code-block:: sh
-
-    docker run -id -p 8000:8080 --entrypoint gunicorn labsyspharm/indra:latest \
-        -w 1 -b :8000 -t 600 rest_api.api:app
-
-Note that the :code:`-w 1` parameter specifies one service worker which can
-be set to a higher number if needed.
-
-Setting up the INDRA live curation service
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Assuming you already have the INDRA docker image, run the INDRA live
-feedback service with the following parameters:
-
-.. code-block:: sh
-
-    docker run -id -p 8001:8001 --env-file docker_variables --entrypoint \
-    python labsyspharm/indra /sw/indra/indra/tools/live_curation/live_curation.py
-
-Here we use the tag :code:`--env-file` to provide a file containing
-environment variables to the docker. In this case, we need to provide
-:code:`AWS_ACCESS_KEY_ID` and :code:`AWS_SECRET_ACCESS_KEY` to allow the
-curation service to access World Modelers corpora on S3.
-The file content should look like this:
-
-.. code-block:: sh
-
-    AWS_ACCESS_KEY_ID=<aws_access_key_id>
-    AWS_SECRET_ACCESS_KEY=<aws_secret_access_key>
-
-Replace :code:`<aws_access_key_id>` and :code:`<aws_secret_access_key>` with
-your aws access and secret keys.
