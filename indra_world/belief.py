@@ -3,6 +3,7 @@ import copy
 import json
 import pandas
 import requests
+from typing import Dict, Optional
 from indra.belief import SimpleScorer, BayesianScorer
 from indra.pipeline import register_pipeline
 from indra_world.resources import get_resource_file
@@ -11,8 +12,14 @@ from indra_world.resources import get_resource_file
 default_priors = {'hume': [13, 7], 'cwms': [13, 7], 'sofia': [13, 7]}
 
 
-def load_eidos_curation_table():
-    """Return a pandas table of Eidos curation data."""
+def load_eidos_curation_table() -> pandas.DataFrame:
+    """Return a pandas table of Eidos curation data.
+
+    Returns
+    -------
+    table :
+        A pandas dataframe of the curation data.
+    """
     url = 'https://raw.githubusercontent.com/clulab/eidos/master/' + \
         'src/main/resources/org/clulab/wm/eidos/english/confidence/' + \
         'rule_summary.tsv'
@@ -25,8 +32,16 @@ def load_eidos_curation_table():
 
 
 @register_pipeline
-def get_eidos_bayesian_scorer(prior_counts=None):
-    """Return a BayesianScorer based on Eidos curation counts."""
+def get_eidos_bayesian_scorer(
+    prior_counts: Optional[Dict[str, Dict[str, float]]] = None,
+) -> BayesianScorer:
+    """Return a BayesianScorer based on Eidos curation counts.
+
+    Returns
+    -------
+    scorer :
+        A BayesianScorer belief scorer instance.
+    """
     table = load_eidos_curation_table()
     subtype_counts = {'eidos': {r: [c, i] for r, c, i in
                               zip(table['RULE'], table['Num correct'],
@@ -40,8 +55,15 @@ def get_eidos_bayesian_scorer(prior_counts=None):
 
 
 @register_pipeline
-def get_eidos_scorer():
-    """Return a SimpleScorer based on Eidos curated precision estimates."""
+def get_eidos_scorer() -> SimpleScorer:
+    """Return a SimpleScorer based on Eidos curated precision estimates.
+
+    Returns
+    -------
+    scorer :
+        A SimpleScorer instance loaded with default prior probabilities as
+        well as prior probabilities derived from curation-based counts.
+    """
     with open(get_resource_file('default_belief_probs.json'), 'r') as fh:
         prior_probs = json.load(fh)
 

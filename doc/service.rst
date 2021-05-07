@@ -3,144 +3,45 @@ World Modelers INDRA service stack
 
 .. _wm-service-endpoints:
 
-Using the services
-------------------
-Below, SERVICE_HOST should be replaced by the address of the server on which
-the services are running.
+Using the INDRA World API
+-------------------------
+The API is deployed and documented at `wm.indra.bio <http://wm.indra.bio/>`_.
 
-Check that the service is running
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. _wm-service-local-setup:
 
-This is a simple health endpoint that can be pinged to check that the service
-is running.
+Setting up the INDRA World API locally
+--------------------------------------
+These instructions describe setting up and using the INDRA service stack
+for World Modelers applications.
 
-.. code-block:: sh
-
-    URL: http://SERVICE_HOST:8001/health
-    Method: GET
-    Output: {"state": "healthy", "version": "1.0.0"}
-
-
-Read text to produce INDRA Statements
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Read a given text with a reader and return INDRA Statements (below, <reader>
-can be eidos, sofia or cwms). Note that for `eidos` specifically, a
-`webservice` parameter should also be passed which points to the address
-on which the Eidos web service is running (see above):
+First, you need to build the INDRA World Docker image as follows:
 
 .. code-block:: sh
 
-    URL: http://SERVICE_HOST:8000/<reader>/process_text
-    Method: POST with JSON content header
-    Input parameters: {"text": "rainfall causes floods"}
-    Output: <indra statements json>
+    git clone https://github.com/indralab/indra_world.git
+    cd indra_world/docker
+    docker build --tag indra_world:latest .
 
-Submit curations
-~~~~~~~~~~~~~~~~
-
-This endpoint take a single `curations` parameter which is a list
-of curations according to the CauseMos JSON format in which curations
-are represented. This representation contains a `corpus_id` and a
-`project_id` as part of each curation entry, therefore these do not need
-to be specified separately.
+Then, in the same folder, do:
 
 .. code-block:: sh
 
-    URL: http://SERVICE_HOST:8001/submit_curations
-    Method: POST with JSON content header
-    Input parameters: {"curations": <list of curations>}
-    Output: {}
+    docker-compose up -d
 
-Persist curations for a given corpus on S3
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The service does local caching of curations, however, it does not push
-curations submitted during runtime to S3 (which can be useful if someone
-wants to access them as a file independent of the service). This endpoint
-allows pushing all the curations for a given `corpus_id` to S3.
-
-.. code-block:: sh
-
-    URL: http://SERVICE_HOST:8001/save_curations
-    Method: POST with JSON content header
-    Input parameters: {"corpus_id": "<corpus id>"}
-    Output: {}
-
-Update beliefs
-~~~~~~~~~~~~~~
-
-This endpoint performs a lightweight belief re-calculation based on curations
-obtained so far. It takes a required `corpus_id` argument and an optional
-`project_id` argument. If a `project_id` is provided, beliefs are calculated
-based on project-specific curations, otherwise, all the curations for the given
-corpus are taken into account.
-
-.. code-block:: sh
-
-    URL: http://SERVICE_HOST:8001/update_beliefs
-    Method: POST with JSON content header
-    Input parameters: {"corpus_id": "<corpus id>",
-                       "project_id": "<project id>"}
-    Output: {"38ce0c14-2c7e-4df8-bd53-3006afeaa193": 0,
-     "6f2b2d69-16af-40ea-aa03-9b3a9a1d2ac3": 0.6979166666666666,
-     "727adb95-4890-4bbc-a985-fd985c355215": 0.6979166666666666}
-
-Re-assemble corpus
-~~~~~~~~~~~~~~~~~~
-
-This endpoint runs a new assembly for a given `corpus_id` and `project_id`
-based on curations and dumps the results on S3. The project-specific
-statement dump appears as a sub-key under the corpus key base, as
-`indra-models/<corpus id>/<project id>/statements.json`.
-
-.. code-block:: sh
-
-    URL: http://SERVICE_HOST:8001/run_assembly
-    Method: POST with JSON content header
-    Input parameters: {"corpus_id": "<corpus id>",
-                       "project_id": "<project id>"}
-    Output: {}
-
-Download curations
-~~~~~~~~~~~~~~~~~~
-
-This endpoint allows downloading curations and the corresponding curated
-statements for a corpus. If a reader name is provided, the results are filtered
-to curations for statements that have the provided reader among its sources,
-otherwise all curations and their corresponding statements are returned.
-
-.. code-block:: sh
-
-    URL: http://SERVICE_HOST:8001/download_curations
-    Method: POST with JSON content header
-    Input parameters: {"corpus_id": "<corpus id>",
-                       "reader": "<reader name>"}
-    Output: {"curations": <list of curations>,
-             "statements": {"38ce0c14-2c7e-4df8-bd53-3006afeaa193": <stmt json>}}
-
-
-Notify INDRA of a new reader output in DART
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: sh
-
-    URL: http://SERVICE_HOST:8001/notify
-    Method: POST with JSON content header
-    Input parameters: {"identity": "eidos",
-                       "version": "3.1.4",
-                       "document_id": "38ce0c14-2c7e-4df8-bd53-3006afeaa193",
-                       "storage_key": "uuid.ext"}
-    Output: {}
-
+to run the INDRA world service as well as an associated postgres container
+with the relational database used by the service. The `docker-compose` file
+reads secret configuration values for accessing various resources from two
+files: `indra_world.env` and `indra_world_db.env`. These files are not part
+of the public code and need to be added manually.
 
 .. _wm-service-s3:
 
 INDRA assemblies on S3
 ----------------------
-Access to the INDRA-assembled corpora requires credentails to the shared
+Access to the INDRA-assembled corpora requires credentials to the shared
 World Modelers S3 bucket "world-modelers". Each INDRA-assembled corpus is
 available within this bucket, under the "indra_models" key base. Each corpus
-is identified by a string identifier ("corpus_id" in the requests above).
+is identified by a string identifier.
 
 The corpus index
 ~~~~~~~~~~~~~~~~
@@ -203,83 +104,4 @@ for each corpus are as follows
 - `curations.json`: a JSON file which persists curations as collected by INDRA.
   This is the basis of surfacing reader-specific curations in the
   download_curation endpoint (see above).
-
-
-.. _wm-service-local-setup:
-
-Setting up the services locally
--------------------------------
-These instructions describe setting up and using the INDRA service stack
-for World Modelers applications, in particular, as a back-end for the
-CauseMos UI.
-
-The instructions below run each Docker container with the :code:`-d` option
-which will run containers in the background. You can list running containers
-with their ids using :code:`docker ps` and stop a container with
-:code:`docker stop <container id>`.
-
-Setting up the Eidos service
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Clone the Eidos repo and cd to the Docker folder
-
-.. code-block:: sh
-
-    git clone https://github.com/clulab/eidos.git
-    cd eidos/Docker
-
-Build the Eidos docker image
-
-.. code-block:: sh
-
-    docker build -f DockerfileRunProd . -t eidos-webservice
-
-Run the Eidos web service and expose it on port 9000
-
-.. code-block:: sh
-
-    docker run -id -p 9000:9000 eidos-webservice
-
-
-Setting up the general INDRA service
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Pull the INDRA docker image from DockerHub
-
-.. code-block:: sh
-
-    docker pull labsyspharm/indra
-
-Run the INDRA web service and expose it on port 8000
-
-.. code-block:: sh
-
-    docker run -id -p 8000:8080 --entrypoint gunicorn labsyspharm/indra:latest \
-        -w 1 -b :8000 -t 600 rest_api.api:app
-
-Note that the :code:`-w 1` parameter specifies one service worker which can
-be set to a higher number if needed.
-
-Setting up the INDRA live curation service
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Assuming you already have the INDRA docker image, run the INDRA live
-feedback service with the following parameters:
-
-.. code-block:: sh
-
-    docker run -id -p 8001:8001 --env-file docker_variables --entrypoint \
-    python labsyspharm/indra /sw/indra/indra/tools/live_curation/live_curation.py
-
-Here we use the tag :code:`--env-file` to provide a file containing
-environment variables to the docker. In this case, we need to provide
-:code:`AWS_ACCESS_KEY_ID` and :code:`AWS_SECRET_ACCESS_KEY` to allow the
-curation service to access World Modelers corpora on S3.
-The file content should look like this:
-
-.. code-block:: sh
-
-    AWS_ACCESS_KEY_ID=<aws_access_key_id>
-    AWS_SECRET_ACCESS_KEY=<aws_secret_access_key>
-
-Replace :code:`<aws_access_key_id>` and :code:`<aws_secret_access_key>` with
-your aws access and secret keys.
-
 

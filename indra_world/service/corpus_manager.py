@@ -1,3 +1,6 @@
+"""This module allows running one-off assembly on a set of DART records
+(i.e., reader outputs) into a 'seed corpus' that can be dumped on S3
+for loading into CauseMos."""
 import os
 import json
 import logging
@@ -12,6 +15,8 @@ logger = logging.getLogger(__name__)
 
 
 class CorpusManager:
+    """Corpus manager class allowing running assembly on a set of DART records.
+    """
     def __init__(self, db_url, dart_records, corpus_id, metadata,
                  dart_client=None):
         self.sc = ServiceController(db_url=db_url, dart_client=dart_client)
@@ -21,6 +26,13 @@ class CorpusManager:
         self.assembled_stmts = None
 
     def prepare(self):
+        """Run the preprocessing pipeline on statements.
+
+        This function adds the new corpus to the DB, adds records to the
+        new corpus, then processes the reader outputs for those records into
+        statements, preprocesses the statements, and then stores these
+        prepared statements in the DB.
+        """
         self.sc.db.add_corpus(self.corpus_id, self.metadata)
         self.sc.db.add_records_for_corpus(
             self.corpus_id,
@@ -33,6 +45,11 @@ class CorpusManager:
             self.sc.process_dart_record(record)
 
     def assemble(self):
+        """Run assembly on the prepared statements.
+
+        This function loads all the prepared statements associated with the
+        corpus and then runs assembly on them.
+        """
         all_stmts = []
         for record in self.dart_records:
             stmts = self.sc.db.get_statements_for_document(
@@ -45,6 +62,7 @@ class CorpusManager:
         self.metadata['num_statements'] = len(self.assembled_stmts)
 
     def dump_local(self, base_folder):
+        """Dump assembled corpus into local files."""
         corpus_folder = os.path.join(base_folder, self.corpus_id)
         os.makedirs(corpus_folder, exist_ok=True)
         stmts_to_json_file(self.assembled_stmts,
@@ -54,6 +72,7 @@ class CorpusManager:
             json.dump(fh, self.metadata)
 
     def dump_s3(self):
+        """Dump assembled corpus onto S3."""
         logger.info('Uploading %s to S3' % self.corpus_id)
         s3 = _make_s3_client()
 

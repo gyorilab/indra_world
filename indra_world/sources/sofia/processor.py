@@ -1,5 +1,7 @@
 import itertools
+from openpyxl.cell.cell import Cell
 from collections import defaultdict
+from typing import Any, Dict, Iterator, List, Tuple, Union
 from indra.statements import Influence, Concept, Event, Evidence, \
     WorldContext, TimeContext, RefContext, QualitativeDelta
 
@@ -15,6 +17,7 @@ bad_grnd = {'event1'}
 
 
 class SofiaProcessor(object):
+    """A processor extracting statements from reading done by Sofia"""
     def __init__(self, score_cutoff=None,
                  grounding_mode='flat'):
         self._entities = {}
@@ -106,13 +109,40 @@ class SofiaProcessor(object):
             stmt_list.append(stmt)
         return stmt_list
 
-    def get_event(self, event_entry):
+    def get_event(self, event_entry: Dict[str, str]) -> Event:
+        """Get an Event with the pre-set grounding mode
+
+        The grounding mode is set at initialization of the class and is
+        stored in the attribute `grounding_mode`.
+
+        Parameters
+        ----------
+        event_entry :
+            The event to process
+
+        Returns
+        -------
+        event :
+            An Event statement
+        """
         if self.grounding_mode == 'flat':
             return self.get_event_flat(event_entry)
         else:
             return self.get_event_compositional(event_entry)
 
-    def get_event_flat(self, event_entry):
+    def get_event_flat(self, event_entry: Dict[str, str]) -> Event:
+        """Get an Event with flattened grounding
+
+        Parameters
+        ----------
+        event_entry :
+            The event to process
+
+        Returns
+        -------
+        event :
+            An Event statement
+        """
         name = event_entry['Relation']
         concept = Concept(name, db_refs={'TEXT': name})
         grounding = event_entry['Event_Type']
@@ -143,7 +173,19 @@ class SofiaProcessor(object):
                       delta=QualitativeDelta(polarity=pol, adjectives=None))
         return event
 
-    def get_event_compositional(self, event_entry):
+    def get_event_compositional(self, event_entry: Dict[str, str]) -> Event:
+        """Get an Event with compositional grounding
+
+        Parameters
+        ----------
+        event_entry :
+            The event to process
+
+        Returns
+        -------
+        event :
+            An Event statement
+        """
         # Get get compositional grounding
         comp_name, comp_grnd = self.get_compositional_grounding(event_entry)
         if comp_name is not None and \
@@ -186,7 +228,19 @@ class SofiaProcessor(object):
 
         return event
 
-    def get_relation_events(self, rel_dict):
+    def get_relation_events(self, rel_dict: Dict[str, str]) -> List[str]:
+        """Get a list of the event indices associated with a causal entry
+
+        Parameters
+        ----------
+        rel_dict :
+            A causal entry to extract event indices from
+
+        Returns
+        -------
+        relation_events :
+            A list of event indices
+        """
         # Save indexes of events that are part of causal relations
         relation_events = []
         cause_entries = rel_dict.get('Cause Index')
@@ -199,7 +253,22 @@ class SofiaProcessor(object):
             relation_events.append(ei)
         return relation_events
 
-    def get_meaningful_events(self, raw_event_dict):
+    def get_meaningful_events(
+        self,
+        raw_event_dict: Dict[str, Any],
+    ) -> Dict[str, Union[int, str]]:
+        """Process events by extracting polarity
+
+        Parameters
+        ----------
+        raw_event_dict :
+            A dict of events to process
+
+        Returns
+        -------
+        processed_event_dict :
+            A dict of event data
+        """
         # Only keep meaningful events and extract polarity information from
         # events showing change
         processed_event_dict = {}
@@ -235,7 +304,23 @@ class SofiaProcessor(object):
                 processed_event_dict[event_index] = raw_event_dict[event_index]
         return processed_event_dict
 
-    def get_compositional_grounding(self, event_entry):
+    def get_compositional_grounding(
+        self,
+        event_entry: Dict[str, str],
+    ) -> Tuple[str, Tuple[str, ...]]:
+        """Get the compositional grounding for an event
+
+        Parameters
+        ----------
+        event_entry :
+            The event to get the compositional grounding for
+
+        Returns
+        -------
+        grounding :
+            The name of the grounding and a tuple of representing the
+            compositional grounding
+        """
         # According to the Sofia team:
         # Process is the "Event_Type" of event
         # Theme is the "Entity_Type" of patient of event, a wm-concept
@@ -391,6 +476,7 @@ class SofiaProcessor(object):
 
 
 class SofiaJsonProcessor(SofiaProcessor):
+    """A JSON processor extracting statements from reading done by Sofia"""
     def __init__(self, jd, **kwargs):
         super().__init__(**kwargs)
         self._entities = self.process_entities(jd)
@@ -398,7 +484,19 @@ class SofiaJsonProcessor(SofiaProcessor):
         self.statements = []
         self.relation_subj_obj_ids = []
 
-    def process_entities(self, jd):
+    def process_entities(self, jd: Dict[str, Any]) -> Dict[str, Any]:
+        """Process the entities of a Sofia document extraction
+
+        Parameters
+        ----------
+        jd :
+            The extracted data from a document
+
+        Returns
+        -------
+        ent_dict :
+            A dictionary of processed entities keyed by their entity index
+        """
         ent_dict = {}
         entity_list = jd['entities']
         for entity in entity_list:
@@ -407,7 +505,19 @@ class SofiaJsonProcessor(SofiaProcessor):
 
         return ent_dict
 
-    def process_events(self, jd):
+    def process_events(self, jd: Dict[str, Any]) -> Dict[str, Union[int, str]]:
+        """Process the event of a Sofia document extraction
+
+        Parameters
+        ----------
+        jd :
+            The extracted data from a document
+
+        Returns
+        -------
+        processed_event_dict :
+            A dictionary of processed events keyed by their event index
+        """
         event_dict = {}
         # First get all events from reader output
         events = jd['events']
@@ -417,7 +527,14 @@ class SofiaJsonProcessor(SofiaProcessor):
         processed_event_dict = self.get_meaningful_events(event_dict)
         return processed_event_dict
 
-    def extract_relations(self, jd):
+    def extract_relations(self, jd: Dict[str, Any]) -> None:
+        """Extract Influence statements from a Sofia document extraction
+
+        Parameters
+        ----------
+        jd :
+            A dictionary with document extractions
+        """
         stmts = []
         for rel_dict in jd['causal']:
             # Save indexes of causes and effects
@@ -432,12 +549,19 @@ class SofiaJsonProcessor(SofiaProcessor):
         for stmt in stmts:
             self.statements.append(stmt)
 
-    def extract_events(self, json_list):
+    def extract_events(self, jd: Dict[str, str]) -> None:
+        """Extract Event statements from a Sofia document extraction
+
+        Parameters
+        ----------
+        jd :
+            A dictionary with document extractions
+        """
         # First confirm we have extracted event information and relation events
         if not self._events:
-            self.process_events(json_list)
+            self.process_events(jd)
         if not self.relation_subj_obj_ids:
-            self.extract_relations(json_list)
+            self.extract_relations(jd)
         # Only make Event Statements from standalone events
         for event_index in self._events:
             if event_index not in self.relation_subj_obj_ids:
@@ -446,14 +570,27 @@ class SofiaJsonProcessor(SofiaProcessor):
 
 
 class SofiaExcelProcessor(SofiaProcessor):
-    def __init__(self, relation_rows, event_rows, entity_rows,
+    """An Excel processor extracting statements from reading done by Sofia"""
+    def __init__(self, relation_rows, event_rows: Iterator[Tuple[Cell, ...]], entity_rows,
                  **kwargs):
         super().__init__(**kwargs)
         self._events = self.process_events(event_rows)
         self.statements = []
         self.relation_subj_obj_ids = []
 
-    def process_events(self, event_rows):
+    def process_events(self, event_rows: Iterator[Tuple[Cell, ...]]) -> Dict[str, Union[int, str]]:
+        """Process the events of Sofia document extractions in Excel format
+
+        Parameters
+        ----------
+        event_rows :
+            The extracted event data from an Excel document
+
+        Returns
+        -------
+        processed_event_dict :
+            A dict of event keyed by their event index
+        """
         header = [cell.value for cell in next(event_rows)]
         event_dict = {}
         for row in event_rows:
@@ -464,7 +601,14 @@ class SofiaExcelProcessor(SofiaProcessor):
         processed_event_dict = self.get_meaningful_events(event_dict)
         return processed_event_dict
 
-    def extract_relations(self, relation_rows):
+    def extract_relations(self, relation_rows: Iterator[Tuple[Cell, ...]]) -> None:
+        """Extract Influence statements from relation events
+
+        Parameters
+        ----------
+        relation_rows :
+            The extracted relation data from an Excel document
+        """
         header = [cell.value for cell in next(relation_rows)]
         stmts = []
         for row in relation_rows:
@@ -482,7 +626,20 @@ class SofiaExcelProcessor(SofiaProcessor):
         for stmt in stmts:
             self.statements.append(stmt)
 
-    def extract_events(self, event_rows, relation_rows):
+    def extract_events(
+        self,
+        event_rows: Iterator[Tuple[Cell, ...]],
+        relation_rows: Iterator[Tuple[Cell, ...]],
+    ) -> None:
+        """Extract Event statements of a Sofia document in Excel format
+
+        Parameters
+        ----------
+        event_rows :
+            The extracted event data from an Excel document
+        relation_rows :
+            The extracted relation data from an Excel document
+        """
         # First confirm we have extracted event information and relation events
         if not self._events:
             self.process_events(event_rows)

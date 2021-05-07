@@ -1,4 +1,11 @@
 sphinx
 sphinx_rtd_theme
+sphinx_autodoc_typehints
 pyyaml
-indra
+git+https://github.com/sorgerlab/indra.git
+openpyxl
+flask
+sqlalchemy
+flask_wtf
+flask_bootstrap
+flask_restx

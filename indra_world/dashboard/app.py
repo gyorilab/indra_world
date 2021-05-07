@@ -1,3 +1,4 @@
+"""A web application to run INDRA World assembly on a set of reader otputs."""
 import os
 import logging
 import argparse
@@ -33,6 +34,7 @@ assembly_levels = [('grounding', 'grounding'),
 
 
 class RunAssemblyForm(FlaskForm):
+    """Defines the main input form constituting the dashboard."""
     after_date = DateField(label='After date', format='%Y-%m-%d')
     before_date = DateField(label='Before date', format='%Y-%m-%d')
     readers = SelectMultipleField(label='Readers',
@@ -53,6 +55,7 @@ class RunAssemblyForm(FlaskForm):
 
 @app.route('/', methods=['GET'])
 def index():
+    """Render landing page form."""
     run_assembly_form = RunAssemblyForm()
     kwargs = {'run_assembly_form': run_assembly_form}
     return render_template('index.html', **kwargs)
@@ -60,6 +63,7 @@ def index():
 
 @app.route('/run_assembly', methods=['POST'])
 def run_assembly():
+    """Run assembly."""
     readers = request.form.getlist('readers')
     readers = readers if readers else None
     after_date = request.form.get('after_date')
