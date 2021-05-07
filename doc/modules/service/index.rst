@@ -10,5 +10,5 @@ service. Documentation of the service API can be found
 
    db/index
    controller/index
-   app/index
+   api/index
    corpus_manager/index
