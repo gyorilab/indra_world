@@ -6,10 +6,10 @@ INDRA World Modules Reference
 .. toctree::
    :maxdepth: 4
 
-   assemblers/index
-   assembly/index
-   dashboard/index
-   ontology/index
-   service/index
    sources/index
+   assembly/index
+   ontology/index
    belief
+   assemblers/index
+   service/index
+   dashboard/index
