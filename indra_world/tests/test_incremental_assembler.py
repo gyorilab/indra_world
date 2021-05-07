@@ -39,6 +39,27 @@ def test_assembly_delta_construct_serialize():
                        new_refinements=new_refinements,
                        beliefs=beliefs)
     adj = ad.to_json()
+    assert 'evidence' not in adj['new_stmts'][s1h]
+    assert adj['new_evidence'][s1h]
+
+
+def test_assembly_delta_custom_matches():
+    from indra.statements.context import WorldContext, RefContext
+    stmt = copy.deepcopy(s1)
+    stmt.subj.context = WorldContext(geo_location=RefContext('Africa'))
+    sh = stmt.get_hash(refresh=True,
+                       matches_fun=location_matches_compositional)
+    new_stmts = {sh: stmt}
+    new_evidences = {sh: stmt.evidence}
+    new_refinements = []
+    beliefs = {sh: 1.0}
+    ad = AssemblyDelta(new_stmts, new_evidences, new_refinements, beliefs)
+    adj = ad.to_json()
+    assert adj['new_stmts'][sh]['matches_hash'] != sh
+    ad = AssemblyDelta(new_stmts, new_evidences, new_refinements, beliefs,
+                       matches_fun=location_matches_compositional)
+    adj = ad.to_json()
+    assert adj['new_stmts'][sh]['matches_hash'] == sh
 
 
 def test_incremental_assembler_constructor():
