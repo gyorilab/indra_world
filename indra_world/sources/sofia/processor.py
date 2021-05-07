@@ -107,12 +107,37 @@ class SofiaProcessor(object):
         return stmt_list
 
     def get_event(self, event_entry):
+        """Get an Event with the pre-set grounding mode
+
+        The grounding mode is set at initialization of the class and is
+        stored in the attribute `grounding_mode`.
+
+        Parameters
+        ----------
+        event_entry : dict[str, str]
+            The event to process
+
+        Returns
+        -------
+        Event
+        """
         if self.grounding_mode == 'flat':
             return self.get_event_flat(event_entry)
         else:
             return self.get_event_compositional(event_entry)
 
     def get_event_flat(self, event_entry):
+        """Get an Event with flattened grounding
+
+        Parameters
+        ----------
+        event_entry : dict[str, str]
+            The event to process
+
+        Returns
+        -------
+        Event
+        """
         name = event_entry['Relation']
         concept = Concept(name, db_refs={'TEXT': name})
         grounding = event_entry['Event_Type']
@@ -198,6 +223,17 @@ class SofiaProcessor(object):
         return event
 
     def get_relation_events(self, rel_dict):
+        """Get a list of the event indices associated with a causal entry
+
+        Parameters
+        ----------
+        rel_dict : dict[str, str]
+            A causal entry to extract event indices from
+
+        Returns
+        -------
+        list[str]
+        """
         # Save indexes of events that are part of causal relations
         relation_events = []
         cause_entries = rel_dict.get('Cause Index')
@@ -211,6 +247,17 @@ class SofiaProcessor(object):
         return relation_events
 
     def get_meaningful_events(self, raw_event_dict):
+        """Process events by extracting polarity
+
+        Parameters
+        ----------
+        raw_event_dict : dict[str, Any]
+            A dict of events to process
+
+        Returns
+        -------
+        dict[str, Union[int, str]]
+        """
         # Only keep meaningful events and extract polarity information from
         # events showing change
         processed_event_dict = {}
@@ -423,6 +470,17 @@ class SofiaJsonProcessor(SofiaProcessor):
         self.relation_subj_obj_ids = []
 
     def process_entities(self, jd):
+        """Process the entities of a Sofia document extraction
+
+        Parameters
+        ----------
+        jd : dict[str, Any]
+            The extracted data from a document
+
+        Returns
+        -------
+        dict[str, Any]
+        """
         ent_dict = {}
         entity_list = jd['entities']
         for entity in entity_list:
@@ -432,6 +490,17 @@ class SofiaJsonProcessor(SofiaProcessor):
         return ent_dict
 
     def process_events(self, jd):
+        """Process the event of a Sofia document extraction
+
+        Parameters
+        ----------
+        jd : dict[str, Any]
+            The extracted data from a document
+
+        Returns
+        -------
+        dict[str, Any]
+        """
         event_dict = {}
         # First get all events from reader output
         events = jd['events']
@@ -442,6 +511,12 @@ class SofiaJsonProcessor(SofiaProcessor):
         return processed_event_dict
 
     def extract_relations(self, jd):
+        """Extract Influence statements from a Sofia document extraction
+
+        Parameters
+        ----------
+        jd : dict[str, Any]
+        """
         stmts = []
         for rel_dict in jd['causal']:
             # Save indexes of causes and effects
@@ -456,12 +531,18 @@ class SofiaJsonProcessor(SofiaProcessor):
         for stmt in stmts:
             self.statements.append(stmt)
 
-    def extract_events(self, json_list):
+    def extract_events(self, jd):
+        """Extract Event statements from a Sofia document extraction
+
+        Parameters
+        ----------
+        jd : dict[str, str]
+        """
         # First confirm we have extracted event information and relation events
         if not self._events:
-            self.process_events(json_list)
+            self.process_events(jd)
         if not self.relation_subj_obj_ids:
-            self.extract_relations(json_list)
+            self.extract_relations(jd)
         # Only make Event Statements from standalone events
         for event_index in self._events:
             if event_index not in self.relation_subj_obj_ids:
@@ -478,6 +559,17 @@ class SofiaExcelProcessor(SofiaProcessor):
         self.relation_subj_obj_ids = []
 
     def process_events(self, event_rows):
+        """Process the events of a Sofia document extraction in Excel format
+
+        Parameters
+        ----------
+        event_rows : openpyxl.worksheet.Worksheet.rows
+            The extracted event data from an Excel document
+
+        Returns
+        -------
+        dict[str, Union[int, str]]
+        """
         header = [cell.value for cell in next(event_rows)]
         event_dict = {}
         for row in event_rows:
@@ -489,6 +581,13 @@ class SofiaExcelProcessor(SofiaProcessor):
         return processed_event_dict
 
     def extract_relations(self, relation_rows):
+        """Extract Influence statements from relation events
+
+        Parameters
+        ----------
+        relation_rows : openpyxl.worksheet.Worksheet.rows
+            The extracted relation data from an Excel document
+        """
         header = [cell.value for cell in next(relation_rows)]
         stmts = []
         for row in relation_rows:
@@ -507,6 +606,15 @@ class SofiaExcelProcessor(SofiaProcessor):
             self.statements.append(stmt)
 
     def extract_events(self, event_rows, relation_rows):
+        """Extract Event statements of a Sofia document in Excel format
+
+        Parameters
+        ----------
+        event_rows : openpyxl.worksheet.Worksheet.rows
+            The extracted event data from an Excel document
+        relation_rows : openpyxl.worksheet.Worksheet.rows
+            The extracted relation data from an Excel document
+        """
         # First confirm we have extracted event information and relation events
         if not self._events:
             self.process_events(event_rows)
