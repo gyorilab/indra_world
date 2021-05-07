@@ -121,6 +121,7 @@ class SofiaProcessor(object):
         Returns
         -------
         Event
+            An Event statement
         """
         if self.grounding_mode == 'flat':
             return self.get_event_flat(event_entry)
@@ -138,6 +139,7 @@ class SofiaProcessor(object):
         Returns
         -------
         Event
+            An Event statement
         """
         name = event_entry['Relation']
         concept = Concept(name, db_refs={'TEXT': name})
@@ -180,6 +182,7 @@ class SofiaProcessor(object):
         Returns
         -------
         Event
+            An Event statement
         """
         # Get get compositional grounding
         comp_name, comp_grnd = self.get_compositional_grounding(event_entry)
@@ -234,6 +237,7 @@ class SofiaProcessor(object):
         Returns
         -------
         list[str]
+            A list of event indices
         """
         # Save indexes of events that are part of causal relations
         relation_events = []
@@ -258,6 +262,7 @@ class SofiaProcessor(object):
         Returns
         -------
         dict[str, Union[int, str]]
+            A dict of event data
         """
         # Only keep meaningful events and extract polarity information from
         # events showing change
@@ -482,6 +487,7 @@ class SofiaJsonProcessor(SofiaProcessor):
         Returns
         -------
         dict[str, Any]
+            A dictionary of processed entities keyed by their entity index
         """
         ent_dict = {}
         entity_list = jd['entities']
@@ -502,6 +508,7 @@ class SofiaJsonProcessor(SofiaProcessor):
         Returns
         -------
         dict[str, Any]
+            A dictionary of processed events keyed by their event index
         """
         event_dict = {}
         # First get all events from reader output
@@ -518,6 +525,7 @@ class SofiaJsonProcessor(SofiaProcessor):
         Parameters
         ----------
         jd : dict[str, Any]
+            A dictionary with document extractions
         """
         stmts = []
         for rel_dict in jd['causal']:
@@ -539,6 +547,7 @@ class SofiaJsonProcessor(SofiaProcessor):
         Parameters
         ----------
         jd : dict[str, str]
+            A dictionary with document extractions
         """
         # First confirm we have extracted event information and relation events
         if not self._events:
@@ -562,7 +571,7 @@ class SofiaExcelProcessor(SofiaProcessor):
         self.relation_subj_obj_ids = []
 
     def process_events(self, event_rows):
-        """Process the events of a Sofia document extraction in Excel format
+        """Process the events of Sofia document extractions in Excel format
 
         Parameters
         ----------
@@ -572,6 +581,7 @@ class SofiaExcelProcessor(SofiaProcessor):
         Returns
         -------
         dict[str, Union[int, str]]
+            A dict of event keyed by their event index
         """
         header = [cell.value for cell in next(event_rows)]
         event_dict = {}
