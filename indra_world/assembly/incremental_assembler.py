@@ -338,9 +338,16 @@ class AssemblyDelta:
 
     def to_json(self):
         """Return a JSON representation of the assembly delta."""
+        # Serialize statements with custom matches function to make
+        # sure matches hashes are consistent
+        new_stmts_json = {sh: stmt.to_json(matches_fun=self.matches_fun)
+                          for sh, stmt in self.new_stmts.items()}
+        # Pop out evidence since it is redundant with the new_evidence field
+        for stmtj in new_stmts_json.values():
+            stmtj.pop('evidence', None)
+        # Return the full construct
         return {
-            'new_stmts': {sh: stmt.to_json(matches_fun=self.matches_fun)
-                          for sh, stmt in self.new_stmts.items()},
+            'new_stmts': new_stmts_json,
             'new_evidence': {sh: [ev.to_json() for ev in evs]
                              for sh, evs in self.new_evidences.items()},
             'new_refinements': list(self.new_refinements),

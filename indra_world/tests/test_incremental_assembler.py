@@ -39,6 +39,8 @@ def test_assembly_delta_construct_serialize():
                        new_refinements=new_refinements,
                        beliefs=beliefs)
     adj = ad.to_json()
+    assert 'evidence' not in adj['new_stmts'][s1h]
+    assert adj['new_evidence'][s1h]
 
 
 def test_assembly_delta_custom_matches():
