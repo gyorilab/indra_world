@@ -1,7 +1,7 @@
 import itertools
-from openpyxl.worksheet import Worksheet
+from openpyxl.cell.cell import Cell
 from collections import defaultdict
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, Dict, Iterator, List, Tuple, Union
 from indra.statements import Influence, Concept, Event, Evidence, \
     WorldContext, TimeContext, RefContext, QualitativeDelta
 
@@ -571,14 +571,14 @@ class SofiaJsonProcessor(SofiaProcessor):
 
 class SofiaExcelProcessor(SofiaProcessor):
     """An Excel processor extracting statements from reading done by Sofia"""
-    def __init__(self, relation_rows, event_rows: Worksheet.rows, entity_rows,
+    def __init__(self, relation_rows, event_rows: Iterator[Tuple[Cell, ...]], entity_rows,
                  **kwargs):
         super().__init__(**kwargs)
         self._events = self.process_events(event_rows)
         self.statements = []
         self.relation_subj_obj_ids = []
 
-    def process_events(self, event_rows: Worksheet.rows) -> Dict[str, Union[int, str]]:
+    def process_events(self, event_rows: Iterator[Tuple[Cell, ...]]) -> Dict[str, Union[int, str]]:
         """Process the events of Sofia document extractions in Excel format
 
         Parameters
@@ -601,7 +601,7 @@ class SofiaExcelProcessor(SofiaProcessor):
         processed_event_dict = self.get_meaningful_events(event_dict)
         return processed_event_dict
 
-    def extract_relations(self, relation_rows: Worksheet.rows) -> None:
+    def extract_relations(self, relation_rows: Iterator[Tuple[Cell, ...]]) -> None:
         """Extract Influence statements from relation events
 
         Parameters
@@ -628,8 +628,8 @@ class SofiaExcelProcessor(SofiaProcessor):
 
     def extract_events(
         self,
-        event_rows: Worksheet.rows,
-        relation_rows: Worksheet.rows,
+        event_rows: Iterator[Tuple[Cell, ...]],
+        relation_rows: Iterator[Tuple[Cell, ...]],
     ) -> None:
         """Extract Event statements of a Sofia document in Excel format
 
