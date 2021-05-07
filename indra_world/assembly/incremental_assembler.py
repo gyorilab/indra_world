@@ -323,7 +323,7 @@ class AssemblyDelta:
     beliefs : dict[str, float]
         A dict of belief scores keyed by all statement hashes (both old and
         new).
-    matches_fun : Optional[function]
+    matches_fun : Optional[Callable[[Statement], str]]
         An optional custom matches function. When using a custom matches
         function for assembly, providing it here is necessary to get
         correct JSON serialization.
