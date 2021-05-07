@@ -28,6 +28,7 @@ author = 'INDRA team'
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx.ext.intersphinx',
     'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
     'sphinx_autodoc_typehints',
@@ -57,3 +58,13 @@ html_theme = 'sphinx_rtd_theme'
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+
+
+# Example configuration for intersphinx: refer to the Python standard library.
+
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3', None),
+    'requests': ('https://requests.kennethreitz.org/en/master/', None),
+    'openpyxl': ('https://openpyxl.readthedocs.io/en/stable/', None),
+}
+
