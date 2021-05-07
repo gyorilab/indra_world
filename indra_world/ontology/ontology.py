@@ -1,8 +1,3 @@
-"""This script loads the ontologies for Eidos and Hume and generates RDFs.
-
-The script can handle any ontology which uses the same format (yaml ontology
-following the namespace defined at `eidos_ns`).
-"""
 import logging
 import requests
 from collections import defaultdict
