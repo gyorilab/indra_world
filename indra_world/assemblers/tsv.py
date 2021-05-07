@@ -1,3 +1,5 @@
+"""Assemble tab separated spreadsheets of assembled INDRA Statements for
+curation purposes."""
 import csv
 import tqdm
 from collections import defaultdict
