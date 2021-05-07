@@ -258,7 +258,7 @@ class IncrementalAssembler:
                                      matches_fun=self.matches_fun)
         beliefs = self.get_beliefs()
         return AssemblyDelta(new_stmts, new_evidences, new_refinements,
-                             beliefs)
+                             beliefs, matches_fun=self.matches_fun)
 
     def get_all_supporting_evidence(self, sh):
         """Return direct and incirect evidence for a statement hash."""
@@ -323,17 +323,23 @@ class AssemblyDelta:
     beliefs : dict[str, float]
         A dict of belief scores keyed by all statement hashes (both old and
         new).
+    matches_fun : Optional[function]
+        An optional custom matches function. When using a custom matches
+        function for assembly, providing it here is necessary to get
+        correct JSON serialization.
     """
-    def __init__(self, new_stmts, new_evidences, new_refinements, beliefs):
+    def __init__(self, new_stmts, new_evidences, new_refinements, beliefs,
+                 matches_fun=None):
         self.new_stmts = new_stmts
         self.new_evidences = new_evidences
         self.new_refinements = new_refinements
         self.beliefs = beliefs
+        self.matches_fun = matches_fun
 
     def to_json(self):
         """Return a JSON representation of the assembly delta."""
         return {
-            'new_stmts': {sh: stmt.to_json()
+            'new_stmts': {sh: stmt.to_json(matches_fun=self.matches_fun)
                           for sh, stmt in self.new_stmts.items()},
             'new_evidence': {sh: [ev.to_json() for ev in evs]
                              for sh, evs in self.new_evidences.items()},
