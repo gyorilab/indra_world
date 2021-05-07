@@ -15,6 +15,7 @@ bad_grnd = {'event1'}
 
 
 class SofiaProcessor(object):
+    """A processor extracting statements from reading done by Sofia"""
     def __init__(self, score_cutoff=None,
                  grounding_mode='flat'):
         self._entities = {}
@@ -462,6 +463,7 @@ class SofiaProcessor(object):
 
 
 class SofiaJsonProcessor(SofiaProcessor):
+    """A JSON processor extracting statements from reading done by Sofia"""
     def __init__(self, jd, **kwargs):
         super().__init__(**kwargs)
         self._entities = self.process_entities(jd)
@@ -551,6 +553,7 @@ class SofiaJsonProcessor(SofiaProcessor):
 
 
 class SofiaExcelProcessor(SofiaProcessor):
+    """An Excel processor extracting statements from reading done by Sofia"""
     def __init__(self, relation_rows, event_rows, entity_rows,
                  **kwargs):
         super().__init__(**kwargs)
