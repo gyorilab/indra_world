@@ -1,4 +1,4 @@
-sofia (:py:mod:`indra_world.sources.sofia`)
+Sofia (:py:mod:`indra_world.sources.sofia`)
 ===========================================
 
 .. automodule:: indra_world.sources.sofia

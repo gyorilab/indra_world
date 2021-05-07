@@ -1,4 +1,4 @@
-eidos (:py:mod:`indra_world.sources.eidos`)
+Eidos (:py:mod:`indra_world.sources.eidos`)
 ===========================================
 
 .. automodule:: indra_world.sources.eidos

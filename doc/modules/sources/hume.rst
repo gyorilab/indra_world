@@ -1,4 +1,4 @@
-hume (:py:mod:`indra_world.sources.hume`)
+Hume (:py:mod:`indra_world.sources.hume`)
 =========================================
 
 .. automodule:: indra_world.sources.hume
