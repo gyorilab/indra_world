@@ -1,5 +1,7 @@
 import itertools
+from openpyxl.worksheet import Worksheet
 from collections import defaultdict
+from typing import Any, Dict, List, Tuple, Union
 from indra.statements import Influence, Concept, Event, Evidence, \
     WorldContext, TimeContext, RefContext, QualitativeDelta
 
@@ -107,7 +109,7 @@ class SofiaProcessor(object):
             stmt_list.append(stmt)
         return stmt_list
 
-    def get_event(self, event_entry):
+    def get_event(self, event_entry: Dict[str, str]) -> Event:
         """Get an Event with the pre-set grounding mode
 
         The grounding mode is set at initialization of the class and is
@@ -115,12 +117,12 @@ class SofiaProcessor(object):
 
         Parameters
         ----------
-        event_entry : dict[str, str]
+        event_entry :
             The event to process
 
         Returns
         -------
-        Event
+        event :
             An Event statement
         """
         if self.grounding_mode == 'flat':
@@ -128,17 +130,17 @@ class SofiaProcessor(object):
         else:
             return self.get_event_compositional(event_entry)
 
-    def get_event_flat(self, event_entry):
+    def get_event_flat(self, event_entry: Dict[str, str]) -> Event:
         """Get an Event with flattened grounding
 
         Parameters
         ----------
-        event_entry : dict[str, str]
+        event_entry :
             The event to process
 
         Returns
         -------
-        Event
+        event :
             An Event statement
         """
         name = event_entry['Relation']
@@ -171,17 +173,17 @@ class SofiaProcessor(object):
                       delta=QualitativeDelta(polarity=pol, adjectives=None))
         return event
 
-    def get_event_compositional(self, event_entry):
+    def get_event_compositional(self, event_entry: Dict[str, str]) -> Event:
         """Get an Event with compositional grounding
 
         Parameters
         ----------
-        event_entry : dict[str, str]
+        event_entry :
             The event to process
 
         Returns
         -------
-        Event
+        event :
             An Event statement
         """
         # Get get compositional grounding
@@ -226,17 +228,17 @@ class SofiaProcessor(object):
 
         return event
 
-    def get_relation_events(self, rel_dict):
+    def get_relation_events(self, rel_dict: Dict[str, str]) -> List[str]:
         """Get a list of the event indices associated with a causal entry
 
         Parameters
         ----------
-        rel_dict : dict[str, str]
+        rel_dict :
             A causal entry to extract event indices from
 
         Returns
         -------
-        list[str]
+        relation_events :
             A list of event indices
         """
         # Save indexes of events that are part of causal relations
@@ -251,17 +253,20 @@ class SofiaProcessor(object):
             relation_events.append(ei)
         return relation_events
 
-    def get_meaningful_events(self, raw_event_dict):
+    def get_meaningful_events(
+        self,
+        raw_event_dict: Dict[str, Any],
+    ) -> Dict[str, Union[int, str]]:
         """Process events by extracting polarity
 
         Parameters
         ----------
-        raw_event_dict : dict[str, Any]
+        raw_event_dict :
             A dict of events to process
 
         Returns
         -------
-        dict[str, Union[int, str]]
+        processed_event_dict :
             A dict of event data
         """
         # Only keep meaningful events and extract polarity information from
@@ -299,17 +304,20 @@ class SofiaProcessor(object):
                 processed_event_dict[event_index] = raw_event_dict[event_index]
         return processed_event_dict
 
-    def get_compositional_grounding(self, event_entry):
+    def get_compositional_grounding(
+        self,
+        event_entry: Dict[str, str],
+    ) -> Tuple[str, Tuple[str, ...]]:
         """Get the compositional grounding for an event
 
         Parameters
         ----------
-        event_entry : dict[str, str]
+        event_entry :
             The event to get the compositional grounding for
 
         Returns
         -------
-        tuple[str, tuple[str, ...]]
+        grounding :
             The name of the grounding and a tuple of representing the
             compositional grounding
         """
@@ -476,17 +484,17 @@ class SofiaJsonProcessor(SofiaProcessor):
         self.statements = []
         self.relation_subj_obj_ids = []
 
-    def process_entities(self, jd):
+    def process_entities(self, jd: Dict[str, Any]) -> Dict[str, Any]:
         """Process the entities of a Sofia document extraction
 
         Parameters
         ----------
-        jd : dict[str, Any]
+        jd :
             The extracted data from a document
 
         Returns
         -------
-        dict[str, Any]
+        ent_dict :
             A dictionary of processed entities keyed by their entity index
         """
         ent_dict = {}
@@ -497,17 +505,17 @@ class SofiaJsonProcessor(SofiaProcessor):
 
         return ent_dict
 
-    def process_events(self, jd):
+    def process_events(self, jd: Dict[str, Any]) -> Dict[str, Union[int, str]]:
         """Process the event of a Sofia document extraction
 
         Parameters
         ----------
-        jd : dict[str, Any]
+        jd :
             The extracted data from a document
 
         Returns
         -------
-        dict[str, Any]
+        processed_event_dict :
             A dictionary of processed events keyed by their event index
         """
         event_dict = {}
@@ -519,12 +527,12 @@ class SofiaJsonProcessor(SofiaProcessor):
         processed_event_dict = self.get_meaningful_events(event_dict)
         return processed_event_dict
 
-    def extract_relations(self, jd):
+    def extract_relations(self, jd: Dict[str, Any]) -> None:
         """Extract Influence statements from a Sofia document extraction
 
         Parameters
         ----------
-        jd : dict[str, Any]
+        jd :
             A dictionary with document extractions
         """
         stmts = []
@@ -541,12 +549,12 @@ class SofiaJsonProcessor(SofiaProcessor):
         for stmt in stmts:
             self.statements.append(stmt)
 
-    def extract_events(self, jd):
+    def extract_events(self, jd: Dict[str, str]) -> None:
         """Extract Event statements from a Sofia document extraction
 
         Parameters
         ----------
-        jd : dict[str, str]
+        jd :
             A dictionary with document extractions
         """
         # First confirm we have extracted event information and relation events
@@ -563,24 +571,24 @@ class SofiaJsonProcessor(SofiaProcessor):
 
 class SofiaExcelProcessor(SofiaProcessor):
     """An Excel processor extracting statements from reading done by Sofia"""
-    def __init__(self, relation_rows, event_rows, entity_rows,
+    def __init__(self, relation_rows, event_rows: Worksheet.rows, entity_rows,
                  **kwargs):
         super().__init__(**kwargs)
         self._events = self.process_events(event_rows)
         self.statements = []
         self.relation_subj_obj_ids = []
 
-    def process_events(self, event_rows):
+    def process_events(self, event_rows: Worksheet.rows) -> Dict[str, Union[int, str]]:
         """Process the events of Sofia document extractions in Excel format
 
         Parameters
         ----------
-        event_rows : openpyxl.worksheet.Worksheet.rows
+        event_rows :
             The extracted event data from an Excel document
 
         Returns
         -------
-        dict[str, Union[int, str]]
+        processed_event_dict :
             A dict of event keyed by their event index
         """
         header = [cell.value for cell in next(event_rows)]
@@ -593,12 +601,12 @@ class SofiaExcelProcessor(SofiaProcessor):
         processed_event_dict = self.get_meaningful_events(event_dict)
         return processed_event_dict
 
-    def extract_relations(self, relation_rows):
+    def extract_relations(self, relation_rows: Worksheet.rows) -> None:
         """Extract Influence statements from relation events
 
         Parameters
         ----------
-        relation_rows : openpyxl.worksheet.Worksheet.rows
+        relation_rows :
             The extracted relation data from an Excel document
         """
         header = [cell.value for cell in next(relation_rows)]
@@ -618,14 +626,18 @@ class SofiaExcelProcessor(SofiaProcessor):
         for stmt in stmts:
             self.statements.append(stmt)
 
-    def extract_events(self, event_rows, relation_rows):
+    def extract_events(
+        self,
+        event_rows: Worksheet.rows,
+        relation_rows: Worksheet.rows,
+    ) -> None:
         """Extract Event statements of a Sofia document in Excel format
 
         Parameters
         ----------
-        event_rows : openpyxl.worksheet.Worksheet.rows
+        event_rows :
             The extracted event data from an Excel document
-        relation_rows : openpyxl.worksheet.Worksheet.rows
+        relation_rows :
             The extracted relation data from an Excel document
         """
         # First confirm we have extracted event information and relation events

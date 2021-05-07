@@ -1,24 +1,29 @@
 import logging
-from indra.pipeline import AssemblyPipeline
+from typing import Any, Dict, List
 
+from indra.pipeline import AssemblyPipeline
+from indra.statements import Statement
 
 logger = logging.getLogger(__name__)
 
 
-def preprocess_statements(raw_statements, steps):
+def preprocess_statements(
+    raw_statements: List[Statement],
+    steps: List[Dict[str, Any]],
+) -> List[Statement]:
     """Run a preprocessing pipeline on raw statements.
 
     Parameters
     ----------
-    raw_statements : list[indra.statements.Statement]
+    raw_statements :
         A list of INDRA Statements to preprocess.
-    steps : list[dict]
+    steps :
         A list of AssemblyPipeline steps that define the steps of
         preprocessing.
 
     Returns
     -------
-    list[indra.statements.Statement]
+    preprocessed_statements :
         A list of preprocessed INDRA Statements.
     """
     logger.info('Running preprocessing on %d statements'
