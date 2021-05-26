@@ -109,14 +109,22 @@ class ServiceController:
         delta = self.assemblers[project_id].add_statements(new_stmts)
         return delta
 
-    def add_curation(self, project_id, curation):
-        res = self.db.add_curation_for_project(project_id, curation)
+    def add_curations(self, project_id, curations):
+        # Note: since loading a project applies all existing curations, it's
+        # very important that this happens first, before the new curations
+        # are added to the DB
+        self.load_project(project_id)
+        # We now add new curations to the DB
+        for stmt_hash, curation in curations.items():
+            self.db.add_curation_for_project(project_id, stmt_hash, curation)
+        matches_hash_map = \
+            self.assemblers[project_id].get_curation_effects(curations)
         # We need to *unload* the project here if it is currently loaded
         # since that is the cleanest way to guarantee that it will be
         # reloaded and the new curation applied correctly (in the
-        # IncrementalAssembler's constructor.
+        # IncrementalAssembler's constructor).
         self.unload_project(project_id)
-        return res
+        return matches_hash_map
 
     def get_project_curations(self, project_id):
         return self.db.get_curations_for_project(project_id)
