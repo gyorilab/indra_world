@@ -32,6 +32,7 @@ class Curations(Base):
     __tablename__ = 'curations'
     _dummy = Column(Integer, primary_key=True)
     project_id = Column(String)
+    stmt_hash = Column(Integer)
     curation = Column(JSON)
 
 

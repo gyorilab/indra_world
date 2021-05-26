@@ -42,10 +42,10 @@ def test_statements():
 
 def test_curations():
     db = _get_db()
-    db.add_curation_for_project('p1', {'curation': {'x': 'y'}})
+    db.add_curation_for_project('p1', 12345, {'x': 'y'})
     curs = db.get_curations_for_project('p1')
     assert len(curs) == 1
-    assert curs[0]['curation'] == {'x': 'y'}
+    assert curs[12345] == {'x': 'y'}
 
 
 def test_project_records_unique():
