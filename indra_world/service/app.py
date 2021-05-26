@@ -67,7 +67,7 @@ curation_model = api.model(
     'Curation',
     {
         'project_id': fields.String(example='project1'),
-        'statement_id': fields.String(example='12345'),
+        'statement_id': fields.String(example='83f5aec2-978b-4e01-a2c9-e231f90bfabd'),
         'update_type': fields.String(example='discard_statement')
     }
 )
@@ -82,7 +82,7 @@ curation_model_wrapped = api.model(
 submit_curations_model = api.model(
     'SubmitCurations',
     {'project_id': fields.String(example='project1'),
-     'curations': fields.List(fields.Nested(curation_model_wrapped))
+     'curations': fields.Nested(curation_model_wrapped)
      }
 )
 
@@ -271,7 +271,7 @@ class GetProjectRecords(Resource):
     def get(self):
         """Get records for a project.
 
-        Paremeters
+        Parameters
         ----------
         project_id : str
             ID of a project.
@@ -302,16 +302,25 @@ class SubmitCurations(Resource):
             ID of a project.
         curations : list[dict]
             A list of curations to submit.
+
+        Returns
+        -------
+        mappings : dict
+            For any statement matches hashes that have changed due to the
+            curations submitted here, the new hash (after applying the curation)
+            is given. Statements whose hash didn't change, or if a curation
+            for some reason couldn't be applied, the given statement is
+            not added to the return value.
         """
-        # TODO: previously, each curation contained a project ID as an attribute
-        # we need to check if it's possible that curations are submitted for
-        # multiple projects at once.
         project_id = request.json.get('project_id')
         curations = request.json.get('curations')
         logger.info('Got %d curations for project %s' %
                     (len(curations), project_id))
-        for stmt_id, curation in curations.items():
-            sc.add_curation(project_id, curation)
+        # Convert to int hashes here
+        curations = {int(sh): cur for sh, cur in curations.items()}
+        mappings = sc.add_curations(project_id, curations)
+        # Convert back to strings for consistency
+        return {str(nh): str(oh) for nh, oh in mappings.items()}
 
 
 @assembly_ns.expect(project_model)

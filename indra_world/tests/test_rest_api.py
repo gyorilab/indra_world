@@ -144,7 +144,7 @@ def test_curations():
                   project_name='Project 1'
               ))
     curation = {'project_id': 'p1',
-                'statement_id': '12345',
+                'statement_id': 'abcdef',
                 'update_type': 'discard_statement'}
     _call_api('post', 'assembly/submit_curations',
               json=dict(
@@ -154,7 +154,8 @@ def test_curations():
     res = _call_api('get', 'assembly/get_project_curations',
                     json=dict(project_id='p1'))
     assert len(res) == 1
-    assert res[0] == curation
+    assert res['12345'] == curation
+    assert False, res
 
 
 def test_cwms_process_text():
@@ -180,6 +181,7 @@ def test_hume_process_jsonld():
     stmts_json = res_json.get('statements')
     stmts = stmts_from_json(stmts_json)
     assert len(stmts) == 1
+
 
 def test_eidos_json():
     from indra_world.tests.test_eidos import test_jsonld, _get_data_file
