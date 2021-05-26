@@ -2,7 +2,7 @@ import os
 import json
 from nose.tools import raises
 from datetime import datetime
-from indra.statements import stmts_from_json, Influence, Event
+from indra.statements import stmts_from_json, Influence, Event, Concept
 from indra_world.service.app import api
 from indra_world.service.app import sc
 from indra_world.sources.dart import DartClient
@@ -143,19 +143,27 @@ def test_curations():
                   project_id='p1',
                   project_name='Project 1'
               ))
+
+    # Now add a record just on the back-end
+    sc.db.add_records_for_project('p1', ['r1'])
+    # And now add a statement for that record so we can "curate" it
+    stmt = Influence(Event(Concept('x')), Event(Concept('y')))
+    stmt_hash = -11334164755554266
+    sc.db.add_statements_for_record('r1', [stmt], '1.0')
+
     curation = {'project_id': 'p1',
                 'statement_id': 'abcdef',
-                'update_type': 'discard_statement'}
-    _call_api('post', 'assembly/submit_curations',
-              json=dict(
-                  project_id='p1',
-                  curations={'12345': curation}
-              ))
+                'update_type': 'reverse_relation'}
+    mappings = _call_api('post', 'assembly/submit_curations',
+                         json=dict(
+                            project_id='p1',
+                            curations={stmt_hash: curation}
+                         ))
+    assert mappings
     res = _call_api('get', 'assembly/get_project_curations',
                     json=dict(project_id='p1'))
     assert len(res) == 1
-    assert res['12345'] == curation
-    assert False, res
+    assert res[str(stmt_hash)] == curation, res
 
 
 def test_cwms_process_text():

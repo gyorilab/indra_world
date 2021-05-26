@@ -113,7 +113,7 @@ class IncrementalAssembler:
             self.apply_polarity_curation(stmt, curation)
         # Flip subject/object
         elif curation['update_type'] == 'reverse_relation':
-            self.apply_polarity_curation(stmt, curation)
+            self.apply_reverse_curation(stmt, curation)
         # Change grounding
         elif curation['update_type'] == 'factor_grounding':
             self.apply_grounding_curation(stmt, curation)
