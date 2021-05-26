@@ -135,9 +135,7 @@ class IncrementalAssembler:
 
     @staticmethod
     def apply_reverse_curation(stmt, curation):
-        tmp = stmt.subj
-        stmt.subj = stmt.obj
-        stmt.obj = tmp
+        stmt.subj, stmt.obj = stmt.obj, stmt.subj
         # TODO: update evidence annotations
 
     @staticmethod
