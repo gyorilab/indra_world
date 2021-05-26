@@ -1,3 +1,4 @@
+import copy
 import logging
 from copy import deepcopy
 import networkx
@@ -86,6 +87,70 @@ class IncrementalAssembler:
         self.belief_scorer = eidos_scorer
         self.beliefs = self.get_beliefs()
 
+    def get_curation_effects(self, curations):
+        mappings = {}
+        for stmt_hash, curation in curations.items():
+            new_hash = self.get_curation_effect(stmt_hash, curation)
+            if new_hash:
+                mappings[stmt_hash] = new_hash
+        return mappings
+
+    def get_curation_effect(self, old_hash, curation):
+        """Return changed matches hash as a result of curation."""
+        relevant_types = {'factor_polarity', 'reverse_relation',
+                          'factor_grounding'}
+        if curation['update_type'] not in relevant_types:
+            return None
+        # This should work but we don't want to error in case
+        # the hash is missing.
+        stmt = self.stmts_by_hash.get(old_hash)
+        if not stmt:
+            return None
+        # Make a deepcopy so we don't persist changes
+        stmt = copy.deepcopy(stmt)
+        # Flip the polarity
+        if curation['update_type'] == 'factor_polarity':
+            self.apply_polarity_curation(stmt, curation)
+        # Flip subject/object
+        elif curation['update_type'] == 'reverse_relation':
+            self.apply_polarity_curation(stmt, curation)
+        # Change grounding
+        elif curation['update_type'] == 'factor_grounding':
+            self.apply_grounding_curation(stmt, curation)
+
+        new_hash = stmt.get_hash(matches_fun=self.matches_fun,
+                                 refresh=True)
+        if new_hash != old_hash:
+            return new_hash
+        else:
+            return None
+
+    @staticmethod
+    def apply_polarity_curation(stmt, curation):
+        role, new_pol = parse_factor_polarity_curation(curation)
+        if role == 'subj':
+            stmt.subj.delta.polarity = new_pol
+        elif role == 'obj':
+            stmt.obj.delta.polarity = new_pol
+
+    @staticmethod
+    def apply_reverse_curation(stmt, curation):
+        tmp = stmt.subj
+        stmt.subj = stmt.obj
+        stmt.obj = tmp
+        # TODO: update evidence annotations
+
+    @staticmethod
+    def apply_grounding_curation(stmt, curation):
+        role, txt, grounding = parse_factor_grounding_curation(curation)
+        # FIXME: It is not clear how compositional groundings will be
+        # represented in curations. This implementation assumes a single
+        # grounding entry to which we assign a score of 1.0
+        if role == 'subj':
+            stmt.subj.concept.db_refs['WM'][0] = (grounding, 1.0)
+        elif role == 'obj':
+            stmt.obj.concept.db_refs['WM'][0] = (grounding, 1.0)
+
     def apply_curations(self):
         """Apply the set of curations to the de-duplicated statements."""
         hashes_by_uuid = {stmt.uuid: sh
@@ -106,30 +171,13 @@ class IncrementalAssembler:
                 # TODO: update belief model here
             # Flip the polarity
             elif curation['update_type'] == 'factor_polarity':
-                role, new_pol = parse_factor_polarity_curation(curation)
-                if role == 'subj':
-                    stmt.subj.delta.polarity = new_pol
-                elif role == 'obj':
-                    stmt.obj.delta.polarity = new_pol
-                else:
-                    continue
-
+                self.apply_polarity_curation(stmt, curation)
             # Flip subject/object
             elif curation['update_type'] == 'reverse_relation':
-                tmp = stmt.subj
-                stmt.subj = stmt.obj
-                stmt.obj = tmp
-                # TODO: update evidence annotations
+                self.apply_reverse_curation(stmt, curation)
             # Change grounding
             elif curation['update_type'] == 'factor_grounding':
-                role, txt, grounding = parse_factor_grounding_curation(curation)
-                # FIXME: It is not clear how compositional groundings will be
-                # represented in curations. This implementation assumes a single
-                # grounding entry to which we assign a score of 1.0
-                if role == 'subj':
-                    stmt.subj.concept.db_refs['WM'][0] = (grounding, 1.0)
-                elif role == 'obj':
-                    stmt.obj.concept.db_refs['WM'][0] = (grounding, 1.0)
+                self.apply_grounding_curation(stmt, curation)
             else:
                 logger.warning('Unknown curation type: %s' %
                                curation['update_type'])
