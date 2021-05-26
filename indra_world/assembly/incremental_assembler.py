@@ -144,10 +144,17 @@ class IncrementalAssembler:
         # FIXME: It is not clear how compositional groundings will be
         # represented in curations. This implementation assumes a single
         # grounding entry to which we assign a score of 1.0
+
+        # Compositional grounding
+        if isinstance(grounding, list):
+            grounding_entry = [(gr, 1.0) if gr else None for gr in grounding]
+        # Flat grounding
+        else:
+            grounding_entry = (grounding, 1.0)
         if role == 'subj':
-            stmt.subj.concept.db_refs['WM'][0] = (grounding, 1.0)
+            stmt.subj.concept.db_refs['WM'][0] = grounding_entry
         elif role == 'obj':
-            stmt.obj.concept.db_refs['WM'][0] = (grounding, 1.0)
+            stmt.obj.concept.db_refs['WM'][0] = grounding_entry
 
     def apply_curations(self):
         """Apply the set of curations to the de-duplicated statements."""
@@ -307,7 +314,7 @@ class IncrementalAssembler:
                              beliefs, matches_fun=self.matches_fun)
 
     def get_all_supporting_evidence(self, sh):
-        """Return direct and incirect evidence for a statement hash."""
+        """Return direct and indirect evidence for a statement hash."""
         all_evs = set(self.evs_by_stmt_hash[sh])
         for supp in networkx.descendants(self.refinements_graph, sh):
             all_evs |= set(self.evs_by_stmt_hash[supp])
