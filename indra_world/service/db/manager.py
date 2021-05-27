@@ -147,9 +147,10 @@ class DbManager:
         )
         return self.execute(op)
 
-    def add_curation_for_project(self, project_id, curation):
+    def add_curation_for_project(self, project_id, stmt_hash, curation):
         """Add curations for a given project."""
         op = insert(wms_schema.Curations).values(project_id=project_id,
+                                                 stmt_hash=stmt_hash,
                                                  curation=curation)
         return self.execute(op)
 
@@ -196,8 +197,9 @@ class DbManager:
     def get_curations_for_project(self, project_id):
         """Return curations for a given project"""
         qfilter = wms_schema.Curations.project_id.like(project_id)
-        q = self.query(wms_schema.Curations.curation).filter(qfilter)
-        curations = [res[0] for res in q.all()]
+        q = self.query(wms_schema.Curations).filter(qfilter)
+        # Build a dict of stmt_hash: curation records
+        curations = {res.stmt_hash: res.curation for res in q.all()}
         return curations
 
     def add_dart_record(self, reader, reader_version, document_id, storage_key,

@@ -2,7 +2,7 @@ import os
 import json
 from nose.tools import raises
 from datetime import datetime
-from indra.statements import stmts_from_json, Influence, Event
+from indra.statements import stmts_from_json, Influence, Event, Concept
 from indra_world.service.app import api
 from indra_world.service.app import sc
 from indra_world.sources.dart import DartClient
@@ -143,18 +143,27 @@ def test_curations():
                   project_id='p1',
                   project_name='Project 1'
               ))
+
+    # Now add a record just on the back-end
+    sc.db.add_records_for_project('p1', ['r1'])
+    # And now add a statement for that record so we can "curate" it
+    stmt = Influence(Event(Concept('x')), Event(Concept('y')))
+    stmt_hash = -11334164755554266
+    sc.db.add_statements_for_record('r1', [stmt], '1.0')
+
     curation = {'project_id': 'p1',
-                'statement_id': '12345',
-                'update_type': 'discard_statement'}
-    _call_api('post', 'assembly/submit_curations',
-              json=dict(
-                  project_id='p1',
-                  curations={'12345': curation}
-              ))
+                'statement_id': 'abcdef',
+                'update_type': 'reverse_relation'}
+    mappings = _call_api('post', 'assembly/submit_curations',
+                         json=dict(
+                            project_id='p1',
+                            curations={stmt_hash: curation}
+                         ))
+    assert mappings
     res = _call_api('get', 'assembly/get_project_curations',
                     json=dict(project_id='p1'))
     assert len(res) == 1
-    assert res[0] == curation
+    assert res[str(stmt_hash)] == curation, res
 
 
 def test_cwms_process_text():
@@ -180,6 +189,7 @@ def test_hume_process_jsonld():
     stmts_json = res_json.get('statements')
     stmts = stmts_from_json(stmts_json)
     assert len(stmts) == 1
+
 
 def test_eidos_json():
     from indra_world.tests.test_eidos import test_jsonld, _get_data_file

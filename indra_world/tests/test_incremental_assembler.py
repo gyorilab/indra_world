@@ -152,3 +152,23 @@ def test_post_processing_new_stmts():
     assert stmt.evidence[0].annotations['agents'] == {
         'raw_text': ['some_text2', 'some_text2']
     }, stmt.evidence[0].annotations['agents']
+
+
+def test_apply_grounding_curation():
+    gr1 = [('theme1', 0.8), None, ('process', 0.7), None]
+    gr2 = ['theme2', 'property2', None, None]
+    cur = {
+        "before": {"subj": {"factor": 'x',
+                            "concept": gr1},
+                   "obj": {"factor": 'y',
+                           "concept": 'z'}},
+        "after": {"subj": {"factor": 'x',
+                           "concept": gr2},
+                  "obj": {"factor": 'y',
+                          "concept": 'z'}},
+    }
+    c1 = Concept('x', db_refs={'WM': [gr1]})
+    stmt = Influence(Event(c1), Event('y'))
+    IncrementalAssembler.apply_grounding_curation(stmt, cur)
+    assert stmt.subj.concept.db_refs['WM'][0] == \
+        [('theme2', 1.0), ('property2', 1.0), None, None]
