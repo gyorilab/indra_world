@@ -125,6 +125,30 @@ sofia_json_model = api.model(
      'grounding_mode': fields.String(example='flat', required=False)  
     })
 
+# Models for response
+project_resp_model = api.model('ProjectResponse', {
+    'id': fields.String(example='project1', description='Project ID'),
+    'name': fields.String(example='Project 1', description='Project name')
+})
+
+project_records_resp = fields.List(fields.String, example=['record1, record2'])
+
+curated_mapping = fields.Raw(
+    example={'12345': '23456'},
+    description=(
+        'Mapping from old statement hashes to new statement hashes '
+        'if they changed due to the curations'))
+
+project_curation = fields.Wildcard(fields.Nested(curation_model), example={
+    '12345': {
+        'project_id': 'project1',
+        'statement_id': '83f5aec2-978b-4e01-a2c9-e231f90bfabd',
+        'update_type': 'discard_statement'
+    },
+}, description='Mapping from statement hashes to curations'
+)
+
+
 def _stmts_from_proc(proc):
     if proc and proc.statements:
         stmts = stmts_to_json(proc.statements)
@@ -255,6 +279,8 @@ class GetProjects(Resource):
     def options(self):
         return {}
 
+    @assembly_ns.marshal_list_with(project_resp_model,
+                                   description='List of projects')
     def get(self):
         """Get a list of all projects."""
         projects = sc.get_projects()
@@ -268,6 +294,7 @@ class GetProjectRecords(Resource):
     def options(self):
         return {}
 
+    # @assembly_ns.marshal_with(project_records_resp)
     def get(self):
         """Get records for a project.
 
@@ -293,6 +320,7 @@ class SubmitCurations(Resource):
     def options(self):
         return {}
 
+    # @assembly_ns.marshal_with(curated_mapping)
     def post(self):
         """Submit curations.
 
@@ -330,6 +358,7 @@ class GetProjectCurations(Resource):
     def options(self):
         return {}
 
+    # @assembly_ns.marshal_list_with(project_curation)
     def get(self):
         """Get project curations.
 
