@@ -43,33 +43,44 @@ dict_model = api.model('dict', {})
 
 dart_record_model = api.model(
     'DartRecord',
-    {'identity': fields.String(example='eidos'),
-     'version': fields.String(example='1.0'),
+    {'identity': fields.String(example='eidos',
+                               description='Name of the reader'),
+     'version': fields.String(example='1.0', description='Reader version'),
      'document_id': fields.String(
-         example='70a62e43-f881-47b1-8367-a3cca9450c03'),
+         example='70a62e43-f881-47b1-8367-a3cca9450c03',
+         description='ID of a document to process'),
      'storage_key': fields.String(
-         example='bcd04c45-3cfc-456f-a31e-59e875aefabf.json')
+         example='bcd04c45-3cfc-456f-a31e-59e875aefabf.json',
+         description='Key to store the record with')
     }
 )
 
 project_model = api.model(
     'Project',
-    {'project_id': fields.String(example='project1', required=True)}
+    {'project_id': fields.String(example='project1', required=True,
+                                 description='ID of a project')}
 )
 
 project_records_model = api.model(
     'ProjectRecords',
-    {'project_id': fields.String(example='project1'),
-     'records': fields.List(fields.Nested(dart_record_model))
+    {'project_id': fields.String(example='project1',
+                                 description='ID of a project'),
+     'records': fields.List(
+        fields.Nested(dart_record_model),
+        description='A list of records to add, each should have a storage_key')
      }
 )
 
 curation_model = api.model(
     'Curation',
     {
-        'project_id': fields.String(example='project1'),
-        'statement_id': fields.String(example='83f5aec2-978b-4e01-a2c9-e231f90bfabd'),
-        'update_type': fields.String(example='discard_statement')
+        'project_id': fields.String(example='project1',
+                                    description='ID of a project'),
+        'statement_id': fields.String(
+            example='83f5aec2-978b-4e01-a2c9-e231f90bfabd',
+            description='INDRA Statement ID'),
+        'update_type': fields.String(example='discard_statement',
+                                     description='What to do with the Statement')
     }
 )
 
@@ -82,48 +93,62 @@ curation_model_wrapped = api.model(
 
 submit_curations_model = api.model(
     'SubmitCurations',
-    {'project_id': fields.String(example='project1'),
+    {'project_id': fields.String(example='project1',
+                                 description='ID of a project'),
      'curations': fields.Nested(curation_model_wrapped)
      }
 )
 
 new_project_model = api.model(
     'NewProject',
-    {'project_id': fields.String(example='project1', required=True),
-     'project_name': fields.String(example='Project 1', required=True),
-     'corpus_id': fields.String(example='corpus1', required=False)
+    {'project_id': fields.String(example='project1', required=True,
+                                 description='ID of a project'),
+     'project_name': fields.String(example='Project 1', required=True,
+                                   description='Name of a project'),
+     'corpus_id': fields.String(example='corpus1', required=False,
+                                description='ID of a corpus')
      }
 )
 
 wm_text_model = api.model(
     'WMText',
-    {'text': fields.String(example='Rainfall causes floods.')})
+    {'text': fields.String(example='Rainfall causes floods.',
+                           description='Text to process')})
 
 jsonld_model = api.model(
     'jsonld',
-    {'jsonld': fields.String(example='{}')})
+    {'jsonld': fields.String(example='{}', description='JSON-LD reader output')})
 
 eidos_text_model = api.inherit('EidosText', wm_text_model, {
-    'webservice': fields.String,
-    'grounding_ns': fields.List(fields.String(example=['WM']), required=False),
-    'extract_filter': fields.List(fields.String(example=['Influence']),
-                                  required=False),
+    'webservice': fields.String(description='URL for Eidos webservice'),
+    'grounding_ns': fields.List(
+        fields.String, example=['WM'], required=False,
+        description='A list of name spaces for which INDRA should represent groundings'),
+    'extract_filter': fields.List(
+        fields.String, example=['Influence'], required=False,
+        description='A list of relation types to extract'),
     'grounding_mode': fields.String(example='flat', required=False)
 })
 
 eidos_jsonld_model = api.inherit('EidosJson', jsonld_model, {
-    'grounding_ns': fields.List(fields.String(example=['WM']), required=False),
-    'extract_filter': fields.List(fields.String(example=['Influence']),
-                                  required=False),
-    'grounding_mode': fields.String(example='flat', required=False)    
+    'grounding_ns': fields.List(
+        fields.String, example=['WM'], required=False,
+        description='A list of name spaces for which INDRA should represent groundings'),
+    'extract_filter': fields.List(
+        fields.String, example=['Influence'], required=False,
+        description='A list of relation types to extract'),
+    'grounding_mode': fields.String(example='flat', required=False,
+                                    description='flat or compositional')    
 })
 
 sofia_json_model = api.model(
     'json',
-    {'json': fields.String(example='{}'),
-     'extract_filter': fields.List(fields.String(example=['Influence']),
-                                   required=False),
-     'grounding_mode': fields.String(example='flat', required=False)  
+    {'json': fields.String(example='{}', description='JSON reader output'),
+     'extract_filter': fields.List(
+         fields.String(example=['Influence']), required=False,
+         description='A list of relation types to extract'),
+     'grounding_mode': fields.String(example='flat', required=False,
+                                     description='flat or compositional')  
     })
 
 # Models for response
@@ -528,7 +553,7 @@ class EidosProcessText(Resource):
         return _stmts_from_proc(ep)
 
 
-@sources_ns.expect(jsonld_model)
+@sources_ns.expect(eidos_jsonld_model)
 @sources_ns.route('/eidos/process_jsonld')
 class EidosProcessJsonld(Resource):
     @api.doc(False)
