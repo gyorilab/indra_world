@@ -152,13 +152,10 @@ project_curation = fields.Wildcard(fields.Nested(curation_model), example={
 
 stmt_fields = fields.Raw(example={
     "id": "acc6d47c-f622-41a4-8ae9-d7b0f3d24a2f",
-    "type": "Complex",
-    "members": [
-        {"db_refs": {"TEXT": "MEK", "FPLX": "MEK"}, "name": "MEK"},
-        {"db_refs": {"TEXT": "ERK", "FPLX": "ERK"}, "name": "ERK"}
-    ],
-    "sbo": "https://identifiers.org/SBO:0000526",
-    "evidence": [{"text": "MEK binds ERK", "source_api": "trips"}]
+    "type": "Influence",
+    "subj": {"db_refs": {"WM": "wm/concept/causal_factor/environmental/meteorologic/precipitation/rainfall"}, "name": "rainfall"},
+    "obj": {"db_refs": {"WM": "wm/concept/causal_factor/crisis_and_disaster/environmental_disasters/natural_disaster/flooding"}, "name": "flood"},
+    "evidence": [{"text": "Rainfall causes flood", "source_api": "eidos"}]
 }, description='INDRA Statement JSON')
 
 stmts_model = api.model('Statements', {
@@ -169,17 +166,14 @@ delta_fields = fields.Raw(example={
     'new_statements': {
         '12345': {
             "id": "acc6d47c-f622-41a4-8ae9-d7b0f3d24a2f",
-            "type": "Complex",
-            "members": [
-                {"db_refs": {"TEXT": "MEK", "FPLX": "MEK"}, "name": "MEK"},
-                {"db_refs": {"TEXT": "ERK", "FPLX": "ERK"}, "name": "ERK"}
-            ],
-            "sbo": "https://identifiers.org/SBO:0000526",
-            "evidence": [{"text": "MEK binds ERK", "source_api": "trips"}]
-        }
+            "type": "Influence",
+            "subj": {"db_refs": {"WM": "wm/concept/causal_factor/environmental/meteorologic/precipitation/rainfall"}, "name": "rainfall"},
+            "obj": {"db_refs": {"WM": "wm/concept/causal_factor/crisis_and_disaster/environmental_disasters/natural_disaster/flooding"}, "name": "flood"},
+            "evidence": [{"text": "Rainfall causes flood", "source_api": "eidos"}]
+            }
     },
     'new_evidence': {
-        '12345': [{"text": "MEK binds ERK", "source_api": "trips"}]
+        '12345': [{"text": "Rainfall causes flood", "source_api": "eidos"}]
     },
     'new_refinements': [['12345', '23456'], ['34567', '45678']],
     'beliefs': {'12345': 0.7, '23456': 0.9}
