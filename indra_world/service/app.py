@@ -150,6 +150,20 @@ project_curation = fields.Wildcard(fields.Nested(curation_model), example={
     },
 })
 
+stmt_fields = fields.Raw(example={
+    "id": "acc6d47c-f622-41a4-8ae9-d7b0f3d24a2f",
+    "type": "Complex",
+    "members": [
+        {"db_refs": {"TEXT": "MEK", "FPLX": "MEK"}, "name": "MEK"},
+        {"db_refs": {"TEXT": "ERK", "FPLX": "ERK"}, "name": "ERK"}
+    ],
+    "sbo": "https://identifiers.org/SBO:0000526",
+    "evidence": [{"text": "MEK binds ERK", "source_api": "trips"}]
+})
+
+stmts_model = api.model('Statements', {
+    'statements': fields.List(stmt_fields)
+})
 
 def _stmts_from_proc(proc):
     if proc and proc.statements:
@@ -393,6 +407,7 @@ class HumeProcessJsonld(Resource):
     def options(self):
         return {}
 
+    @sources_ns.response(200, 'INDRA Statements', stmts_model)
     def post(self):
         """Process Hume JSON-LD and return INDRA Statements.
 
@@ -421,6 +436,7 @@ class CwmsProcessText(Resource):
     def options(self):
         return {}
 
+    @sources_ns.response(200, 'INDRA Statements', stmts_model)
     def post(self):
         """Process text with CWMS and return INDRA Statements.
 
@@ -448,6 +464,7 @@ class EidosProcessText(Resource):
     def options(self):
         return {}
 
+    @sources_ns.response(200, 'INDRA Statements', stmts_model)
     def post(self):
         """Process text with EIDOS and return INDRA Statements.
 
@@ -503,6 +520,7 @@ class EidosProcessJsonld(Resource):
     def options(self):
         return {}
 
+    @sources_ns.response(200, 'INDRA Statements', stmts_model)
     def post(self):
         """Process an EIDOS JSON-LD and return INDRA Statements.
 
@@ -551,6 +569,7 @@ class SofiaProcessJson(Resource):
     def options(self):
         return {}
 
+    @sources_ns.response(200, 'INDRA Statements', stmts_model)
     def post(self):
         """Process a Sofia JSON and return INDRA Statements.
 
