@@ -159,10 +159,30 @@ stmt_fields = fields.Raw(example={
     ],
     "sbo": "https://identifiers.org/SBO:0000526",
     "evidence": [{"text": "MEK binds ERK", "source_api": "trips"}]
-})
+}, description='INDRA Statement JSON')
 
 stmts_model = api.model('Statements', {
     'statements': fields.List(stmt_fields)
+})
+
+delta_fields = fields.Raw(example={
+    'new_statements': {
+        '12345': {
+            "id": "acc6d47c-f622-41a4-8ae9-d7b0f3d24a2f",
+            "type": "Complex",
+            "members": [
+                {"db_refs": {"TEXT": "MEK", "FPLX": "MEK"}, "name": "MEK"},
+                {"db_refs": {"TEXT": "ERK", "FPLX": "ERK"}, "name": "ERK"}
+            ],
+            "sbo": "https://identifiers.org/SBO:0000526",
+            "evidence": [{"text": "MEK binds ERK", "source_api": "trips"}]
+        }
+    },
+    'new_evidence': {
+        '12345': [{"text": "MEK binds ERK", "source_api": "trips"}]
+    },
+    'new_refinements': [['12345', '23456'], ['34567', '45678']],
+    'beliefs': {'12345': 0.7, '23456': 0.9}
 })
 
 def _stmts_from_proc(proc):
@@ -263,6 +283,7 @@ class AddProjectRecords(Resource):
     def options(self):
         return {}
 
+    @assembly_ns.response(200, 'AssemblyDelta JSON', delta_fields)
     def post(self):
         """Add project records and assemble them.
 
