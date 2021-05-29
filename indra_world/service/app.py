@@ -126,6 +126,11 @@ sofia_json_model = api.model(
     })
 
 # Models for response
+health_model = api.model('Health', {
+    'state': fields.String(example='healthy'),
+    'version': fields.String(example='1.0.0')
+})
+
 project_resp_model = api.model('ProjectResponse', {
     'id': fields.String(example='project1', description='Project ID'),
     'name': fields.String(example='Project 1', description='Project name')
@@ -162,6 +167,7 @@ class Health(Resource):
     def options(self):
         return {}
 
+    @base_ns.response(200, 'State and version of the API', health_model)
     def get(self):
         return {'state': 'healthy', 'version': '1.0.0'}
 
@@ -174,6 +180,7 @@ class Notify(Resource):
     def options(self):
         return {}
 
+    @dart_ns.response(200, 'DART record is added and processed')
     def post(self):
         """Add and process DART record.
 
@@ -209,6 +216,7 @@ class NewProject(Resource):
     def options(self):
         return {}
 
+    @assembly_ns.response(200, 'New project is created')
     def post(self):
         """Create new project.
 
