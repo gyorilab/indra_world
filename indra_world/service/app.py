@@ -19,6 +19,7 @@ sc = ServiceController(db_url, dart_client=dart_client)
 
 
 app = Flask(__name__)
+app.config['RESTX_MASK_SWAGGER'] = False
 api = Api(app, title='INDRA World Modelers API',
           description='REST API for INDRA World Modelers')
 
