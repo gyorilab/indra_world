@@ -86,16 +86,16 @@ class CorpusManager:
 
         # Upload statements
         jsonl_str = stmts_to_jsonl_str(self.assembled_stmts)
-        key = os.path.join(default_key_base, 'statements.json')
+        key = os.path.join(default_key_base, self.corpus_id, 'statements.json')
         s3.put_object(Body=jsonl_str, Bucket=default_bucket, Key=key)
 
         # Upload meta data
         metadata_str = json.dumps(self.metadata, indent=1)
-        key = os.path.join(default_key_base, 'metadata.json')
+        key = os.path.join(default_key_base, self.corpus_id, 'metadata.json')
         s3.put_object(Body=metadata_str, Bucket=default_bucket, Key=key)
 
         # Update index
-        key = os.path.join(default_key_base, 'index.csv')
+        key = os.path.join(default_key_base, self.corpus_id, 'index.csv')
         obj = s3.get_object(Bucket=default_bucket, Key=key)
         index_str = obj['Body'].read().decode('utf-8')
         if not index_str.endswith('\n'):
