@@ -65,7 +65,7 @@ class IncrementalAssembler:
         self.known_corrects = set()
 
         if not refinement_filters:
-            logger.info('Initializing refinement filters')
+            logger.info('Instantiating refinement filters')
             crf = CompositionalRefinementFilter(ontology=world_ontology)
             rcf = RefinementConfirmationFilter(ontology=world_ontology,
                 refinement_fun=location_refinement_compositional)
