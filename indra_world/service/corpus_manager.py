@@ -52,10 +52,7 @@ class CorpusManager:
         """
         all_stmts = []
         for record in self.dart_records:
-            stmts = self.sc.db.get_statements_for_document(
-                document_id=record['document_id'],
-                reader=record['reader'],
-                reader_version=record['reader_version'])
+            stmts = self.sc.db.get_statements_for_record(record['storage_key'])
             all_stmts += stmts
         ia = IncrementalAssembler(all_stmts)
         self.assembled_stmts = ia.get_statements()
