@@ -3,6 +3,7 @@
 for loading into CauseMos."""
 import os
 import json
+import tqdm
 import logging
 import datetime
 from indra.statements import stmts_to_json, stmts_to_json_file
@@ -25,7 +26,7 @@ class CorpusManager:
         self.metadata = metadata
         self.assembled_stmts = None
 
-    def prepare(self):
+    def prepare(self, records_exist=False):
         """Run the preprocessing pipeline on statements.
 
         This function adds the new corpus to the DB, adds records to the
@@ -33,16 +34,20 @@ class CorpusManager:
         statements, preprocesses the statements, and then stores these
         prepared statements in the DB.
         """
+        logger.info('Adding corpus %s to DB' % self.corpus_id)
         self.sc.db.add_corpus(self.corpus_id, self.metadata)
+        logger.info('Adding %d records for corpus' % len(self.dart_records))
         self.sc.db.add_records_for_corpus(
             self.corpus_id,
             [c['storage_key'] for c in self.dart_records]
         )
-        for record in self.dart_records:
-            # This adds DART records
-            self.sc.add_dart_record(record)
-            # This adds prepared statements
-            self.sc.process_dart_record(record)
+        if not records_exist:
+            logger.info('Adding and processing records')
+            for record in tqdm.tqdm(self.dart_records):
+                # This adds DART records
+                self.sc.add_dart_record(record)
+                # This adds prepared statements
+                self.sc.process_dart_record(record)
 
     def assemble(self):
         """Run assembly on the prepared statements.
@@ -51,11 +56,17 @@ class CorpusManager:
         corpus and then runs assembly on them.
         """
         all_stmts = []
-        for record in self.dart_records:
+        logger.info('Loading statements from DB for %d records' %
+                    len(self.dart_records))
+        for record in tqdm.tqdm(self.dart_records):
             stmts = self.sc.db.get_statements_for_record(record['storage_key'])
             all_stmts += stmts
+        logger.info('Instantiating incremental assembler with %d statements'
+                    % len(all_stmts))
         ia = IncrementalAssembler(all_stmts)
+        logger.info('Getting assembled statements')
         self.assembled_stmts = ia.get_statements()
+        logger.info('Got %d assembled statements' % len(self.assembled_stmts))
         self.metadata['num_statements'] = len(self.assembled_stmts)
 
     def dump_local(self, base_folder):
