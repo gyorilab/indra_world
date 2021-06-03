@@ -1,4 +1,5 @@
 import copy
+import tqdm
 import logging
 from copy import deepcopy
 import networkx
@@ -64,6 +65,7 @@ class IncrementalAssembler:
         self.known_corrects = set()
 
         if not refinement_filters:
+            logger.info('Instantiating refinement filters')
             crf = CompositionalRefinementFilter(ontology=world_ontology)
             rcf = RefinementConfirmationFilter(ontology=world_ontology,
                 refinement_fun=location_refinement_compositional)
@@ -212,7 +214,8 @@ class IncrementalAssembler:
     def deduplicate(self):
         """Build hash-based statement and evidence data structures to
         deduplicate."""
-        for stmt in self.prepared_stmts:
+        logger.info('Deduplicating prepared statements')
+        for stmt in tqdm.tqdm(self.prepared_stmts):
             self.annotate_evidences(stmt)
             stmt_hash = stmt.get_hash(matches_fun=self.matches_fun)
             evs = stmt.evidence
@@ -230,9 +233,11 @@ class IncrementalAssembler:
     def get_refinements(self):
         """Calculate refinement relationships between de-duplicated statements.
         """
+        logger.info('Initializing refinement filters')
         for filter in self.refinement_filters:
             filter.initialize(self.stmts_by_hash)
-        for sh, stmt in self.stmts_by_hash.items():
+        logger.info('Applying refinement filters')
+        for sh, stmt in tqdm.tqdm(self.stmts_by_hash.items()):
             refinements = None
             for filter in self.refinement_filters:
                 # This gets less specific hashes
@@ -245,6 +250,7 @@ class IncrementalAssembler:
     def build_refinements_graph(stmts_by_hash, refinement_edges):
         """Return a refinements graph based on statements and refinement edges.
         """
+        logger.info('Building refinement graph')
         g = networkx.DiGraph()
         nodes = [(sh, {'stmt': stmt}) for sh, stmt in stmts_by_hash.items()]
         g.add_nodes_from(nodes)

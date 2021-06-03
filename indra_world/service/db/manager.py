@@ -29,6 +29,8 @@ class DbManager:
     def create_all(self):
         """Create all the database tables in the schema."""
         wms_schema.Base.metadata.create_all(self.engine)
+        self.engine.execute('create index record_key_idx on '
+                            'prepared_statements (record_key)')
 
     def query(self, *query_args):
         """Run and return results of a generic query."""
@@ -40,7 +42,8 @@ class DbManager:
         return self.engine.execute(query_str)
 
     def execute(self, operation):
-        """Execute an operation on the current session and return results."""
+        """Execute an insert operation on the current session and return
+        results."""
         session = self.get_session()
         try:
             res = session.execute(operation)
