@@ -67,7 +67,7 @@ project_records_model = api.model(
                                  description='ID of a project'),
      'records': fields.List(
         fields.Nested(dart_record_model),
-        description='A list of records to add, each should have a storage_key')
+        description='A list of records to add')
      }
 )
 
@@ -80,7 +80,8 @@ curation_model = api.model(
             example='83f5aec2-978b-4e01-a2c9-e231f90bfabd',
             description='INDRA Statement ID'),
         'update_type': fields.String(example='discard_statement',
-                                     description='What to do with the Statement')
+                                     description='The curation operation '
+                                                 'applied to the Statement')
     }
 )
 
@@ -125,7 +126,7 @@ eidos_text_model = api.inherit('EidosText', wm_text_model, {
         fields.String, example=['WM'], required=False,
         description='A list of name spaces for which INDRA should represent groundings'),
     'extract_filter': fields.List(
-        fields.String, example=['Influence'], required=False,
+        fields.String, example=['influence'], required=False,
         description='A list of relation types to extract'),
     'grounding_mode': fields.String(example='flat', required=False)
 })
@@ -133,19 +134,20 @@ eidos_text_model = api.inherit('EidosText', wm_text_model, {
 eidos_jsonld_model = api.inherit('EidosJson', jsonld_model, {
     'grounding_ns': fields.List(
         fields.String, example=['WM'], required=False,
-        description='A list of name spaces for which INDRA should represent groundings'),
+        description='A list of name spaces for which INDRA should '
+                    'represent groundings'),
     'extract_filter': fields.List(
-        fields.String, example=['Influence'], required=False,
+        fields.String, example=['influence'], required=False,
         description='A list of relation types to extract'),
     'grounding_mode': fields.String(example='flat', required=False,
-                                    description='flat or compositional')    
+                                    description='flat or compositional')
 })
 
 sofia_json_model = api.model(
     'json',
     {'json': fields.String(example='{}', description='JSON reader output'),
      'extract_filter': fields.List(
-         fields.String(example=['Influence']), required=False,
+         fields.String(example=['influence']), required=False,
          description='A list of relation types to extract'),
      'grounding_mode': fields.String(example='flat', required=False,
                                      description='flat or compositional')  
@@ -203,6 +205,7 @@ delta_fields = fields.Raw(example={
     'new_refinements': [['12345', '23456'], ['34567', '45678']],
     'beliefs': {'12345': 0.7, '23456': 0.9}
 })
+
 
 def _stmts_from_proc(proc):
     if proc and proc.statements:
