@@ -19,6 +19,7 @@ sc = ServiceController(db_url, dart_client=dart_client)
 
 
 app = Flask(__name__)
+app.config['RESTX_MASK_SWAGGER'] = False
 api = Api(app, title='INDRA World Modelers API',
           description='REST API for INDRA World Modelers')
 
@@ -42,33 +43,45 @@ dict_model = api.model('dict', {})
 
 dart_record_model = api.model(
     'DartRecord',
-    {'identity': fields.String(example='eidos'),
-     'version': fields.String(example='1.0'),
+    {'identity': fields.String(example='eidos',
+                               description='Name of the reader'),
+     'version': fields.String(example='1.0', description='Reader version'),
      'document_id': fields.String(
-         example='70a62e43-f881-47b1-8367-a3cca9450c03'),
+         example='70a62e43-f881-47b1-8367-a3cca9450c03',
+         description='ID of a document to process'),
      'storage_key': fields.String(
-         example='bcd04c45-3cfc-456f-a31e-59e875aefabf.json')
+         example='bcd04c45-3cfc-456f-a31e-59e875aefabf.json',
+         description='Key to store the record with')
     }
 )
 
 project_model = api.model(
     'Project',
-    {'project_id': fields.String(example='project1', required=True)}
+    {'project_id': fields.String(example='project1', required=True,
+                                 description='ID of a project')}
 )
 
 project_records_model = api.model(
     'ProjectRecords',
-    {'project_id': fields.String(example='project1'),
-     'records': fields.List(fields.Nested(dart_record_model))
+    {'project_id': fields.String(example='project1',
+                                 description='ID of a project'),
+     'records': fields.List(
+        fields.Nested(dart_record_model),
+        description='A list of records to add')
      }
 )
 
 curation_model = api.model(
     'Curation',
     {
-        'project_id': fields.String(example='project1'),
-        'statement_id': fields.String(example='83f5aec2-978b-4e01-a2c9-e231f90bfabd'),
-        'update_type': fields.String(example='discard_statement')
+        'project_id': fields.String(example='project1',
+                                    description='ID of a project'),
+        'statement_id': fields.String(
+            example='83f5aec2-978b-4e01-a2c9-e231f90bfabd',
+            description='INDRA Statement ID'),
+        'update_type': fields.String(example='discard_statement',
+                                     description='The curation operation '
+                                                 'applied to the Statement')
     }
 )
 
@@ -81,49 +94,118 @@ curation_model_wrapped = api.model(
 
 submit_curations_model = api.model(
     'SubmitCurations',
-    {'project_id': fields.String(example='project1'),
+    {'project_id': fields.String(example='project1',
+                                 description='ID of a project'),
      'curations': fields.Nested(curation_model_wrapped)
      }
 )
 
 new_project_model = api.model(
     'NewProject',
-    {'project_id': fields.String(example='project1', required=True),
-     'project_name': fields.String(example='Project 1', required=True),
-     'corpus_id': fields.String(example='corpus1', required=False)
+    {'project_id': fields.String(example='project1', required=True,
+                                 description='ID of a project'),
+     'project_name': fields.String(example='Project 1', required=True,
+                                   description='Name of a project'),
+     'corpus_id': fields.String(example='corpus1', required=False,
+                                description='ID of a corpus')
      }
 )
 
 wm_text_model = api.model(
     'WMText',
-    {'text': fields.String(example='Rainfall causes floods.')})
+    {'text': fields.String(example='Rainfall causes floods.',
+                           description='Text to process')})
 
 jsonld_model = api.model(
     'jsonld',
-    {'jsonld': fields.String(example='{}')})
+    {'jsonld': fields.String(example='{}', description='JSON-LD reader output')})
 
 eidos_text_model = api.inherit('EidosText', wm_text_model, {
-    'webservice': fields.String,
-    'grounding_ns': fields.List(fields.String(example=['WM']), required=False),
-    'extract_filter': fields.List(fields.String(example=['Influence']),
-                                  required=False),
+    'webservice': fields.String(description='URL for Eidos webservice'),
+    'grounding_ns': fields.List(
+        fields.String, example=['WM'], required=False,
+        description='A list of name spaces for which INDRA should represent groundings'),
+    'extract_filter': fields.List(
+        fields.String, example=['influence'], required=False,
+        description='A list of relation types to extract'),
     'grounding_mode': fields.String(example='flat', required=False)
 })
 
 eidos_jsonld_model = api.inherit('EidosJson', jsonld_model, {
-    'grounding_ns': fields.List(fields.String(example=['WM']), required=False),
-    'extract_filter': fields.List(fields.String(example=['Influence']),
-                                  required=False),
-    'grounding_mode': fields.String(example='flat', required=False)    
+    'grounding_ns': fields.List(
+        fields.String, example=['WM'], required=False,
+        description='A list of name spaces for which INDRA should '
+                    'represent groundings'),
+    'extract_filter': fields.List(
+        fields.String, example=['influence'], required=False,
+        description='A list of relation types to extract'),
+    'grounding_mode': fields.String(example='flat', required=False,
+                                    description='flat or compositional')
 })
 
 sofia_json_model = api.model(
     'json',
-    {'json': fields.String(example='{}'),
-     'extract_filter': fields.List(fields.String(example=['Influence']),
-                                   required=False),
-     'grounding_mode': fields.String(example='flat', required=False)  
+    {'json': fields.String(example='{}', description='JSON reader output'),
+     'extract_filter': fields.List(
+         fields.String(example=['influence']), required=False,
+         description='A list of relation types to extract'),
+     'grounding_mode': fields.String(example='flat', required=False,
+                                     description='flat or compositional')  
     })
+
+# Models for response
+health_model = api.model('Health', {
+    'state': fields.String(example='healthy'),
+    'version': fields.String(example='1.0.0')
+})
+
+project_resp_model = api.model('ProjectResponse', {
+    'id': fields.String(example='project1', description='Project ID'),
+    'name': fields.String(example='Project 1', description='Project name')
+})
+
+project_records_resp = fields.List(
+    fields.String, example=['bcd04c45-3cfc-456f-a31e-59e875aefabf.json'])
+
+curated_mapping = fields.Raw(example={'12345': '23456'})
+
+project_curation = fields.Wildcard(fields.Nested(curation_model), example={
+    '12345': {
+        'project_id': 'project1',
+        'statement_id': '83f5aec2-978b-4e01-a2c9-e231f90bfabd',
+        'update_type': 'discard_statement'
+    },
+})
+
+stmt_fields = fields.Raw(example={
+    "id": "acc6d47c-f622-41a4-8ae9-d7b0f3d24a2f",
+    "type": "Influence",
+    "subj": {"db_refs": {"WM": "wm/concept/causal_factor/environmental/meteorologic/precipitation/rainfall"}, "name": "rainfall"},
+    "obj": {"db_refs": {"WM": "wm/concept/causal_factor/crisis_and_disaster/environmental_disasters/natural_disaster/flooding"}, "name": "flood"},
+    "evidence": [{"text": "Rainfall causes flood", "source_api": "eidos"}]
+}, description='INDRA Statement JSON')
+
+stmts_model = api.model('Statements', {
+    'statements': fields.List(stmt_fields)
+})
+
+delta_fields = fields.Raw(example={
+    'new_statements': {
+        '12345': {
+            "id": "acc6d47c-f622-41a4-8ae9-d7b0f3d24a2f",
+            "type": "Influence",
+            "subj": {"db_refs": {"WM": "wm/concept/causal_factor/environmental/meteorologic/precipitation/rainfall"}, "name": "rainfall"},
+            "obj": {"db_refs": {"WM": "wm/concept/causal_factor/crisis_and_disaster/environmental_disasters/natural_disaster/flooding"}, "name": "flood"},
+            "evidence": [{"text": "Rainfall causes flood", "source_api": "eidos"}]
+            }
+    },
+    'new_evidence': {
+        '12345': [{"text": "Rainfall causes flood", "source_api": "eidos"}]
+    },
+    'new_refinements': [['12345', '23456'], ['34567', '45678']],
+    'beliefs': {'12345': 0.7, '23456': 0.9}
+})
+
 
 def _stmts_from_proc(proc):
     if proc and proc.statements:
@@ -142,6 +224,7 @@ class Health(Resource):
     def options(self):
         return {}
 
+    @base_ns.response(200, 'State and version of the API', health_model)
     def get(self):
         return {'state': 'healthy', 'version': '1.0.0'}
 
@@ -154,6 +237,7 @@ class Notify(Resource):
     def options(self):
         return {}
 
+    @dart_ns.response(200, 'DART record is added and processed')
     def post(self):
         """Add and process DART record.
 
@@ -189,6 +273,7 @@ class NewProject(Resource):
     def options(self):
         return {}
 
+    @assembly_ns.response(200, 'New project is created')
     def post(self):
         """Create new project.
 
@@ -220,6 +305,7 @@ class AddProjectRecords(Resource):
     def options(self):
         return {}
 
+    @assembly_ns.response(200, 'AssemblyDelta JSON', delta_fields)
     def post(self):
         """Add project records and assemble them.
 
@@ -255,6 +341,8 @@ class GetProjects(Resource):
     def options(self):
         return {}
 
+    @assembly_ns.marshal_list_with(project_resp_model,
+                                   description='List of projects')
     def get(self):
         """Get a list of all projects."""
         projects = sc.get_projects()
@@ -268,6 +356,7 @@ class GetProjectRecords(Resource):
     def options(self):
         return {}
 
+    @assembly_ns.response(200, 'A list of records', project_records_resp)
     def get(self):
         """Get records for a project.
 
@@ -293,6 +382,9 @@ class SubmitCurations(Resource):
     def options(self):
         return {}
 
+    @assembly_ns.response(200, description=(
+        'Mapping from old statement hashes to new statement hashes '
+        'if they changed due to the curations'), model=curated_mapping)
     def post(self):
         """Submit curations.
 
@@ -330,6 +422,8 @@ class GetProjectCurations(Resource):
     def options(self):
         return {}
 
+    @assembly_ns.response(200, 'Mapping from statement hashes to curations',
+                          project_curation)
     def get(self):
         """Get project curations.
 
@@ -356,6 +450,7 @@ class HumeProcessJsonld(Resource):
     def options(self):
         return {}
 
+    @sources_ns.response(200, 'INDRA Statements', stmts_model)
     def post(self):
         """Process Hume JSON-LD and return INDRA Statements.
 
@@ -384,6 +479,7 @@ class CwmsProcessText(Resource):
     def options(self):
         return {}
 
+    @sources_ns.response(200, 'INDRA Statements', stmts_model)
     def post(self):
         """Process text with CWMS and return INDRA Statements.
 
@@ -411,6 +507,7 @@ class EidosProcessText(Resource):
     def options(self):
         return {}
 
+    @sources_ns.response(200, 'INDRA Statements', stmts_model)
     def post(self):
         """Process text with EIDOS and return INDRA Statements.
 
@@ -459,13 +556,14 @@ class EidosProcessText(Resource):
         return _stmts_from_proc(ep)
 
 
-@sources_ns.expect(jsonld_model)
+@sources_ns.expect(eidos_jsonld_model)
 @sources_ns.route('/eidos/process_jsonld')
 class EidosProcessJsonld(Resource):
     @api.doc(False)
     def options(self):
         return {}
 
+    @sources_ns.response(200, 'INDRA Statements', stmts_model)
     def post(self):
         """Process an EIDOS JSON-LD and return INDRA Statements.
 
@@ -514,6 +612,7 @@ class SofiaProcessJson(Resource):
     def options(self):
         return {}
 
+    @sources_ns.response(200, 'INDRA Statements', stmts_model)
     def post(self):
         """Process a Sofia JSON and return INDRA Statements.
 
