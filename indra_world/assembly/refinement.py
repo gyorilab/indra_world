@@ -187,13 +187,12 @@ def get_relevants_for_stmt(sh, all_keys_by_role, agent_key_to_hash,
                     direction=direction)
                 # We now get the actual statement hashes that these other
                 # potentially refined agent keys appear in in the given role
-                role_relevant_stmt_hashes = set.union(
-                    *[agent_key_to_hash[role][comp_idx][rel]
-                      for rel in relevant_keys]) - {sh}
                 # In the first iteration, we initialize the set with the
                 # relevant statement hashes
                 if relevants is None:
-                    relevants = role_relevant_stmt_hashes
+                    relevants = set.union(
+                        *[agent_key_to_hash[role][comp_idx][rel]
+                          for rel in relevant_keys]) - {sh}
                 # If not none but an empty set then we can stop
                 # here
                 elif not relevants:
@@ -201,7 +200,11 @@ def get_relevants_for_stmt(sh, all_keys_by_role, agent_key_to_hash,
                 # In subsequent iterations, we take the intersection of
                 # the relevant sets per role
                 else:
-                    relevants &= role_relevant_stmt_hashes
+                    role_relevant_stmt_hashes = set()
+                    for rel in relevant_keys:
+                        role_relevant_stmt_hashes |= \
+                            (agent_key_to_hash[role][comp_idx][rel] & relevants)
+                    relevants = role_relevant_stmt_hashes - {sh}
     return relevants
 
 
