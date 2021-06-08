@@ -1,3 +1,4 @@
+import logging
 import datetime
 from indra_world.sources.dart import process_reader_output, DartClient
 from indra_world.assembly.incremental_assembler import \
@@ -7,6 +8,8 @@ from indra.pipeline import AssemblyPipeline
 from indra_world.assembly.operations import *
 from .db import DbManager
 
+
+logger = logging.getLogger(__name__)
 
 preparation_pipeline = AssemblyPipeline.from_json_file(
     get_resource_file('statement_preparation.json'))
@@ -96,9 +99,11 @@ class ServiceController:
     def assemble_new_records(self, project_id, new_record_keys):
         # 1. We get all the records associated with the project
         # which may or may not include some of the new ones
+        logger.info('Getting records for project')
         record_keys = self.db.get_records_for_project(project_id)
         old_record_keys = list(set(record_keys) - set(new_record_keys))
         # 2. Now load the project with the old record keys
+        logger.info('Loading the project with its existing statements')
         self.load_project(project_id, old_record_keys)
         # 3. Now get the new statements associated with the new records
         new_stmts = []
@@ -106,7 +111,9 @@ class ServiceController:
             stmts = self.db.get_statements_for_record(record_key)
             new_stmts += stmts
         # 4. Finally get an incremental assembly delta and return it
+        logger.info('Running incremental assembly')
         delta = self.assemblers[project_id].add_statements(new_stmts)
+        logger.info('Got assembly delta, returning')
         return delta
 
     def add_curations(self, project_id, curations):
