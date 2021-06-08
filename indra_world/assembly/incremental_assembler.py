@@ -403,16 +403,24 @@ class AssemblyDelta:
         """Return a JSON representation of the assembly delta."""
         # Serialize statements with custom matches function to make
         # sure matches hashes are consistent
+        logger.info('Serializing new statements')
         new_stmts_json = {sh: stmt.to_json(matches_fun=self.matches_fun)
                           for sh, stmt in self.new_stmts.items()}
+        logger.info('Serialized %d new statements' % len(new_stmts_json))
         # Pop out evidence since it is redundant with the new_evidence field
         for stmtj in new_stmts_json.values():
             stmtj.pop('evidence', None)
+        # Serialize new evidences
+        logger.info('Serializing new evidences')
+        new_evs_json = {sh: [ev.to_json() for ev in evs]
+                        for sh, evs in self.new_evidences.items()}
+        logger.info('Serialized new evidences for %d statements' %
+                    len(new_evs_json))
         # Return the full construct
+        logger.info('Returning with assembly delta JSON')
         return {
             'new_stmts': new_stmts_json,
-            'new_evidence': {sh: [ev.to_json() for ev in evs]
-                             for sh, evs in self.new_evidences.items()},
+            'new_evidence': new_evs_json,
             'new_refinements': list(self.new_refinements),
             'beliefs': self.beliefs
         }

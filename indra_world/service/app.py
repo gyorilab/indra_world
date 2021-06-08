@@ -333,7 +333,8 @@ class AddProjectRecords(Resource):
         delta = sc.assemble_new_records(project_id,
                                         new_record_keys=record_keys)
         logger.info('Finished constructing assembly delta, returning.')
-        return delta.to_json()
+        delta_json = delta.to_json()
+        return delta_json
 
 
 @assembly_ns.route('/get_projects')
