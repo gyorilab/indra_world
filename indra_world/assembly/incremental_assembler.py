@@ -301,10 +301,12 @@ class IncrementalAssembler:
         ap.run(list(new_stmts.values()))
 
         # Next we extend refinements and re-calculate beliefs
+        logger.info('Extending refinement filters')
         for filter in self.refinement_filters:
             filter.extend(new_stmts)
         new_refinements = set()
-        for sh, stmt in new_stmts.items():
+        logger.info('Finding refinements for new statements')
+        for sh, stmt in tqdm.tqdm(new_stmts.items()):
             refinements = None
             for filter in self.refinement_filters:
                 # Note that this gets less specifics
@@ -315,7 +317,9 @@ class IncrementalAssembler:
             extend_refinements_graph(self.refinements_graph,
                                      stmt, list(refinements),
                                      matches_fun=self.matches_fun)
+        logger.info('Getting beliefs')
         beliefs = self.get_beliefs()
+        logger.info('Returning assembly delta')
         return AssemblyDelta(new_stmts, new_evidences, new_refinements,
                              beliefs, matches_fun=self.matches_fun)
 
