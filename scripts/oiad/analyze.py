@@ -95,6 +95,17 @@ def plot_num_edges_by_threshold(thresholds, num_edges):
     plt.show()
 
 
+def get_grounding_scores(indexed_events):
+    scores = {}
+    for version, idx_events in indexed_events.items():
+        scores[version] = []
+        for grounding in idx_events.values():
+            if grounding is not None:
+                for entry in grounding:
+                    if entry is not None:
+                        scores[version].append(entry[1])
+    return scores
+
 
 if __name__ == '__main__':
     CACHED = True
@@ -199,3 +210,4 @@ if __name__ == '__main__':
 
     thresholds, num_edges = get_num_edges_by_threshold(all_stmts)
     plot_num_edges_by_threshold(thresholds, num_edges)
+
