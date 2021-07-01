@@ -107,6 +107,24 @@ def get_grounding_scores(indexed_events):
     return scores
 
 
+def drop_compositional(stmts):
+    for stmt in stmts:
+        for agent in stmt.agent_list():
+            if 'WM' in agent.db_refs:
+                for grounding in agent.db_refs['WM']:
+                    for pos in [1, 2, 3]:
+                        grounding[pos] = None
+
+
+def drop_compositional_indexed(indexed_events):
+    for k, v in indexed_events.items():
+        if v is None:
+            continue
+        for pos in [1, 2, 3]:
+            v[pos] = None
+        indexed_events[k] = v
+
+
 if __name__ == '__main__':
     CACHED = True
     versions = ['old', 'new']
@@ -152,6 +170,12 @@ if __name__ == '__main__':
         print('Number of grounded events [%s]: %d' %
               (version, len([e for e in indexed_events[version].values()
                              if e is not None])))
+
+    drop_compositional(all_stmts['old'])
+    drop_compositional(all_stmts['new'])
+    drop_compositional_indexed(indexed_events['old'])
+    drop_compositional_indexed(indexed_events['new'])
+
     # Differential groundings
     diff_groundings = get_different_events(indexed_events)
     print('Number of groundings that differ between old and new: %d' %
@@ -161,11 +185,14 @@ if __name__ == '__main__':
     print('Number of grounded concepts that were ungrounded before: %d' % ng)
     # Diff score groundings
     inc = dec = mixed = 0
+    diffs = []
     for old_grounding, new_grounding in diff_groundings:
         if old_grounding is None and new_grounding is not None:
             inc += 1
+            diffs.append(new_grounding[0][1])
         elif old_grounding is not None and new_grounding is None:
             dec += 1
+            diffs.append(-old_grounding[0][1])
         else:
             if all([old_entry is None or (old_entry[1] <= new_entry[1])
                     for old_entry, new_entry in
@@ -179,6 +206,7 @@ if __name__ == '__main__':
                 dec += 1
             else:
                 mixed = 1
+            diffs.append(new_grounding[0][1] - old_grounding[0][1])
     print('Number of grounding scores increased: %d' % inc)
     print('Number of grounding scores decreased: %d' % dec)
     print('Number of grounding scores mixed: %d' % mixed)
@@ -207,7 +235,6 @@ if __name__ == '__main__':
               (threshold, version, len(nx)))
         print('Number of CAG edges with grounding threshold %.2f [%s]: %d' %
               (threshold, version, len(nx.edges)))
-
     thresholds, num_edges = get_num_edges_by_threshold(all_stmts)
     plot_num_edges_by_threshold(thresholds, num_edges)
 
