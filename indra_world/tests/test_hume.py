@@ -110,5 +110,5 @@ def test_compositional_grounding():
             wmg = wm[0]
             assert all(len(entry) == 2 for entry in wmg
                        if entry is not None), wmg
-            assert all(entry[0].startswith('wm_compositional') for entry
+            assert all(entry[0].startswith('wm') for entry
                        in wmg if entry is not None)

@@ -465,7 +465,7 @@ class SofiaProcessor(object):
             grnd = grnd[1:]
         # Add initial wm
         if grnd and not grnd.startswith('wm'):
-            grnd = f'wm_compositional/{grnd_type}/{grnd}'
+            grnd = f'wm/{grnd_type}/{grnd}'
 
         # Remove special misgrounding
         if any(mg in grnd for mg in bad_grnd):

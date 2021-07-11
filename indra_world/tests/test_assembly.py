@@ -63,12 +63,12 @@ def test_compositional_grounding_filter():
 
     # Score filter combined with groundings to exclude plus promoting
     # a property to a theme
-    wm = [[('wm_compositional/entity/geo-location', 0.7), ('y', 0.7),
+    wm = [[('wm/entity/geo-location', 0.7), ('y', 0.7),
            None, None]]
     concept.db_refs['WM'] = wm
     stmt = Event(concept)
     stmt_out = compositional_grounding_filter_stmt(stmt, 0.7,
-        ['wm_compositional/entity/geo-location'])
+        ['wm/entity/geo-location'])
     concept = stmt_out.concept
     assert concept.db_refs['WM'][0][0] == ('y', 0.7), concept.db_refs
 
@@ -86,15 +86,15 @@ def test_compositional_refinements():
         event = Event(concept)
         return event
 
-    wm1 = ('wm_compositional/concept/agriculture',
-           'wm_compositional/property/price_or_cost',
+    wm1 = ('wm/concept/agriculture',
+           'wm/property/price_or_cost',
            None, None)
-    wm2 = ('wm_compositional/concept/agriculture',
+    wm2 = ('wm/concept/agriculture',
            None, None, None)
-    wm3 = ('wm_compositional/concept/agriculture/crop',
+    wm3 = ('wm/concept/agriculture/crop',
            None, None, None)
-    wm4 = ('wm_compositional/concept/agriculture/crop',
-           'wm_compositional/property/price_or_cost',
+    wm4 = ('wm/concept/agriculture/crop',
+           'wm/property/price_or_cost',
            None, None)
 
     events = [make_event(comp_grounding)

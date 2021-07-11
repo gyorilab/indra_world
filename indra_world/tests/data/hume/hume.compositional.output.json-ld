@@ -55,7 +55,7 @@
                 {
                     "@type": "Grounding",
                     "name": "bbn",
-                    "ontologyConcept": "/wm_compositional/concept/goods/food",
+                    "ontologyConcept": "/wm/concept/goods/food",
                     "value": 0.8
                 }
             ],
@@ -88,7 +88,7 @@
                 {
                     "@type": "Grounding",
                     "name": "bbn",
-                    "ontologyConcept": "/wm_compositional/entity/person_or_group",
+                    "ontologyConcept": "/wm/entity/person_or_group",
                     "value": 0.8
                 }
             ],
@@ -121,7 +121,7 @@
                 {
                     "@type": "Grounding",
                     "name": "bbn",
-                    "ontologyConcept": "/wm_compositional/concept/agriculture/crop",
+                    "ontologyConcept": "/wm/concept/agriculture/crop",
                     "value": 0.8
                 }
             ],
@@ -155,7 +155,7 @@
                 {
                     "@type": "Grounding",
                     "name": "bbn",
-                    "ontologyConcept": "/wm_compositional/entity/geo-location",
+                    "ontologyConcept": "/wm/entity/geo-location",
                     "value": 0.8
                 }
             ],
@@ -189,7 +189,7 @@
                 {
                     "@type": "Grounding",
                     "name": "bbn",
-                    "ontologyConcept": "/wm_compositional/entity/geo-location",
+                    "ontologyConcept": "/wm/entity/geo-location",
                     "value": 0.8
                 }
             ],
@@ -247,7 +247,7 @@
                 {
                     "@type": "Grounding",
                     "name": "bbn",
-                    "ontologyConcept": "/wm_compositional/concept/goods/agricultural/fertilizer",
+                    "ontologyConcept": "/wm/concept/goods/agricultural/fertilizer",
                     "value": 0.8
                 }
             ],
@@ -280,7 +280,7 @@
                 {
                     "@type": "Grounding",
                     "name": "bbn",
-                    "ontologyConcept": "/wm_compositional/entity",
+                    "ontologyConcept": "/wm/entity",
                     "value": 0.8
                 }
             ],
@@ -313,7 +313,7 @@
                 {
                     "@type": "Grounding",
                     "name": "bbn",
-                    "ontologyConcept": "/wm_compositional/concept/agriculture/crop",
+                    "ontologyConcept": "/wm/concept/agriculture/crop",
                     "value": 0.8
                 }
             ],
@@ -346,7 +346,7 @@
                 {
                     "@type": "Grounding",
                     "name": "bbn",
-                    "ontologyConcept": "/wm_compositional/entity/person_or_group",
+                    "ontologyConcept": "/wm/entity/person_or_group",
                     "value": 0.8
                 }
             ],
@@ -379,7 +379,7 @@
                 {
                     "@type": "Grounding",
                     "name": "bbn",
-                    "ontologyConcept": "/wm_compositional/entity/person_or_group",
+                    "ontologyConcept": "/wm/entity/person_or_group",
                     "value": 0.8
                 }
             ],
@@ -412,7 +412,7 @@
                 {
                     "@type": "Grounding",
                     "name": "bbn",
-                    "ontologyConcept": "/wm_compositional/entity/person_or_group",
+                    "ontologyConcept": "/wm/entity/person_or_group",
                     "value": 0.8
                 }
             ],
@@ -495,7 +495,7 @@
                 {
                     "@type": "Grounding",
                     "name": "bbn",
-                    "ontologyConcept": "/wm_compositional/concept/goods/food",
+                    "ontologyConcept": "/wm/concept/goods/food",
                     "value": 0.8
                 }
             ],
@@ -528,7 +528,7 @@
                 {
                     "@type": "Grounding",
                     "name": "bbn",
-                    "ontologyConcept": "/wm_compositional/entity/person_or_group",
+                    "ontologyConcept": "/wm/entity/person_or_group",
                     "value": 0.8
                 }
             ],
@@ -562,13 +562,13 @@
                 {
                     "@type": "Grounding",
                     "name": "bbn",
-                    "ontologyConcept": "/wm_compositional/process/conflict",
+                    "ontologyConcept": "/wm/process/conflict",
                     "value": 0.7
                 },
                 {
                     "@type": "Grounding",
                     "name": "bbn",
-                    "ontologyConcept": "/wm_compositional/concept/crisis_or_disaster/famine",
+                    "ontologyConcept": "/wm/concept/crisis_or_disaster/famine",
                     "value": 0.7
                 }
             ],
@@ -663,7 +663,7 @@
                 {
                     "@type": "Grounding",
                     "name": "bbn",
-                    "ontologyConcept": "/wm_compositional/process/conflict/attack",
+                    "ontologyConcept": "/wm/process/conflict/attack",
                     "value": 0.7
                 }
             ],
@@ -742,7 +742,7 @@
                 {
                     "@type": "Grounding",
                     "name": "bbn",
-                    "ontologyConcept": "/wm_compositional/time",
+                    "ontologyConcept": "/wm/time",
                     "value": 0.75
                 }
             ],
@@ -789,7 +789,7 @@
                 {
                     "@type": "Grounding",
                     "name": "bbn",
-                    "ontologyConcept": "/wm_compositional/concept/economy",
+                    "ontologyConcept": "/wm/concept/economy",
                     "value": 0.800000011920929
                 }
             ],
@@ -877,7 +877,7 @@
                 {
                     "@type": "Grounding",
                     "name": "bbn",
-                    "ontologyConcept": "/wm_compositional/process/trade/import",
+                    "ontologyConcept": "/wm/process/trade/import",
                     "value": 0.9166908548546311
                 }
             ],
@@ -956,7 +956,7 @@
                 {
                     "@type": "Grounding",
                     "name": "bbn",
-                    "ontologyConcept": "/wm_compositional/time",
+                    "ontologyConcept": "/wm/time",
                     "value": 0.75
                 }
             ],
@@ -1003,7 +1003,7 @@
                 {
                     "@type": "Grounding",
                     "name": "bbn",
-                    "ontologyConcept": "/wm_compositional/process",
+                    "ontologyConcept": "/wm/process",
                     "value": 0.5
                 }
             ],
@@ -1083,7 +1083,7 @@
                 {
                     "@type": "Grounding",
                     "name": "bbn",
-                    "ontologyConcept": "/wm_compositional/process/demand",
+                    "ontologyConcept": "/wm/process/demand",
                     "value": 0.7252605872825345
                 }
             ],
@@ -1171,7 +1171,7 @@
                 {
                     "@type": "Grounding",
                     "name": "bbn",
-                    "ontologyConcept": "/wm_compositional/concept/trend",
+                    "ontologyConcept": "/wm/concept/trend",
                     "value": 0.800000011920929
                 }
             ],
@@ -1250,7 +1250,7 @@
                 {
                     "@type": "Grounding",
                     "name": "bbn",
-                    "ontologyConcept": "/wm_compositional/time",
+                    "ontologyConcept": "/wm/time",
                     "value": 0.75
                 }
             ],
@@ -1312,7 +1312,7 @@
                 {
                     "@type": "Grounding",
                     "name": "bbn",
-                    "ontologyConcept": "/wm_compositional/property/price_or_cost",
+                    "ontologyConcept": "/wm/property/price_or_cost",
                     "value": 0.7
                 }
             ],
@@ -1391,7 +1391,7 @@
                 {
                     "@type": "Grounding",
                     "name": "bbn",
-                    "ontologyConcept": "/wm_compositional/property/price_or_cost",
+                    "ontologyConcept": "/wm/property/price_or_cost",
                     "value": 0.75
                 }
             ],
@@ -1430,7 +1430,7 @@
                 {
                     "@type": "Grounding",
                     "name": "bbn",
-                    "ontologyConcept": "/wm_compositional/process",
+                    "ontologyConcept": "/wm/process",
                     "value": 0.5
                 }
             ],
@@ -1510,7 +1510,7 @@
                 {
                     "@type": "Grounding",
                     "name": "bbn",
-                    "ontologyConcept": "/wm_compositional/concept/trend",
+                    "ontologyConcept": "/wm/concept/trend",
                     "value": 0.7
                 }
             ],
@@ -1605,7 +1605,7 @@
                 {
                     "@type": "Grounding",
                     "name": "bbn",
-                    "ontologyConcept": "/wm_compositional/concept/trend",
+                    "ontologyConcept": "/wm/concept/trend",
                     "value": 0.7
                 }
             ],
@@ -1684,7 +1684,7 @@
                 {
                     "@type": "Grounding",
                     "name": "bbn",
-                    "ontologyConcept": "/wm_compositional/time",
+                    "ontologyConcept": "/wm/time",
                     "value": 0.75
                 }
             ],
@@ -1731,7 +1731,7 @@
                 {
                     "@type": "Grounding",
                     "name": "bbn",
-                    "ontologyConcept": "/wm_compositional/concept/trend",
+                    "ontologyConcept": "/wm/concept/trend",
                     "value": 0.7
                 }
             ],
@@ -1826,7 +1826,7 @@
                 {
                     "@type": "Grounding",
                     "name": "bbn",
-                    "ontologyConcept": "/wm_compositional/process",
+                    "ontologyConcept": "/wm/process",
                     "value": 0.5
                 }
             ],
@@ -1905,7 +1905,7 @@
                 {
                     "@type": "Grounding",
                     "name": "bbn",
-                    "ontologyConcept": "/wm_compositional/time",
+                    "ontologyConcept": "/wm/time",
                     "value": 0.75
                 }
             ],
@@ -1967,7 +1967,7 @@
                 {
                     "@type": "Grounding",
                     "name": "bbn",
-                    "ontologyConcept": "/wm_compositional/process",
+                    "ontologyConcept": "/wm/process",
                     "value": 0.5
                 }
             ],
@@ -2046,7 +2046,7 @@
                 {
                     "@type": "Grounding",
                     "name": "bbn",
-                    "ontologyConcept": "/wm_compositional/time",
+                    "ontologyConcept": "/wm/time",
                     "value": 0.75
                 }
             ],
@@ -2115,7 +2115,7 @@
                 {
                     "@type": "Grounding",
                     "name": "bbn",
-                    "ontologyConcept": "/wm_compositional/process/provide",
+                    "ontologyConcept": "/wm/process/provide",
                     "value": 0.7124571682072799
                 }
             ],
@@ -2194,7 +2194,7 @@
                 {
                     "@type": "Grounding",
                     "name": "bbn",
-                    "ontologyConcept": "/wm_compositional/property/price_or_cost",
+                    "ontologyConcept": "/wm/property/price_or_cost",
                     "value": 0.75
                 }
             ],
@@ -2241,7 +2241,7 @@
                 {
                     "@type": "Grounding",
                     "name": "bbn",
-                    "ontologyConcept": "/wm_compositional/process",
+                    "ontologyConcept": "/wm/process",
                     "value": 0.5
                 }
             ],
@@ -2320,7 +2320,7 @@
                 {
                     "@type": "Grounding",
                     "name": "bbn",
-                    "ontologyConcept": "/wm_compositional/time",
+                    "ontologyConcept": "/wm/time",
                     "value": 0.75
                 }
             ],
@@ -2374,7 +2374,7 @@
                 {
                     "@type": "Grounding",
                     "name": "bbn",
-                    "ontologyConcept": "/wm_compositional/property/price_or_cost",
+                    "ontologyConcept": "/wm/property/price_or_cost",
                     "value": 0.7
                 }
             ],
@@ -2453,7 +2453,7 @@
                 {
                     "@type": "Grounding",
                     "name": "bbn",
-                    "ontologyConcept": "/wm_compositional/property/price_or_cost",
+                    "ontologyConcept": "/wm/property/price_or_cost",
                     "value": 0.75
                 }
             ],
@@ -2507,7 +2507,7 @@
                 {
                     "@type": "Grounding",
                     "name": "bbn",
-                    "ontologyConcept": "/wm_compositional/process/provide",
+                    "ontologyConcept": "/wm/process/provide",
                     "value": 0.9999999999999999
                 }
             ],
@@ -2586,7 +2586,7 @@
                 {
                     "@type": "Grounding",
                     "name": "bbn",
-                    "ontologyConcept": "/wm_compositional/property/price_or_cost",
+                    "ontologyConcept": "/wm/property/price_or_cost",
                     "value": 0.75
                 }
             ],
