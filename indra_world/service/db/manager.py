@@ -206,7 +206,7 @@ class DbManager:
         return curations
 
     def add_dart_record(self, reader, reader_version, document_id, storage_key,
-                        date, output_version, labels):
+                        date, output_version=None, labels=None):
         op = insert(wms_schema.DartRecords).values(
                 **{
                     'reader': reader,

@@ -27,6 +27,33 @@ def test_dart_record():
     assert keys == ['xyz3']
 
 
+def test_dart_records_extended():
+    db = _get_db()
+    db.add_dart_record('eidos', '1.0', 'd1', 'stk1', '2021',
+                       '1.2', 'embed|test|xyz')
+    db.add_dart_record('eidos', '1.0', 'd1', 'stk2', '2021',
+                       '1.3', 'embed|test|abc')
+
+    keys = db.get_dart_records(reader='eidos', document_id='d1')
+    assert set(keys) == {'stk1', 'stk2'}
+
+    keys = db.get_dart_records(reader='eidos', document_id='d1',
+                               output_version='1.3')
+    assert set(keys) == {'stk2'}
+
+    keys = db.get_dart_records(reader='eidos', document_id='d1',
+                               labels={'abc'})
+    assert set(keys) == {'stk2'}
+
+    keys = db.get_dart_records(reader='eidos', document_id='d1',
+                               labels={'abc', 'xyz'})
+    assert set(keys) == set()
+
+    keys = db.get_dart_records(reader='eidos', document_id='d1',
+                               labels={'embed'})
+    assert set(keys) == {'stk1', 'stk2'}
+
+
 def test_statements():
     db = _get_db()
     db.add_dart_record('eidos', '1.0', 'abc1', 'xyz1', 'today')
