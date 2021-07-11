@@ -50,7 +50,9 @@ class DartRecords(Base):
     document_id = Column(String)
     reader_version = Column(String)
     reader = Column(String)
+    output_version = Column(String)
     date = Column(String)
+    labels = Column(String)
 
 
 class Corpora(Base):
