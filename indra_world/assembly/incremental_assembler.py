@@ -18,7 +18,7 @@ from indra_world.assembly.operations import \
 logger = logging.getLogger(__name__)
 
 comp_onto_url = 'https://raw.githubusercontent.com/WorldModelers/Ontologies/' \
-                'master/CompositionalOntology_v2.1_metadata.yml'
+                'master/CompositionalOntology_metadata.yml'
 
 world_ontology = load_world_ontology(comp_onto_url)
 # TODO: should we use the Bayesian scorer?

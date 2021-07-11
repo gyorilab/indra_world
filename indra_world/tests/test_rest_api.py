@@ -298,18 +298,27 @@ def test_polarity_curations():
     # Now add a record just on the back-end
     sc.db.add_records_for_project(project_id, ['r1'])
     # And now add a statement for that record so we can "curate" it
-    stmt = Influence(Event(Concept('x'), delta=QualitativeDelta(polarity=-1)),
-                     Event(Concept('y')))
+    subj_grounding = {'WM': [[('wm/concept/environment/climate', 1.0), None,
+                              None, None]]}
+    subj = Event(Concept('climate', db_refs=subj_grounding),
+                 delta=QualitativeDelta(polarity=-1))
+    obj_grounding = \
+        {'WM': [[('wm/concept/crisis_or_disaster/environmental/drought', 1.0),
+                 None, None, None]]}
+    obj = Event(Concept('drought', db_refs=obj_grounding))
+    stmt = Influence(subj, obj)
     sc.db.add_statements_for_record('r1', [stmt], '1.0')
 
     mappings = _call_api('post', 'assembly/submit_curations',
                          json=cur)
-    assert mappings
+    assert mappings == {'18354331688382610': '-18369311868314428'}, mappings
     res = _call_api('get', 'assembly/get_project_curations',
-                    json=dict(project_id='p1'))
-    assert len(res) == 1
-    stmt_hash = -11334164755554266
-    assert res[str(stmt_hash)] == False, res
+                    json=dict(project_id=project_id))
+    assert len(res) == 1, res
+    stmt_hash = 18354331688382610
+    assert isinstance(res[str(stmt_hash)], dict)
+    assert res[str(stmt_hash)]['after']['subj']['polarity'] == 1
+
 
 """
 FIXME: IMPLEMENT THIS ENDPOINT
