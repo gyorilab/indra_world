@@ -1,0 +1,70 @@
+{
+    "project_id": "project-3161a0ce-887e-438c-bcf7-50b80746dcd8",
+    "curations": {
+        "18354331688382610": {
+            "project_id": "project-3161a0ce-887e-438c-bcf7-50b80746dcd8",
+            "statement_id": "66f3947e-aa89-4c28-a5ac-7a414c33867e",
+            "update_type": "factor_polarity",
+            "before": {
+                "wm": {
+                    "state": 1,
+                    "readers": [
+                        "eidos"
+                    ]
+                },
+                "subj": {
+                    "factor": "climate",
+                    "concept": [
+                        "wm/concept/environment/climate",
+                        null,
+                        null,
+                        null
+                    ],
+                    "polarity": -1,
+                    "concept_score": 0.6675894856452942
+                },
+                "obj": {
+                    "factor": "drought",
+                    "concept": [
+                        "wm/concept/crisis_or_disaster/environmental/drought",
+                        null,
+                        null,
+                        null
+                    ],
+                    "polarity": 1,
+                    "concept_score": 0.8344800472259521
+                }
+            },
+            "after": {
+                "wm": {
+                    "state": 1,
+                    "readers": [
+                        "eidos"
+                    ]
+                },
+                "subj": {
+                    "factor": "climate",
+                    "concept": [
+                        "wm/concept/environment/climate",
+                        null,
+                        null,
+                        null
+                    ],
+                    "polarity": 1,
+                    "concept_score": 0.6675894856452942
+                },
+                "obj": {
+                    "factor": "drought",
+                    "concept": [
+                        "wm/concept/crisis_or_disaster/environmental/drought",
+                        null,
+                        null,
+                        null
+                    ],
+                    "polarity": 1,
+                    "concept_score": 0.8344800472259521
+                }
+            }
+        }
+    }
+}

@@ -1,5 +1,6 @@
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, String, Integer, JSON, UniqueConstraint
+from sqlalchemy import Column, String, Integer, JSON, UniqueConstraint, \
+    BigInteger
 
 Base = declarative_base()
 
@@ -32,7 +33,7 @@ class Curations(Base):
     __tablename__ = 'curations'
     _dummy = Column(Integer, primary_key=True)
     project_id = Column(String)
-    stmt_hash = Column(Integer)
+    stmt_hash = Column(BigInteger)
     curation = Column(JSON)
 
 
