@@ -53,7 +53,10 @@ def test_notify():
                         identity='eidos',
                         version='1.0',
                         document_id=doc_id,
-                        storage_key=storage_key
+                        storage_key=storage_key,
+                        output_version='1.2',
+                        labels=['l1', 'l2'],
+                        tenants=['t1'],
                     ))
     assert res
     records = sc.db.get_dart_records(

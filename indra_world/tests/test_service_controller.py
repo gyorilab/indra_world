@@ -46,11 +46,15 @@ def test_new_project_with_statements_load():
     rec1 = {'identity': 'eidos',
             'version': '1.0',
             'document_id': 'd1',
-            'storage_key': 'xxx'}
+            'storage_key': 'xxx',
+            'output_version': '1.2',
+            'tenants': 'a|b'}
     rec2 = {'identity': 'eidos',
             'version': '1.0',
             'document_id': 'd2',
-            'storage_key': 'yyy'}
+            'storage_key': 'yyy',
+            'output_version': '1.2',
+            'labels': 'x|y'}
     sc.add_dart_record(rec1)
     sc.add_dart_record(rec2)
     s1x = deepcopy(s1)
