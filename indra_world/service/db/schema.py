@@ -53,6 +53,7 @@ class DartRecords(Base):
     output_version = Column(String)
     date = Column(String)
     labels = Column(String)
+    tenants = Column(String)
 
 
 class Corpora(Base):

@@ -30,9 +30,9 @@ def test_dart_record():
 def test_dart_records_extended():
     db = _get_db()
     db.add_dart_record('eidos', '1.0', 'd1', 'stk1', '2021',
-                       '1.2', 'embed|test|xyz')
+                       '1.2', 'embed|test|xyz', 'tenant1')
     db.add_dart_record('eidos', '1.0', 'd1', 'stk2', '2021',
-                       '1.3', 'embed|test|abc')
+                       '1.3', 'embed|test|abc', 'tenant2|tenant3')
 
     keys = db.get_dart_records(reader='eidos', document_id='d1')
     assert set(keys) == {'stk1', 'stk2'}
@@ -52,6 +52,10 @@ def test_dart_records_extended():
     keys = db.get_dart_records(reader='eidos', document_id='d1',
                                labels={'embed'})
     assert set(keys) == {'stk1', 'stk2'}
+
+    keys = db.get_dart_records(reader='eidos', document_id='d1',
+                               tenants=['tenant3'])
+    assert set(keys) == {'stk2'}
 
 
 def test_statements():
