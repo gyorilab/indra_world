@@ -64,9 +64,13 @@ class ServiceController:
             date = datetime.datetime.utcnow().isoformat()
         return self.db.add_dart_record(reader=record['identity'],
                                        reader_version=record['version'],
+                                       output_version=record['output_version'],
                                        document_id=record['document_id'],
                                        storage_key=record['storage_key'],
-                                       date=date)
+                                       date=date,
+                                       labels=record.get('labels'),
+                                       tenants=record.get('tenants'),
+                                       )
 
     def process_dart_record(self, record, grounding_mode='compositional',
                             extract_filter='influence'):

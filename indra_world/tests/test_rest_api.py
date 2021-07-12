@@ -53,7 +53,10 @@ def test_notify():
                         identity='eidos',
                         version='1.0',
                         document_id=doc_id,
-                        storage_key=storage_key
+                        storage_key=storage_key,
+                        output_version='1.2',
+                        labels=['l1', 'l2'],
+                        tenants=['t1'],
                     ))
     assert res
     records = sc.db.get_dart_records(
@@ -122,7 +125,8 @@ def test_get_project_records():
     record = {'identity': 'eidos',
               'version': '1.0',
               'document_id': doc_id,
-              'storage_key': storage_key}
+              'storage_key': storage_key,
+              'output_version': '1.2'}
     res = _call_api('post', 'dart/notify', json=record)
     res = _call_api('post', 'assembly/add_project_records',
                     json=dict(

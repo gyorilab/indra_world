@@ -254,9 +254,25 @@ class Notify(Resource):
 
         storage_key : str
             Key to store the record with.
+
+        output_version : str
+            The output version (typically ontology version).
+
+        labels : list of str
+            A list of labels for the output.
+
+        tenants : list of str
+            A list of tenants for the output.
         """
+        # We take these parameters as is
         record = {k: request.json[k] for k in ['identity', 'version',
-                                               'document_id', 'storage_key']}
+                                               'document_id', 'storage_key',
+                                               'output_version']}
+        # Here we stringify any lists
+        for key in ['labels', 'tenants']:
+            record[key] = None if key not in request.json \
+                else '|'.join(request.json[key])
+
         logger.info('Got notification for DART record: %s' % str(record))
         res = sc.add_dart_record(record)
         if res is None:

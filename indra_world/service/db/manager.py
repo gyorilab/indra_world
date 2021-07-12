@@ -206,27 +206,50 @@ class DbManager:
         return curations
 
     def add_dart_record(self, reader, reader_version, document_id, storage_key,
-                        date):
+                        date, output_version=None, labels=None, tenants=None):
         op = insert(wms_schema.DartRecords).values(
                 **{
                     'reader': reader,
                     'reader_version': reader_version,
                     'document_id': document_id,
                     'storage_key': storage_key,
-                    'date': date
+                    'date': date,
+                    'output_version': output_version,
+                    'labels': labels,
+                    'tenants': tenants
                 }
         )
         return self.execute(op)
 
-    def get_dart_records(self, reader, document_id, reader_version=None):
-        # TODO: allow more optional parameters
+    def get_dart_records(self, reader, document_id, reader_version=None,
+                         output_version=None, labels=None, tenants=None):
+        records = self.get_full_dart_records(
+            reader=reader, document_id=document_id,
+            reader_version=reader_version,
+            output_version=output_version,
+            labels=labels, tenants=tenants)
+        return [r['storage_key'] for r in records]
+
+    def get_full_dart_records(self, reader, document_id, reader_version=None,
+                              output_version=None, labels=None, tenants=None):
         qfilter = wms_schema.DartRecords.document_id.like(document_id)
         qfilter = and_(qfilter, wms_schema.DartRecords.reader.like(reader))
         if reader_version:
             qfilter = and_(qfilter, wms_schema.DartRecords.
                            reader_version.like(reader_version))
-        q = self.query(wms_schema.DartRecords.storage_key).filter(qfilter)
-        keys = [r[0] for r in q.all()]
-        # TODO: should we just return the keys here or the full record?
-        # maybe add a different function for getting keys
-        return keys
+        if output_version:
+            qfilter = and_(qfilter, wms_schema.DartRecords.
+                           output_version.like(output_version))
+        q = self.query(wms_schema.DartRecords).filter(qfilter)
+        record_keys = ['reader', 'reader_version', 'document_id', 'storage_key',
+                       'date', 'output_version', 'labels', 'tenants']
+        records = [{k: r.__dict__.get(k) for k in record_keys} for r in q.all()]
+        # If some labels are given, we retain opnly records where there are
+        # some labels given and all the given labels are contained in those
+        if labels:
+            records = [r for r in records if r['labels'] and
+                       set(labels) <= set(r['labels'].split('|'))]
+        if tenants:
+            records = [r for r in records if r['tenants'] and
+                       set(tenants) <= set(r['tenants'].split('|'))]
+        return records
