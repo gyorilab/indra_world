@@ -17,12 +17,14 @@ else:
     dart_client = DartClient(storage_mode='web')
 sc = ServiceController(db_url, dart_client=dart_client)
 
+VERSION = '2.0'
+
 
 app = Flask(__name__)
 app.config['RESTX_MASK_SWAGGER'] = False
 api = Api(app, title='INDRA World Modelers API',
           description='REST API for INDRA World Modelers',
-          version='2.0')
+          version=VERSION)
 
 # Namespaces
 base_ns = api.namespace('Basic functions',
@@ -235,7 +237,7 @@ class Health(Resource):
 
     @base_ns.response(200, 'State and version of the API', health_model)
     def get(self):
-        return {'state': 'healthy', 'version': '2.0'}
+        return {'state': 'healthy', 'version': VERSION}
 
 
 # notify

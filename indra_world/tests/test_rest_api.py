@@ -4,8 +4,7 @@ from nose.tools import raises
 from datetime import datetime
 from indra.statements import stmts_from_json, Influence, Event, Concept, \
     QualitativeDelta
-from indra_world.service.app import api
-from indra_world.service.app import sc
+from indra_world.service.app import api, sc, VERSION
 from indra_world.sources.dart import DartClient
 from indra_world.service.db.manager import DbManager
 from .test_service_controller import _get_eidos_output
@@ -36,7 +35,7 @@ def _call_api(method, route, *args, **kwargs):
 
 def test_health():
     res = _call_api('get', 'health')
-    assert res == {'state': 'healthy', 'version': '1.0.0'}
+    assert res == {'state': 'healthy', 'version': VERSION}
 
 
 def test_notify():
