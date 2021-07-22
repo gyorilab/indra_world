@@ -405,6 +405,26 @@ class GetProjectRecords(Resource):
         return records
 
 
+@assembly_ns.expect(project_model)
+@assembly_ns.route('/get_all_records')
+class GetAllRecords(Resource):
+    @api.doc(False)
+    def options(self):
+        return {}
+
+    @assembly_ns.response(200, 'A list of records', project_records_resp)
+    def get(self):
+        """Get all DART records captured by the service.
+
+        Returns
+        -------
+        records : list[dict]
+            A list of records.
+        """
+        records = sc.get_all_records()
+        return records
+
+
 @assembly_ns.expect(submit_curations_model)
 @assembly_ns.route('/submit_curations')
 class SubmitCurations(Resource):

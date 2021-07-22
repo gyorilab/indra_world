@@ -133,6 +133,10 @@ def test_get_project_records():
               'storage_key': storage_key,
               'output_version': '1.2'}
     res = _call_api('post', 'dart/notify', json=record)
+
+    all_records = _call_api('get', 'assembly/get_all_records')
+    assert len(all_records) == 1
+
     res = _call_api('post', 'assembly/add_project_records',
                     json=dict(
                         project_id='p1',
@@ -142,6 +146,9 @@ def test_get_project_records():
                     json=dict(project_id='p1'))
     assert res == [storage_key]
     sc.dart_client.get_output_from_record = _orig
+
+    all_records = _call_api('get', 'assembly/get_all_records')
+    assert len(all_records) == 1
 
 
 def test_curations():
@@ -249,7 +256,7 @@ def test_eidos_json():
                                'grounding_mode': 'compositional'})
     stmts_json = res_json.get('statements')
     stmts = stmts_from_json(stmts_json)
-    assert len(stmts) == 1                             
+    assert len(stmts) == 1
 
 
 def test_sofia_json():

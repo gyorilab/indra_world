@@ -207,6 +207,7 @@ class DbManager:
 
     def add_dart_record(self, reader, reader_version, document_id, storage_key,
                         date, output_version=None, labels=None, tenants=None):
+        """Insert a DART record into the database."""
         op = insert(wms_schema.DartRecords).values(
                 **{
                     'reader': reader,
@@ -224,6 +225,7 @@ class DbManager:
     def get_dart_records(self, reader=None, document_id=None,
                          reader_version=None, output_version=None, labels=None,
                          tenants=None):
+        """Return storage keys for DART records given constraints."""
         records = self.get_full_dart_records(
             reader=reader, document_id=document_id,
             reader_version=reader_version,
@@ -234,6 +236,7 @@ class DbManager:
     def get_full_dart_records(self, reader=None, document_id=None,
                               reader_version=None, output_version=None,
                               labels=None, tenants=None):
+        """Return full DART records given constraints."""
         qfilter = None
         if document_id:
             qfilter = extend_filter(
@@ -248,7 +251,7 @@ class DbManager:
         if output_version:
             qfilter = extend_filter(qfilter, wms_schema.DartRecords.
                                     output_version.like(output_version))
-        if qfilter:
+        if qfilter is not None:
             q = self.query(wms_schema.DartRecords).filter(qfilter)
         else:
             q = self.query(wms_schema.DartRecords)

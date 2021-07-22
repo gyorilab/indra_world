@@ -29,6 +29,7 @@ class ServiceController:
             self.dart_client = DartClient(storage_mode='web')
 
     def new_project(self, project_id, name, corpus_id=None):
+        """Create a new blank project or one based on an existing corpus."""
         res = self.db.add_project(project_id, name)
         if res is None:
             return None
@@ -37,6 +38,7 @@ class ServiceController:
             return self.db.add_records_for_project(project_id, record_keys)
 
     def load_project(self, project_id, record_keys=None):
+        """Load a given project for incremental assembly into memory."""
         # 1. Select records associated with project
         if record_keys is None:
             record_keys = self.db.get_records_for_project(project_id)
@@ -51,15 +53,23 @@ class ServiceController:
         self.assemblers[project_id] = assembler
 
     def unload_project(self, project_id):
+        """Unload a given project from memory."""
         self.assemblers.pop(project_id, None)
 
     def get_projects(self):
+        """Return the list of projects."""
         return self.db.get_projects()
 
     def get_project_records(self, project_id):
+        """Return record keys for a given project."""
         return self.db.get_records_for_project(project_id)
 
+    def get_corpus_records(self, corpus_id):
+        """Return record keys for a given corpus."""
+        return self.db.get_records_for_corpus(corpus_id)
+
     def add_dart_record(self, record, date=None):
+        """Add a new DART record to the database."""
         if date is None:
             date = datetime.datetime.utcnow().isoformat()
         return self.db.add_dart_record(reader=record['identity'],
@@ -74,6 +84,7 @@ class ServiceController:
 
     def process_dart_record(self, record, grounding_mode='compositional',
                             extract_filter='influence'):
+        """Process a DART record's corresponding reader output."""
         reader_output = self.dart_client.get_output_from_record(record)
         return self.add_reader_output(reader_output, record,
                                       grounding_mode=grounding_mode,
@@ -82,6 +93,7 @@ class ServiceController:
     def add_reader_output(self, content, record,
                           grounding_mode='compositional',
                           extract_filter='influence'):
+        """Process reader output and add it to the DB for a given record key."""
         stmts = process_reader_output(record['identity'], content,
                                       record['document_id'],
                                       grounding_mode=grounding_mode,
@@ -89,11 +101,14 @@ class ServiceController:
         return self.add_reader_statements(stmts, record)
 
     def add_reader_statements(self, stmts, record):
+        """Prepare a set of raw statements and add them for a given record key.
+        """
         prepared_stmts = preparation_pipeline.run(stmts)
         return self.add_prepared_statements(prepared_stmts,
                                             record['storage_key'])
 
     def add_prepared_statements(self, prepared_stmts, record_key):
+        """Add a set of prepared statements for a given record key."""
         return self.db.add_statements_for_record(record_key=record_key,
                                                  # FIXME: how should we set the
                                                  # version here?
@@ -101,6 +116,8 @@ class ServiceController:
                                                  stmts=prepared_stmts)
 
     def assemble_new_records(self, project_id, new_record_keys):
+        """Incrementally assemble a set of records into a given project and
+        return assembly delta."""
         # 1. We get all the records associated with the project
         # which may or may not include some of the new ones
         logger.info('Getting records for project')
@@ -121,6 +138,7 @@ class ServiceController:
         return delta
 
     def add_curations(self, project_id, curations):
+        """Add curations for a given project."""
         # Note: since loading a project applies all existing curations, it's
         # very important that this happens first, before the new curations
         # are added to the DB
@@ -138,7 +156,13 @@ class ServiceController:
         return matches_hash_map
 
     def get_project_curations(self, project_id):
+        """Return curations added for a given project."""
         return self.db.get_curations_for_project(project_id)
 
     def add_project_records(self, project_id, record_keys):
+        """Add DART records (given their storage keys) to a given project."""
         return self.db.add_records_for_project(project_id, record_keys)
+
+    def get_all_records(self):
+        """Return all full DART records stored in the service's DB."""
+        return self.db.get_full_dart_records()
