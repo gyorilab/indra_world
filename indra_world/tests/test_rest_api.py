@@ -64,6 +64,12 @@ def test_notify():
         reader_version='1.0')
     assert records == [storage_key], records
 
+    full_records = sc.db.get_full_dart_records(
+        reader='eidos',
+        document_id=doc_id,
+        reader_version='1.0')
+    assert full_records[0]['tenants'] == 't1'
+
     stmts = sc.db.get_statements_for_document(document_id=doc_id)
     assert len(stmts) == 1, stmts
     sc.dart_client.get_output_from_record = _orig
