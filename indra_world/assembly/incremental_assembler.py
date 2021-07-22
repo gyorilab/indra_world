@@ -7,8 +7,8 @@ from collections import defaultdict
 from indra.pipeline import AssemblyPipeline
 from indra.belief import extend_refinements_graph
 from indra.preassembler.refinement import RefinementConfirmationFilter
+from indra_world.ontology import world_ontology
 from indra_world.belief import get_eidos_scorer
-from indra_world.ontology import load_world_ontology
 from indra_world.assembly.operations import CompositionalRefinementFilter
 from indra_world.assembly.operations import \
     location_matches_compositional, location_refinement_compositional, \
@@ -17,10 +17,6 @@ from indra_world.assembly.operations import \
 
 logger = logging.getLogger(__name__)
 
-comp_onto_url = 'https://raw.githubusercontent.com/WorldModelers/Ontologies/' \
-                'master/CompositionalOntology_metadata.yml'
-
-world_ontology = load_world_ontology(comp_onto_url)
 # TODO: should we use the Bayesian scorer?
 eidos_scorer = get_eidos_scorer()
 
@@ -55,7 +51,8 @@ class IncrementalAssembler:
                  refinement_filters=None,
                  matches_fun=location_matches_compositional,
                  curations=None,
-                 post_processing_steps=None):
+                 post_processing_steps=None,
+                 ontology=world_ontology):
         self.matches_fun = matches_fun
         # These are preassembly data structures
         self.stmts_by_hash = {}
@@ -63,11 +60,12 @@ class IncrementalAssembler:
         self.refinement_edges = set()
         self.prepared_stmts = prepared_stmts
         self.known_corrects = set()
+        self.ontology = ontology
 
         if not refinement_filters:
             logger.info('Instantiating refinement filters')
-            crf = CompositionalRefinementFilter(ontology=world_ontology)
-            rcf = RefinementConfirmationFilter(ontology=world_ontology,
+            crf = CompositionalRefinementFilter(ontology=self.ontology)
+            rcf = RefinementConfirmationFilter(ontology=self.ontology,
                 refinement_fun=location_refinement_compositional)
             self.refinement_filters = [crf, rcf]
         else:

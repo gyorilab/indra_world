@@ -1,14 +1,18 @@
 import logging
 import requests
 from collections import defaultdict
+from indra.config import get_config
 from indra.pipeline import register_pipeline
 from indra.ontology.ontology_graph import IndraOntology, with_initialize
 
 
 logger = logging.getLogger(__name__)
 
-wm_ont_url = ('https://raw.githubusercontent.com/WorldModelers/'
-              'Ontologies/master/wm_flat_metadata.yml')
+flat_onto_url = ('https://raw.githubusercontent.com/WorldModelers/'
+                 'Ontologies/master/wm_flat_metadata.yml')
+
+comp_onto_url = ('https://raw.githubusercontent.com/WorldModelers/Ontologies/'
+                 'master/CompositionalOntology_metadata.yml')
 
 
 def get_term(node, prefix):
@@ -235,9 +239,18 @@ class WorldOntology(IndraOntology):
 
 
 @register_pipeline
-def load_world_ontology(url=wm_ont_url):
+def load_world_ontology(url=None, default_type='compositional'):
     """Load the world ontology from a given URL or file path."""
-    return WorldOntology(url)
+    conf_url = get_config('INDRA_WORLD_ONTOLOGY_URL')
+    if url:
+        use_url = url
+    elif conf_url:
+        use_url = conf_url
+    elif default_type == 'flat':
+        use_url = flat_onto_url
+    else:
+        use_url = comp_onto_url
+    return WorldOntology(use_url)
 
 
 world_ontology = load_world_ontology()

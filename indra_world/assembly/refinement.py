@@ -13,7 +13,7 @@ from .matches import has_location, has_time, get_location
 from indra.statements import Influence, Event
 from indra.pipeline import register_pipeline
 from indra.preassembler import RefinementFilter, get_relevant_keys
-from indra_world.ontology import comp_ontology
+from indra_world.ontology import world_ontology
 from .matches import concept_matches_compositional
 
 
@@ -74,7 +74,7 @@ def make_compositional_refinement_filter(ontology, nproc=None):
 
 @register_pipeline
 def make_default_compositional_refinement_filter():
-    return CompositionalRefinementFilter(comp_ontology, nproc=None)
+    return CompositionalRefinementFilter(world_ontology, nproc=None)
 
 
 class CompositionalRefinementFilter(RefinementFilter):

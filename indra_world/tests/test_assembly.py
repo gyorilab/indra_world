@@ -12,9 +12,12 @@ from indra.statements import Evidence, QualitativeDelta, RefContext, \
 from indra.preassembler import Preassembler
 
 from indra_world.assembly.operations import *
-from indra_world.ontology import comp_ontology
-from indra_world.ontology import world_ontology
+from indra_world.ontology import load_world_ontology
 from indra_world.assembly.matches import location_matches
+
+
+flat_ontology = load_world_ontology(default_type='flat')
+comp_ontology = load_world_ontology(default_type='compositional')
 
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -231,7 +234,7 @@ def test_compositional_refinement_polarity_bug():
 
 
 def _get_extended_wm_hierarchy():
-    wo = deepcopy(world_ontology)
+    wo = deepcopy(flat_ontology)
     wo.initialize()
     wo.add_edge(
         'WM:wm/x/y/z/flooding',
@@ -372,12 +375,12 @@ def test_event_assemble_location():
     ev1 = Event(rainfall, context=WorldContext(geo_location=loc1))
     ev2 = Event(rainfall, context=WorldContext(geo_location=loc2))
 
-    pa = Preassembler(ontology=world_ontology, stmts=[ev1, ev2],
+    pa = Preassembler(ontology=flat_ontology, stmts=[ev1, ev2],
                       matches_fun=None)
     unique_stmts = pa.combine_duplicates()
 
     assert len(unique_stmts) == 1
-    pa = Preassembler(ontology=world_ontology, stmts=[ev1, ev2],
+    pa = Preassembler(ontology=flat_ontology, stmts=[ev1, ev2],
                       matches_fun=location_matches)
     unique_stmts = pa.combine_duplicates()
     assert len(unique_stmts) == 2

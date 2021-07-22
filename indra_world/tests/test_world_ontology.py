@@ -1,6 +1,8 @@
 import copy
-from indra_world.ontology import world_ontology
+from indra_world.ontology import load_world_ontology
 from indra_world.ontology.ontology import WorldOntology
+
+flat_ontology = load_world_ontology(default_type='flat')
 
 
 def test_hm_opposite_polarity():
@@ -8,16 +10,16 @@ def test_hm_opposite_polarity():
     concept2 = 'wm/concept/causal_factor/food_security/food_stability'
     concept3 = ('wm/concept/causal_factor/environmental/meteorologic/'
                 'precipitation/flooding')
-    assert world_ontology.is_opposite('WM', concept1, 'WM', concept2)
-    assert world_ontology.is_opposite('WM', concept2, 'WM', concept1)
-    assert not world_ontology.is_opposite('WM', concept1, 'WM', concept3)
-    assert world_ontology.get_polarity('WM', concept1) == -1
-    assert world_ontology.get_polarity('WM', concept2) == 1
-    assert world_ontology.get_polarity('UN', 'something') is None
+    assert flat_ontology.is_opposite('WM', concept1, 'WM', concept2)
+    assert flat_ontology.is_opposite('WM', concept2, 'WM', concept1)
+    assert not flat_ontology.is_opposite('WM', concept1, 'WM', concept3)
+    assert flat_ontology.get_polarity('WM', concept1) == -1
+    assert flat_ontology.get_polarity('WM', concept2) == 1
+    assert flat_ontology.get_polarity('UN', 'something') is None
 
 
 def test_world_ontology_add_entry():
-    ont = copy.deepcopy(world_ontology)
+    ont = copy.deepcopy(flat_ontology)
     nat_dis = ('wm/concept/causal_factor/crisis_and_disaster/'
                'environmental_disasters/natural_disaster')
 
