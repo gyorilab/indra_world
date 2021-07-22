@@ -95,7 +95,7 @@ class CorpusManager:
         s3.put_object(Body=metadata_str, Bucket=default_bucket, Key=key)
 
         # Update index
-        key = os.path.join(default_key_base, self.corpus_id, 'index.csv')
+        key = os.path.join(default_key_base, 'index.csv')
         obj = s3.get_object(Bucket=default_bucket, Key=key)
         index_str = obj['Body'].read().decode('utf-8')
         if not index_str.endswith('\n'):
