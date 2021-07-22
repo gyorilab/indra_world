@@ -1,5 +1,7 @@
 from indra.statements import Concept, QualitativeDelta, Association, Event
-from indra_world.ontology import world_ontology
+from indra_world.ontology import load_world_ontology
+
+world_ontology = load_world_ontology(default_type='flat')
 
 
 def test_concept_isa_eid():
