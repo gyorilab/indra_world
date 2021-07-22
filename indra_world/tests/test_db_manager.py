@@ -25,6 +25,12 @@ def test_dart_record():
     assert keys == ['xyz1']
     keys = db.get_dart_records(reader='hume', document_id='abc1')
     assert keys == ['xyz3']
+    keys = db.get_dart_records()
+    assert len(keys) == 3
+    keys = db.get_dart_records(document_id='abc1')
+    assert len(keys) == 2
+    keys = db.get_dart_records(reader_version='1.0')
+    assert len(keys) == 2
 
 
 def test_dart_records_extended():

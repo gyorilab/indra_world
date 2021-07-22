@@ -207,6 +207,7 @@ class DbManager:
 
     def add_dart_record(self, reader, reader_version, document_id, storage_key,
                         date, output_version=None, labels=None, tenants=None):
+        """Insert a DART record into the database."""
         op = insert(wms_schema.DartRecords).values(
                 **{
                     'reader': reader,
@@ -221,8 +222,10 @@ class DbManager:
         )
         return self.execute(op)
 
-    def get_dart_records(self, reader, document_id, reader_version=None,
-                         output_version=None, labels=None, tenants=None):
+    def get_dart_records(self, reader=None, document_id=None,
+                         reader_version=None, output_version=None, labels=None,
+                         tenants=None):
+        """Return storage keys for DART records given constraints."""
         records = self.get_full_dart_records(
             reader=reader, document_id=document_id,
             reader_version=reader_version,
@@ -230,17 +233,28 @@ class DbManager:
             labels=labels, tenants=tenants)
         return [r['storage_key'] for r in records]
 
-    def get_full_dart_records(self, reader, document_id, reader_version=None,
-                              output_version=None, labels=None, tenants=None):
-        qfilter = wms_schema.DartRecords.document_id.like(document_id)
-        qfilter = and_(qfilter, wms_schema.DartRecords.reader.like(reader))
+    def get_full_dart_records(self, reader=None, document_id=None,
+                              reader_version=None, output_version=None,
+                              labels=None, tenants=None):
+        """Return full DART records given constraints."""
+        qfilter = None
+        if document_id:
+            qfilter = extend_filter(
+                qfilter,
+                wms_schema.DartRecords.document_id.like(document_id))
+        if reader:
+            qfilter = extend_filter(qfilter,
+                                    wms_schema.DartRecords.reader.like(reader))
         if reader_version:
-            qfilter = and_(qfilter, wms_schema.DartRecords.
-                           reader_version.like(reader_version))
+            qfilter = extend_filter(qfilter, wms_schema.DartRecords.
+                                    reader_version.like(reader_version))
         if output_version:
-            qfilter = and_(qfilter, wms_schema.DartRecords.
-                           output_version.like(output_version))
-        q = self.query(wms_schema.DartRecords).filter(qfilter)
+            qfilter = extend_filter(qfilter, wms_schema.DartRecords.
+                                    output_version.like(output_version))
+        if qfilter is not None:
+            q = self.query(wms_schema.DartRecords).filter(qfilter)
+        else:
+            q = self.query(wms_schema.DartRecords)
         record_keys = ['reader', 'reader_version', 'document_id', 'storage_key',
                        'date', 'output_version', 'labels', 'tenants']
         records = [{k: r.__dict__.get(k) for k in record_keys} for r in q.all()]
@@ -253,3 +267,10 @@ class DbManager:
             records = [r for r in records if r['tenants'] and
                        set(tenants) <= set(r['tenants'].split('|'))]
         return records
+
+
+def extend_filter(qfilter, constraint):
+    if qfilter is None:
+        return constraint
+    else:
+        return and_(qfilter, constraint)
