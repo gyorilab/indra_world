@@ -239,15 +239,17 @@ class WorldOntology(IndraOntology):
 
 
 @register_pipeline
-def load_world_ontology(url=None):
+def load_world_ontology(url=None, default_type='compositional'):
     """Load the world ontology from a given URL or file path."""
     conf_url = get_config('INDRA_WORLD_ONTOLOGY_URL')
     if url:
         use_url = url
     elif conf_url:
         use_url = conf_url
-    else:
+    elif default_type == 'flat':
         use_url = flat_onto_url
+    else:
+        use_url = comp_onto_url
     return WorldOntology(use_url)
 
 
