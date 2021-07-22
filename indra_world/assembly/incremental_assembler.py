@@ -4,12 +4,11 @@ import logging
 from copy import deepcopy
 import networkx
 from collections import defaultdict
-from indra.config import get_config
 from indra.pipeline import AssemblyPipeline
 from indra.belief import extend_refinements_graph
 from indra.preassembler.refinement import RefinementConfirmationFilter
+from indra_world.ontology import world_ontology
 from indra_world.belief import get_eidos_scorer
-from indra_world.ontology import load_world_ontology
 from indra_world.assembly.operations import CompositionalRefinementFilter
 from indra_world.assembly.operations import \
     location_matches_compositional, location_refinement_compositional, \
@@ -17,15 +16,6 @@ from indra_world.assembly.operations import \
 
 
 logger = logging.getLogger(__name__)
-
-
-def _load_ontology():
-    conf_url = get_config('INDRA_WORLD_ONTOLOGY_URL')
-    url = conf_url if conf_url else comp_onto_url
-    return load_world_ontology(url)
-
-
-world_ontology = _load_ontology()
 
 # TODO: should we use the Bayesian scorer?
 eidos_scorer = get_eidos_scorer()
