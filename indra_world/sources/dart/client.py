@@ -81,7 +81,7 @@ class DartClient:
                 raise ValueError('DART client initialized in local mode '
                                  'without a local storage path.')
         # If the local storage doesn't exist, we try create the folder
-        if not os.path.exists(self.local_storage):
+        if self.local_storage and (not os.path.exists(self.local_storage)):
             logger.info('The local storage path %s for the DART client '
                         'doesn\'t exist and will now be created' %
                         self.local_storage)
@@ -131,7 +131,7 @@ class DartClient:
         storage_key = record['storage_key']
         fname = self.get_local_storage_path(record)
         output = None
-        if os.path.exists(fname):
+        if fname and os.path.exists(fname):
             with open(fname, 'r') as fh:
                 output = fh.read()
         elif self.storage_mode == 'web':
@@ -173,6 +173,8 @@ class DartClient:
 
     def get_local_storage_path(self, record):
         """Return the local storage path for a DART record."""
+        if not self.local_storage:
+            return None
         folder = os.path.join(self.local_storage, record['identity'],
                               record['version'])
         if not os.path.exists(folder):
