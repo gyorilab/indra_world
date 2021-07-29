@@ -263,10 +263,14 @@ def compositional_grounding_filter_stmt(stmt, score_threshold,
                 # are the same, we remove the process/property
                 if remove_self_loops and wm_groundings[idx][0]:
                     # Theme and property are the same: remove property
-                    if wm_groundings[idx][0] == wm_groundings[idx][1]:
+                    if wm_groundings[idx][1] and \
+                            (wm_groundings[idx][0][0] ==
+                             wm_groundings[idx][1][0]):
                         wm_groundings[idx][1] = None
                     # Theme and process are the same: remove process
-                    if wm_groundings[idx][0] == wm_groundings[idx][2]:
+                    if wm_groundings[idx][2] and \
+                            (wm_groundings[idx][0][0] ==
+                             wm_groundings[idx][2][0]):
                         wm_groundings[idx][2] = None
                         wm_groundings[idx][3] = None
                 if not all(entry is None for entry in wm_groundings[idx]):
