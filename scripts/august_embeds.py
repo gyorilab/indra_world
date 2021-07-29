@@ -1,3 +1,4 @@
+import json
 import logging
 from indra.config import get_config
 from indra_world.sources.dart import DartClient
@@ -24,13 +25,15 @@ if __name__ == '__main__':
         'ata': {'name': 'ATA'}
         }
     for tenant, properties in tenants.items():
-        tenant_records = [rec for rec in records if rec['tenants'] and
+        tenant_records = [rec for rec in records if rec.get('tenants') and
                           tenant in rec['tenants']]
-        logger.info('Got %d records for tenant %s' % (len(records), tenant))
+        logger.info('Got %d records for tenant %s' % (len(tenant_records),
+                                                      tenant))
         corpus_id = 'august_embed_%s' % tenant
         corpus_name = 'August embed %s' % properties['name']
 
         num_docs = len({rec['document_id'] for rec in tenant_records})
+        logger.info('Got %d unique documents' % num_docs)
 
         meta_data = {
             'corpus_id': corpus_id,
@@ -45,6 +48,8 @@ if __name__ == '__main__':
             'num_statements': 0,
             'num_documents': num_docs
         }
+
+        logger.info('Using metadata: %s' % json.dumps(meta_data, indent=1))
 
         cm = CorpusManager(
             db_url=db_url,
