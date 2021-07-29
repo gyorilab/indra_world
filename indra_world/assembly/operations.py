@@ -5,7 +5,8 @@ __all__ = ['get_expanded_events_influences', 'remove_namespaces',
            'compositional_grounding_filter_stmt',
            'compositional_grounding_filter', 'standardize_names_compositional',
            'add_flattened_grounding_compositional', 'validate_grounding_format',
-           'make_display_name', 'set_positive_polarities',
+           'make_display_name', 'make_display_name_linear',
+           'set_positive_polarities',
            'filter_out_long_words', 'concept_matches_compositional',
            'matches_compositional', 'location_matches_compositional',
            'event_compositional_refinement', 'compositional_refinement',
@@ -340,11 +341,20 @@ def validate_grounding_format(stmts):
 
 
 def make_display_name(comp_grounding):
+    """Return display name from a compositional grounding with 'of' linkers."""
     entries = tuple(entry[0].split('/')[-1].replace('_', ' ')
                     if entry else None for entry in comp_grounding)
     entries_reversed = [entry for entry in entries[::-1] if
                         entry is not None]
     return ' of '.join(entries_reversed)
+
+
+def make_display_name_linear(comp_grounding):
+    """Return display name from compositional grounding with linear joining."""
+    entries = tuple(entry[0].split('/')[-1].replace('_', ' ')
+                    if entry else None for entry in comp_grounding)
+    entries = [entry for entry in entries if entry is not None]
+    return ' '.join(entries)
 
 
 @register_pipeline

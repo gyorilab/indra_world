@@ -409,3 +409,16 @@ def test_influence_event_hash_reference():
          print(json.dumps(ij, indent=1)))
 
 
+def test_make_display_name():
+    gr1 = [('theme', 0.5), None, None, None]
+    gr2 = [('theme', 0.5), ('property', 0.5), ('process', 0.5),
+           ('process_property', 0.5)]
+    gr3 = [('theme', 0.5), None, ('process', 0.5), None]
+    assert make_display_name_linear(gr1) == 'theme'
+    assert make_display_name_linear(gr2) == \
+        'theme property process process property'
+    assert make_display_name_linear(gr3) == 'theme process'
+    assert make_display_name(gr1) == 'theme'
+    assert make_display_name(gr2) == \
+        'process property of process of property of theme'
+    assert make_display_name(gr3) == 'process of theme'
