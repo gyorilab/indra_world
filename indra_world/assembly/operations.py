@@ -225,7 +225,8 @@ def deduplicate_groundings(groundings):
 
 
 def compositional_grounding_filter_stmt(stmt, score_threshold,
-                                        groundings_to_exclude):
+                                        groundings_to_exclude,
+                                        remove_self_loops=False):
     stmt = copy.deepcopy(stmt)
     for concept in stmt.agent_list():
         if concept is not None and 'WM' in concept.db_refs:
@@ -257,6 +258,17 @@ def compositional_grounding_filter_stmt(stmt, score_threshold,
                 if wm_groundings[idx][3] is not None and \
                         wm_groundings[idx][2] is None:
                     wm_groundings[idx][3] = None
+                # If we have a theme and want to remove self loops
+                # i.e., where both the theme and the process/property
+                # are the same, we remove the process/property
+                if remove_self_loops and wm_groundings[idx][0]:
+                    # Theme and property are the same: remove property
+                    if wm_groundings[idx][0] == wm_groundings[idx][1]:
+                        wm_groundings[idx][1] = None
+                    # Theme and process are the same: remove process
+                    if wm_groundings[idx][0] == wm_groundings[idx][2]:
+                        wm_groundings[idx][2] = None
+                        wm_groundings[idx][3] = None
                 if not all(entry is None for entry in wm_groundings[idx]):
                     new_groundings.append(wm_groundings[idx])
             new_groundings = deduplicate_groundings(new_groundings)
