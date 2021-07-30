@@ -293,13 +293,15 @@ def compositional_grounding_filter_stmt(stmt, score_threshold,
 
 @register_pipeline
 def compositional_grounding_filter(stmts, score_threshold,
-                                   groundings_to_exclude=None):
+                                   groundings_to_exclude=None,
+                                   remove_self_loops=False):
     groundings_to_exclude = groundings_to_exclude \
         if groundings_to_exclude else []
     stmts_out = []
     for stmt in stmts:
         stmt_out = compositional_grounding_filter_stmt(stmt, score_threshold,
-                                                       groundings_to_exclude)
+                                                       groundings_to_exclude,
+                                                       remove_self_loops=remove_self_loops)
         if stmt_out:
             stmts_out.append(stmt_out)
     return stmts_out
