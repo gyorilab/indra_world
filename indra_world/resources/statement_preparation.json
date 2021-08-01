@@ -29,7 +29,8 @@
         "wm/time",
         "wm/process",
         "wm/property"
-      ]
+      ],
+      "remove_self_loops": true
     }
   },
   {
@@ -59,4 +60,5 @@
   },
   {
     "function": "sort_compositional_groundings"
-  }]
+  }
+]

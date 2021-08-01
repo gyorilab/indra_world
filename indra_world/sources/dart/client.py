@@ -153,6 +153,31 @@ class DartClient:
                         'in local storage.' % storage_key)
         return output
 
+    def cache_record(self, record, overwrite=False):
+        """Download and cache a given record in local storage.
+
+        Parameters
+        ----------
+        record : dict
+            A DART record.
+        """
+        fname = self.get_local_storage_path(record)
+        if overwrite or not os.path.exists(fname):
+            output = self.download_output(record['storage_key'])
+            with open(fname, 'w') as fh:
+                fh.write(output)
+
+    def cache_records(self, records, overwrite=False):
+        """Download and cache a list of records in local storage.
+
+        Parameters
+        ----------
+        records : list[dict]
+            A list of DART records.
+        """
+        for record in tqdm.tqdm(records):
+            self.cache_record(record, overwrite=overwrite)
+
     def download_output(self, storage_key):
         """Return content from the DART web service based on its storage key.
 

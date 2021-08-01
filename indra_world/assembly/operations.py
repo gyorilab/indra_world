@@ -5,7 +5,8 @@ __all__ = ['get_expanded_events_influences', 'remove_namespaces',
            'compositional_grounding_filter_stmt',
            'compositional_grounding_filter', 'standardize_names_compositional',
            'add_flattened_grounding_compositional', 'validate_grounding_format',
-           'make_display_name', 'set_positive_polarities',
+           'make_display_name', 'make_display_name_linear',
+           'set_positive_polarities',
            'filter_out_long_words', 'concept_matches_compositional',
            'matches_compositional', 'location_matches_compositional',
            'event_compositional_refinement', 'compositional_refinement',
@@ -224,7 +225,8 @@ def deduplicate_groundings(groundings):
 
 
 def compositional_grounding_filter_stmt(stmt, score_threshold,
-                                        groundings_to_exclude):
+                                        groundings_to_exclude,
+                                        remove_self_loops=False):
     stmt = copy.deepcopy(stmt)
     for concept in stmt.agent_list():
         if concept is not None and 'WM' in concept.db_refs:
@@ -256,6 +258,21 @@ def compositional_grounding_filter_stmt(stmt, score_threshold,
                 if wm_groundings[idx][3] is not None and \
                         wm_groundings[idx][2] is None:
                     wm_groundings[idx][3] = None
+                # If we have a theme and want to remove self loops
+                # i.e., where both the theme and the process/property
+                # are the same, we remove the process/property
+                if remove_self_loops and wm_groundings[idx][0]:
+                    # Theme and property are the same: remove property
+                    if wm_groundings[idx][1] and \
+                            (wm_groundings[idx][0][0] ==
+                             wm_groundings[idx][1][0]):
+                        wm_groundings[idx][1] = None
+                    # Theme and process are the same: remove process
+                    if wm_groundings[idx][2] and \
+                            (wm_groundings[idx][0][0] ==
+                             wm_groundings[idx][2][0]):
+                        wm_groundings[idx][2] = None
+                        wm_groundings[idx][3] = None
                 if not all(entry is None for entry in wm_groundings[idx]):
                     new_groundings.append(wm_groundings[idx])
             new_groundings = deduplicate_groundings(new_groundings)
@@ -276,13 +293,15 @@ def compositional_grounding_filter_stmt(stmt, score_threshold,
 
 @register_pipeline
 def compositional_grounding_filter(stmts, score_threshold,
-                                   groundings_to_exclude=None):
+                                   groundings_to_exclude=None,
+                                   remove_self_loops=False):
     groundings_to_exclude = groundings_to_exclude \
         if groundings_to_exclude else []
     stmts_out = []
     for stmt in stmts:
         stmt_out = compositional_grounding_filter_stmt(stmt, score_threshold,
-                                                       groundings_to_exclude)
+                                                       groundings_to_exclude,
+                                                       remove_self_loops=remove_self_loops)
         if stmt_out:
             stmts_out.append(stmt_out)
     return stmts_out
@@ -340,11 +359,20 @@ def validate_grounding_format(stmts):
 
 
 def make_display_name(comp_grounding):
+    """Return display name from a compositional grounding with 'of' linkers."""
     entries = tuple(entry[0].split('/')[-1].replace('_', ' ')
                     if entry else None for entry in comp_grounding)
     entries_reversed = [entry for entry in entries[::-1] if
                         entry is not None]
     return ' of '.join(entries_reversed)
+
+
+def make_display_name_linear(comp_grounding):
+    """Return display name from compositional grounding with linear joining."""
+    entries = tuple(entry[0].split('/')[-1].replace('_', ' ')
+                    if entry else None for entry in comp_grounding)
+    entries = [entry for entry in entries if entry is not None]
+    return ' '.join(entries)
 
 
 @register_pipeline

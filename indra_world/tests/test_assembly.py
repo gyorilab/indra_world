@@ -76,6 +76,22 @@ def test_compositional_grounding_filter():
     assert concept.db_refs['WM'][0][0] == ('y', 0.7), concept.db_refs
 
 
+def test_compositional_grounding_filter_self_loops():
+    wm = [[('x', 0.9), ('x', 0.8), None, None]]
+    concept = Concept('x', db_refs={'WM': wm})
+    stmt = Event(concept)
+    stmt_out = compositional_grounding_filter_stmt(stmt, 0.7, [],)
+    concept = stmt_out.concept
+    assert concept.db_refs['WM'][0][0] == ('x', 0.9), concept.db_refs
+    assert concept.db_refs['WM'][0][1] == ('x', 0.8), concept.db_refs
+    stmt_out = compositional_grounding_filter_stmt(stmt, 0.7, [],
+                                                   remove_self_loops=True)
+    concept = stmt_out.concept
+    assert concept.db_refs['WM'][0][0] == ('x', 0.9), concept.db_refs
+    assert concept.db_refs['WM'][0][1] is None
+
+
+
 def test_compositional_refinements():
     def make_event(comp_grounding):
         scored_grounding = [
@@ -409,3 +425,16 @@ def test_influence_event_hash_reference():
          print(json.dumps(ij, indent=1)))
 
 
+def test_make_display_name():
+    gr1 = [('theme', 0.5), None, None, None]
+    gr2 = [('theme', 0.5), ('property', 0.5), ('process', 0.5),
+           ('process_property', 0.5)]
+    gr3 = [('theme', 0.5), None, ('process', 0.5), None]
+    assert make_display_name_linear(gr1) == 'theme'
+    assert make_display_name_linear(gr2) == \
+        'theme property process process property'
+    assert make_display_name_linear(gr3) == 'theme process'
+    assert make_display_name(gr1) == 'theme'
+    assert make_display_name(gr2) == \
+        'process property of process of property of theme'
+    assert make_display_name(gr3) == 'process of theme'
