@@ -2,7 +2,9 @@ import tqdm
 import pickle
 import logging
 import functools
+from typing import List, Mapping, Optional
 from multiprocessing import Pool
+from indra.statements import Statement
 from indra_world.sources import eidos, hume, sofia
 
 logger = logging.getLogger(__name__)
@@ -24,12 +26,40 @@ def _reader_wrapper(fname, reader, dart_ids=None, **kwargs):
     return pr.statements
 
 
-def process_reader_outputs(fnames, reader,
-                           dart_ids=None,
-                           extract_filter=None,
-                           grounding_mode='compositional',
-                           nproc=8,
-                           output_pkl=None):
+def process_reader_outputs(fnames: List[str],
+                           reader: str,
+                           dart_ids: Mapping[str, str] = None,
+                           extract_filter: List[str] = None,
+                           grounding_mode: str = 'compositional',
+                           nproc: int = 8,
+                           output_pkl: str = None) -> List[Statement]:
+    """Process a set of reader outputs in parallel.
+
+    Parameters
+    ----------
+    fnames :
+        The list of file paths to the reader outputs to be processed.
+    reader :
+        The name of the reader which produced the outputs.
+    dart_ids :
+        A dict which maps each fname in the fnames list to a DART document ID.
+        These are then set in the evidences of statements exxtracted from
+        the output.
+    extract_filter :
+        What types of statements to extract.
+    grounding_mode :
+        The type of grounding mode to use for processing.
+    nproc :
+        The number of workers to use for parallelization.
+    output_pkl :
+        The path to an output pickle file in which to dump the statements
+        extracted from the outputs.
+
+    Returns
+    -------
+    :
+        The list of statements extracted from the outputs.
+    """
     if extract_filter is None:
         extract_filter = ['influence']
 

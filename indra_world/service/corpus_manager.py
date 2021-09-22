@@ -139,7 +139,16 @@ def get_corpus_index():
     return index_entries
 
 
-def download_corpus(corpus_id, fname):
+def download_corpus(corpus_id: str, fname: str) -> None:
+    """Download a given corpus of assembled statements from S3.
+
+    Parameters
+    ----------
+    corpus_id :
+        The ID of the corpus.
+    fname :
+        The file in which the downloaded corpus should be written.
+    """
     s3 = _make_s3_client()
     key = os.path.join(default_key_base, corpus_id, 'statements.json')
     obj - s3.get_object(Bucket=default_bucket, Key=key)
