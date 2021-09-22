@@ -127,3 +127,30 @@ def _make_s3_client(profile_name='wm'):
 
 def stmts_to_jsonl_str(stmts):
     return '\n'.join([json.dumps(stmt) for stmt in stmts_to_json(stmts)])
+
+
+def get_corpus_index():
+    """Return the corpus index as a list of tuples with corpus IDs and dates."""
+    s3 = _make_s3_client()
+    key = os.path.join(default_key_base, 'index.csv')
+    obj = s3.get_object(Bucket=default_bucket, Key=key)
+    index_str = obj['Body'].read().decode('utf-8')
+    index_entries = [l.split(',') for l in index_str.split('\n') if l]
+    return index_entries
+
+
+def download_corpus(corpus_id: str, fname: str) -> None:
+    """Download a given corpus of assembled statements from S3.
+
+    Parameters
+    ----------
+    corpus_id :
+        The ID of the corpus.
+    fname :
+        The file in which the downloaded corpus should be written.
+    """
+    s3 = _make_s3_client()
+    key = os.path.join(default_key_base, corpus_id, 'statements.json')
+    obj - s3.get_object(Bucket=default_bucket, Key=key)
+    with open(fname, 'w') as fh:
+        fh.write(obj['Body'].read().decode('utf-8'))
