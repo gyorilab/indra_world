@@ -1,5 +1,4 @@
 import os
-import rdflib
 import logging
 import objectpath
 from datetime import datetime, timedelta
@@ -470,15 +469,6 @@ def get_polarity(event):
             if state_property['type'] == 'polarity':
                 return pol_map[state_property['text']]
     return None
-
-
-def _get_ontology_entries():
-    path_here = os.path.dirname(os.path.abspath(__file__))
-    onto_file = os.path.join(path_here, 'hume_ontology.rdf')
-    G = rdflib.Graph()
-    G.parse(onto_file, format='nt')
-    entries = [e.toPython().split('#')[1] for e in G.all_nodes()]
-    return entries
 
 
 def _resolve_geo(hume_loc_entity):
