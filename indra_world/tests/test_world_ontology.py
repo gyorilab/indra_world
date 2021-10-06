@@ -1,4 +1,5 @@
 import copy
+import yaml
 from indra_world.ontology import load_world_ontology
 from indra_world.ontology.ontology import WorldOntology
 
@@ -47,3 +48,60 @@ def test_load_intermediate_nodes():
     entry = wo.yml[0]['wm'][0]['concept'][0]
     assert 'xxx' in entry['examples']
     assert 'yyy' in entry['neg_examples']
+
+
+def test_new_onto_format():
+    ont_yml = """
+node:
+    name: wm
+    children:
+        - node:
+            name: concept
+            children:
+                - node:
+                    name: agriculture
+                    children:
+                        - node:
+                            name: animal_feed
+                            examples:
+                                - additives
+                                - amounts
+                            polarity: 1
+                            semantic type: entity
+                        - node:
+                            name: animal_science
+                            examples:
+                                - agricultural science
+                                - agriculture organization
+                                - animal production
+                            polarity: 1
+                            semantic type: event
+    """
+    yml = yaml.load(ont_yml, Loader=yaml.FullLoader)
+    wo = WorldOntology(None)
+    wo._load_yml(yml)
+    wo._initialized = True
+    assert len(wo.nodes) == 5
+    assert len(wo.edges) == 4
+    assert all(e['type'] == 'isa' for _, _, e in wo.edges(data=True))
+    assert 'WM:wm' in wo, wo.nodes()
+    assert wo.nodes['WM:wm/concept/agriculture/animal_feed']['name'] == \
+        'animal_feed'
+    examples = set(wo.nodes['WM:wm/concept/agriculture/animal_feed']['examples'])
+    assert examples == {'additives', 'amounts'}
+    assert wo.isa('WM', 'wm/concept', 'WM', 'wm')
+
+
+def test_old_new_format_switch():
+    old_url = 'https://raw.githubusercontent.com/WorldModelers/Ontologies/' \
+        '3.0/CompositionalOntology_metadata.yml'
+    new_url = 'https://raw.githubusercontent.com/WorldModelers/Ontologies/' \
+        '1aa3c2c1723e10e96c5e140c58797f9f46c7cc36/' \
+        'CompositionalOntology_metadata.yml'
+
+    old_ont = load_world_ontology(old_url)
+    old_ont.initialize()
+    assert len(old_ont) == 580, len(old_ont)
+    new_ont = load_world_ontology(new_url)
+    new_ont.initialize()
+    assert len(new_ont) == 580, len(new_ont)
