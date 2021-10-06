@@ -80,3 +80,13 @@ node:
     yml = yaml.load(ont_yml, Loader=yaml.FullLoader)
     wo = WorldOntology(None)
     wo._load_yml(yml)
+    wo._initialized = True
+    assert len(wo.nodes) == 5
+    assert len(wo.edges) == 4
+    assert all(e['type'] == 'isa' for _, _, e in wo.edges(data=True))
+    assert 'WM:wm' in wo, wo.nodes()
+    assert wo.nodes['WM:wm/concept/agriculture/animal_feed']['name'] == \
+        'animal_feed'
+    examples = set(wo.nodes['WM:wm/concept/agriculture/animal_feed']['examples'])
+    assert examples == {'additives', 'amounts'}
+    assert wo.isa('WM', 'wm/concept', 'WM', 'wm')

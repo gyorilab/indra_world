@@ -97,9 +97,9 @@ class WorldOntology(IndraOntology):
     def build_relations_new_format(self, node, prefix):
         edges = []
         name = node['name']
-        this_prefix = prefix + '/' + name
+        this_prefix = prefix + '/' + name if prefix else name
         node_data = {'name': name}
-        attrs = ['polarity', 'semantic type']
+        attrs = ['polarity', 'semantic type', 'examples']
         for attr in attrs:
             if attr in node:
                 node_data[attr] = node[attr]
