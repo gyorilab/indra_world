@@ -1,4 +1,5 @@
 import copy
+import yaml
 from indra_world.ontology import load_world_ontology
 from indra_world.ontology.ontology import WorldOntology
 
@@ -47,3 +48,35 @@ def test_load_intermediate_nodes():
     entry = wo.yml[0]['wm'][0]['concept'][0]
     assert 'xxx' in entry['examples']
     assert 'yyy' in entry['neg_examples']
+
+
+def test_new_onto_format():
+    ont_yml = """
+node:
+    name: wm
+    children:
+        - node:
+            name: concept
+            children:
+                - node:
+                    name: agriculture
+                    children:
+                        - node:
+                            name: animal_feed
+                            examples:
+                                - additives
+                                - amounts
+                            polarity: 1
+                            semantic type: entity
+                        - node:
+                            name: animal_science
+                            examples:
+                                - agricultural science
+                                - agriculture organization
+                                - animal production
+                            polarity: 1
+                            semantic type: event
+    """
+    yml = yaml.load(ont_yml, Loader=yaml.FullLoader)
+    wo = WorldOntology(None)
+    wo._load_yml(yml)
