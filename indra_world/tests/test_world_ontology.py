@@ -90,3 +90,18 @@ node:
     examples = set(wo.nodes['WM:wm/concept/agriculture/animal_feed']['examples'])
     assert examples == {'additives', 'amounts'}
     assert wo.isa('WM', 'wm/concept', 'WM', 'wm')
+
+
+def test_old_new_format_switch():
+    old_url = 'https://raw.githubusercontent.com/WorldModelers/Ontologies/' \
+        '3.0/CompositionalOntology_metadata.yml'
+    new_url = 'https://raw.githubusercontent.com/WorldModelers/Ontologies/' \
+        '1aa3c2c1723e10e96c5e140c58797f9f46c7cc36/' \
+        'CompositionalOntology_metadata.yml'
+
+    old_ont = load_world_ontology(old_url)
+    old_ont.initialize()
+    assert len(old_ont) == 580, len(old_ont)
+    new_ont = load_world_ontology(new_url)
+    new_ont.initialize()
+    assert len(new_ont) == 580, len(new_ont)

@@ -95,7 +95,8 @@ class WorldOntology(IndraOntology):
                 self.build_relations(node, top_entry[node], None)
 
     def build_relations_new_format(self, node, prefix):
-        edges = []
+        """Build relations for the new ontology format > v3.0"""
+        # Put together the ID and attributes for this node
         name = node['name']
         this_prefix = prefix + '/' + name if prefix else name
         node_data = {'name': name}
@@ -104,16 +105,22 @@ class WorldOntology(IndraOntology):
             if attr in node:
                 node_data[attr] = node[attr]
         node_label = self.label('WM', this_prefix)
+
+        # Now iterate over children nodes and make isa edges
+        edges = []
         for child in node.get('children', []):
             self.build_relations_new_format(child['node'], this_prefix)
             child_label = self.label('WM', this_prefix + '/' +
                                      child['node']['name'])
             edges.append((child_label, node_label, {'type': 'isa'}))
+
+        # Add node and edges to graph
         self.add_nodes_from([(node_label, node_data)])
         self.add_edges_from(edges)
 
 
     def build_relations(self, node, tree, prefix):
+        """Build relations for the classic ontology format <= v3.0"""
         nodes = defaultdict(dict)
         edges = []
         this_term = get_term(node, prefix)
