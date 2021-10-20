@@ -105,9 +105,14 @@ class WorldOntology(IndraOntology):
             if attr in node:
                 node_data[attr] = node[attr]
         node_label = self.label('WM', this_prefix)
+        opposite = node.get('opposite')
+        edges = []
+        if opposite:
+            opposite_label = self.label('WM', opposite)
+            edges.append((node_label, opposite_label, {'type': 'is_opposite'}))
+            edges.append((opposite_label, node_label, {'type': 'is_opposite'}))
 
         # Now iterate over children nodes and make isa edges
-        edges = []
         for child in node.get('children', []):
             self.build_relations_new_format(child['node'], this_prefix)
             child_label = self.label('WM', this_prefix + '/' +
