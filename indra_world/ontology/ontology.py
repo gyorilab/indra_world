@@ -86,9 +86,9 @@ class WorldOntology(IndraOntology):
 
     def _load_yml(self, yml):
         self.clear()
-        if isinstance(yml, dict) and set(yml) == {'node'}:
-            node = yml['node']
-            self.build_relations_new_format(node, prefix='')
+        if isinstance(yml, list) and set(yml[0]) == {'node'}:
+            for top_entry in yml:
+                self.build_relations_new_format(top_entry['node'], prefix='')
         else:
             for top_entry in yml:
                 node = list(top_entry.keys())[0]
@@ -215,14 +215,16 @@ class WorldOntology(IndraOntology):
         parts = entry.split('/')
         # We start at the root of the YML tree and walk down from
         # there
-        root = self.yml
+        root = self.yml['node']
         # We iterate over all the parts of the new grounding entry
         for idx, part in enumerate(parts):
             last_part = (idx == (len(parts) - 1))
             matched_node = None
+            if root['name'] == part:
+                matched_node = root
             # We now look at all the elements of the existing ontology
             # subtree to see if any of them match the new entry.
-            for element in root:
+            for element in root.get('children', []):
                 # If this is an OntologyNode
                 if 'OntologyNode' in element:
                     if element['name'] == part:
