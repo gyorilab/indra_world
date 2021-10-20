@@ -3,7 +3,11 @@ import yaml
 from indra_world.ontology import load_world_ontology
 from indra_world.ontology.ontology import WorldOntology
 
-flat_ontology = load_world_ontology(default_type='flat')
+flat_ontology = load_world_ontology(
+    default_type='flat',
+    url = 'https://raw.githubusercontent.com/WorldModelers/Ontologies/kwalcock/topList/wm_flat_metadata.yml'
+)
+flat_ontology.initialize()
 
 
 def test_hm_opposite_polarity():
@@ -52,7 +56,7 @@ def test_load_intermediate_nodes():
 
 def test_new_onto_format():
     ont_yml = """
-node:
+- node:
     name: wm
     children:
         - node:
@@ -95,9 +99,8 @@ node:
 def test_old_new_format_switch():
     old_url = 'https://raw.githubusercontent.com/WorldModelers/Ontologies/' \
         '3.0/CompositionalOntology_metadata.yml'
-    new_url = 'https://raw.githubusercontent.com/WorldModelers/Ontologies/' \
-        '1aa3c2c1723e10e96c5e140c58797f9f46c7cc36/' \
-        'CompositionalOntology_metadata.yml'
+    new_url = 'https://raw.githubusercontent.com/WorldModelers/Ontologies/kwalcock/topList' \
+        '/CompositionalOntology_metadata.yml'
 
     old_ont = load_world_ontology(old_url)
     old_ont.initialize()
