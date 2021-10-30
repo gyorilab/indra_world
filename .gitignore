@@ -130,3 +130,14 @@ dmypy.json
 
 # Outputs
 *.xml
+*.pkl
+*.json_ld
+*.json-ld
+*.json
+*.tsv
+*.csv
+*.png
+*.zip
+*.rdf
+*.pdf
+*.dot

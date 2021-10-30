@@ -8,8 +8,8 @@ from indra.ontology.ontology_graph import IndraOntology, with_initialize
 
 logger = logging.getLogger(__name__)
 
-flat_onto_url = ('https://raw.githubusercontent.com/WorldModelers/'
-                 'Ontologies/master/wm_flat_metadata.yml')
+flat_onto_url = ('https://raw.githubusercontent.com/WorldModelers/Ontologies/'
+                 'master/wm_flat_metadata.yml')
 
 comp_onto_url = ('https://raw.githubusercontent.com/WorldModelers/Ontologies/'
                  'master/CompositionalOntology_metadata.yml')
@@ -86,9 +86,9 @@ class WorldOntology(IndraOntology):
 
     def _load_yml(self, yml):
         self.clear()
-        if isinstance(yml, dict) and set(yml) == {'node'}:
-            node = yml['node']
-            self.build_relations_new_format(node, prefix='')
+        if isinstance(yml, list) and set(yml[0]) == {'node'}:
+            for top_entry in yml:
+                self.build_relations_new_format(top_entry['node'], prefix='')
         else:
             for top_entry in yml:
                 node = list(top_entry.keys())[0]
@@ -220,56 +220,39 @@ class WorldOntology(IndraOntology):
         for idx, part in enumerate(parts):
             last_part = (idx == (len(parts) - 1))
             matched_node = None
-            # We now look at all the elements of the existing ontology
-            # subtree to see if any of them match the new entry.
             for element in root:
                 # If this is an OntologyNode
-                if 'OntologyNode' in element:
-                    if element['name'] == part:
-                        matched_node = element
-                        break
-                # Otherwise, this is an intermediate node
-                else:
-                    assert len(element) == 1
-                    key = list(element.keys())[0]
-                    if key == part:
-                        matched_node = element[key]
-                        break
+                if element['node']['name'] == part:
+                    matched_node = element['node']
+                    break
             # If we matched an existing node and this is the last part
             # then we just need to add the given example
             if matched_node:
-                # NOTE: we have to check for 'OntologyNode' in matched_node here
-                # because intermediate nodes don't have properties so it's
-                # not possible to set examples for them.
-                if last_part and 'OntologyNode' in matched_node:
+                if last_part:
                     matched_node['examples'] += examples
                     if neg_examples:
                         if 'neg_examples' in matched_node:
                             matched_node['neg_examples'] += neg_examples
                         else:
                             matched_node['neg_examples'] = neg_examples
-                elif last_part and isinstance(matched_node, list) and \
-                        'InnerOntologyNode' in matched_node[0]:
-                    matched_node = matched_node[0]
-                    matched_node['examples'] += examples
-                    if 'neg_examples' in matched_node:
-                        matched_node['neg_examples'] += neg_examples
-                    else:
-                        matched_node['neg_examples'] = neg_examples
+                    break
+                else:
+                    if 'children' not in matched_node:
+                        matched_node['children'] = []
+                    root = matched_node['children']
             # If we didn't match an existing node, we have to build up
             # a new subtree starting from the current part
             else:
+                entry = {'node': {'name': part,
+                                  'examples': examples}}
+                if neg_examples:
+                    entry['node']['neg_examples'] = neg_examples
+                root.append(entry)
                 if last_part:
-                    new_entry = {'OntologyNode': None, 'name': part,
-                                 'examples': examples}
-                    if neg_examples:
-                        new_entry['neg_examples'] = neg_examples
-                    root.append(new_entry)
                     break
                 else:
-                    root.append({part: []})
-                    matched_node = root[-1][part]
-            root = matched_node
+                    entry['node']['children'] = []
+                    root = entry['node']['children']
         self._load_yml(self.yml)
 
 
