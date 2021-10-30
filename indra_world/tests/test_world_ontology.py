@@ -5,7 +5,7 @@ from indra_world.ontology.ontology import WorldOntology
 
 flat_ontology = load_world_ontology(
     default_type='flat',
-    url = 'https://raw.githubusercontent.com/WorldModelers/Ontologies/kwalcock/topList/wm_flat_metadata.yml'
+    url = 'https://raw.githubusercontent.com/WorldModelers/Ontologies/master/wm_flat_metadata.yml'
 )
 flat_ontology.initialize()
 
@@ -80,7 +80,7 @@ def test_new_onto_format():
 def test_old_new_format_switch():
     old_url = 'https://raw.githubusercontent.com/WorldModelers/Ontologies/' \
         '3.0/CompositionalOntology_metadata.yml'
-    new_url = 'https://raw.githubusercontent.com/WorldModelers/Ontologies/kwalcock/topList' \
+    new_url = 'https://raw.githubusercontent.com/WorldModelers/Ontologies/master' \
         '/CompositionalOntology_metadata.yml'
 
     old_ont = load_world_ontology(old_url)

@@ -9,10 +9,10 @@ from indra.ontology.ontology_graph import IndraOntology, with_initialize
 logger = logging.getLogger(__name__)
 
 flat_onto_url = ('https://raw.githubusercontent.com/WorldModelers/Ontologies/'
-                 'kwalcock/topList/wm_flat_metadata.yml')
+                 'master/wm_flat_metadata.yml')
 
 comp_onto_url = ('https://raw.githubusercontent.com/WorldModelers/Ontologies/'
-                 'kwalcock/topList/CompositionalOntology_metadata.yml')
+                 'master/CompositionalOntology_metadata.yml')
 
 
 def get_term(node, prefix):

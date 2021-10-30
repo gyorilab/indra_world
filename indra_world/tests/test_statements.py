@@ -2,7 +2,7 @@ from indra.statements import Concept, QualitativeDelta, Association, Event
 from indra_world.ontology import load_world_ontology
 
 world_ontology = load_world_ontology(default_type='flat',
-    url='https://raw.githubusercontent.com/WorldModelers/Ontologies/kwalcock/topList/wm_flat_metadata.yml')
+    url='https://raw.githubusercontent.com/WorldModelers/Ontologies/master/wm_flat_metadata.yml')
 
 
 def test_concept_isa_eid():
