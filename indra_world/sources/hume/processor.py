@@ -144,7 +144,7 @@ class HumeJsonLdProcessor(object):
         for doc in documents:
             sentences = {s['@id']: s['text'] for s in doc.get('sentences', [])}
             self.document_dict[doc['@id']] = {'sentences': sentences,
-                                              'location': doc['location']}
+                                              'location': doc.get('location')}
 
     def _make_world_context(self, entity):
         """Get place and time info from the json for this entity."""
@@ -347,9 +347,7 @@ class HumeJsonLdProcessorCompositional(HumeJsonLdProcessor):
             db_refs['WM'] = grounding_entries
         return db_refs
 
-    def _get_event_and_context(self, event, eid=None, arg_type=None,
-                               evidence=None):
-        """Return an INDRA Event based on an event entry."""
+    def _get_concept(self, event, eid=None, arg_type=None):
         if not eid:
             eid = _choose_id(event, arg_type)
         ev = self.concept_dict[eid]
@@ -423,6 +421,15 @@ class HumeJsonLdProcessorCompositional(HumeJsonLdProcessor):
 
         assert compositional_grounding[0][0]
         concept.db_refs['WM'] = compositional_grounding
+        return concept, metadata
+
+    def _get_event_and_context(self, event, eid=None, arg_type=None,
+                               evidence=None):
+        """Return an INDRA Event based on an event entry."""
+        if not eid:
+            eid = _choose_id(event, arg_type)
+        ev = self.concept_dict[eid]
+        concept, metadata = self._get_concept(event, eid, arg_type)
 
         # Migrations turned off for now
         #for grounding_en in process_grounding:

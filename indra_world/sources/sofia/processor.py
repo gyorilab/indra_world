@@ -11,7 +11,7 @@ pos_rels = ['provide', 'led', 'lead', 'driv', 'support', 'enabl', 'develop',
 neg_rels = ['restrict', 'worsen', 'declin', 'limit', 'constrain',
             'decreas', 'hinder', 'deplet', 'reduce', 'hamper', 'prevent',
             'block']
-neu_rels = ['affect', 'impact', 'due', 'caus', 'because', 'influence']
+neu_rels = ['affect', 'impact', 'due', 'caus', 'because', 'influence', 'as']
 first_gen_ont_nodes = ['concept', 'process', 'property', 'entity', 'time']
 bad_grnd = {'event1'}
 
