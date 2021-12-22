@@ -28,6 +28,9 @@ INDRA World can be installed directly from Github as
 
     $ pip install git+https://github.com/indralab/indra_world.git
 
+Additionally, INDRA World can be run as a dockerized service.
+For more information, see https://github.com/indralab/indra_world/tree/master/docker.
+
 ## Documentation
 
 Detailed documentation is available at:
