@@ -21,6 +21,6 @@ python -c "from indra_world.service.db import DbManager;
 db = DbManager('postgresql://postgres:$POSTGRES_PASSWORD@localhost:$TEMP_CONTAINER_PORT');
 db.create_all()"
 # We now commit the Docker image with the schema baked in
-docker commit $container_id postgres:indra_world
+docker commit $container_id indra_world_db:latest
 # We can finally stop the container
 docker stop $container_id
