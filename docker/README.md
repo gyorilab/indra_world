@@ -7,8 +7,7 @@ customizations are needed.
 Running the integrated service
 ------------------------------
 A docker-compose file defines how the service image and DB image need to be
-run. The docker-compose file refers to two images (`indralab/indra_world`
-and `indralab/indra_world_db`), both available publicly
+run. The docker-compose file refers to two images ([indralab/indra_world](https://hub.docker.com/repository/docker/indralab/indra_world) and [indralab/indra_world_db](https://hub.docker.com/repository/docker/indralab/indra_world_db)), both available publicly
 on Dockerhub. This means that they are automatically pulled when running
 `docker-compose up` unless they are already available locally.
 
