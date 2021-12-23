@@ -1,11 +1,11 @@
-Dockerized INDRA World service
-==============================
+# Dockerized INDRA World service
+
 This folder contains files to run the INDRA World service through Docker
 containers. It also provides files to build them locally in case
 customizations are needed.
 
-Running the integrated service
-------------------------------
+## Running the integrated service
+
 A docker-compose file defines how the service image and DB image need to be
 run. The docker-compose file refers to two images ([indralab/indra_world](https://hub.docker.com/repository/docker/indralab/indra_world) and [indralab/indra_world_db](https://hub.docker.com/repository/docker/indralab/indra_world_db)), both available publicly
 on Dockerhub. This means that they are automatically pulled when running
@@ -39,24 +39,23 @@ POSTGRES_PASSWORD=<password for local postgres>
 PGDATA=/var/lib/postgresql/pgdata
 ```
 
-Building the Docker images locally
------------------------------------
+## Building the Docker images locally
 
 As described above, the two necessary Docker images are available on Dockerhub,
 therefore the following steps are only necessary if local changes to the
 images (beyond what can be controlled through environmental variables)
 are needed.
 
-Building the INDRA World service image
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+### Building the INDRA World service image
+
 To build the `indra_world` Docker image, run
 
 ```
 docker build --tag indra_world:latest .
 ```
 
-Initializing the INDRA World DB image
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+### Initializing the INDRA World DB image
+
 To create the `indra_world_db` Docker image from scratch, run
 
 ```
