@@ -8,11 +8,20 @@ import tqdm
 import pickle
 import networkx
 from collections import Counter
-from indra_world.sources.dart import DartClient
 from indra.statements import Event, Influence
-from indra.statements import stmts_from_json_file
-from indra_world.sources import eidos, hume, sofia
+from indra_world.sources import eidos
 from indra_world.assembly.operations import compositional_grounding_filter
+
+
+def plot_hist_diffs(diffs):
+    import matplotlib.pyplot as plt
+    plt.figure()
+    plt.hist(diffs, 200, color='blue', alpha=0.8)
+    plt.xlabel('Grounding score change after taxonomy update', fontsize=14)
+    plt.ylabel('Number of concept groundings', fontsize=14)
+    plt.axvline(x=0, color='red', linestyle='--')
+    plt.xlim([-0.8, 0.8])
+    plt.show()
 
 
 def fix_provenance(fname, stmts):
@@ -201,10 +210,6 @@ if __name__ == '__main__':
         print('Number of CAG edges with grounding threshold %.2f [%s]: %d' %
               (threshold, version, len(nx.edges)))
 
-    import matplotlib.pyplot as plt
+    plot_hist_diffs()
 
-    plt.ion()
-    plt.hist(diffs, 200)
-    plt.axvline(x=0, color='red')
-    plt.ylabel('Number of concept groundings', fontsize=14)
-    plt.xlabel('Grounding score changes after taxonomy update', fontsize=14)
+

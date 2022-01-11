@@ -72,7 +72,7 @@ def get_network(stmts):
 
 
 def get_num_edges_by_threshold(all_stmts):
-    thresholds = [0.3, 0.4, 0.5, 0.6, 0.7, 0.9]
+    thresholds = [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
     num_edges = {}
     for version, stmts in all_stmts.items():
         num_edges[version] = []
@@ -85,12 +85,22 @@ def get_num_edges_by_threshold(all_stmts):
     return thresholds, num_edges
 
 
+def plot_hist_diffs(diffs):
+    plt.figure()
+    plt.hist(diffs, 100, color='blue', alpha=0.8)
+    plt.xlabel('Grounding score change after taxonomy update', fontsize=14)
+    plt.ylabel('Number of concept groundings', fontsize=14)
+    plt.show()
+
+
 def plot_num_edges_by_threshold(thresholds, num_edges):
     plt.figure()
-    plt.plot(thresholds, num_edges['old'], label='old')
-    plt.plot(thresholds, num_edges['new'], label='new')
-    plt.ylabel('Number of CAG edges')
-    plt.xlabel('Grounding score threshold')
+    plt.plot(thresholds, num_edges['old'], label='Before update', color='blue',
+             marker='.', linestyle='--')
+    plt.plot(thresholds, num_edges['new'], label='After update', color='red',
+             marker='x', linestyle='--')
+    plt.ylabel('Number of causal influence graph edges', fontsize=14)
+    plt.xlabel('Grounding score threshold', fontsize=14)
     plt.legend()
     plt.show()
 
