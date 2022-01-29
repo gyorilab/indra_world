@@ -1,3 +1,4 @@
+__version__ = '1.1.0'
 from pathlib import Path
 from indra.config import get_config
 
