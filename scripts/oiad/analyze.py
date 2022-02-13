@@ -136,7 +136,9 @@ def drop_compositional_indexed(indexed_events):
 
 
 def get_all_terms_grounded_to(indexed_events):
-    return set(grounding[0][0] for grounding in indexed_events.values())
+    breakpoint()
+    return set(grounding[0][0] for grounding in indexed_events.values()
+               if grounding is not None and grounding[0] is not None)
 
 
 def count_grounded_to_new_terms(diff_groundings, all_terms_grounded_to):
@@ -144,9 +146,25 @@ def count_grounded_to_new_terms(diff_groundings, all_terms_grounded_to):
         all_terms_grounded_to['old']
     count = 0
     for old_grounding, new_grounding in diff_groundings:
-        if new_grounding in diff_grounded_to:
+        if new_grounding is not None and \
+                new_grounding[0][0] in diff_grounded_to:
             count += 1
     return count
+
+
+def score_change_for_unchanged_grounding(indexed_events):
+    unchanged_grounding_score_diffs = []
+    for key, old_grounding in indexed_events['old'].items():
+        if key in indexed_events['new']:
+            new_grounding = indexed_events['new'][key]
+            if new_grounding is not None and old_grounding is not None\
+                    and new_grounding[0] is not None \
+                    and old_grounding[0] is not None:
+                if new_grounding[0][0] == old_grounding[0][0] and \
+                        new_grounding[0][1] != old_grounding[0][1]:
+                    unchanged_grounding_score_diffs.append(new_grounding[0][1] -
+                                                           old_grounding[0][1])
+    return unchanged_grounding_score_diffs
 
 
 if __name__ == '__main__':
@@ -195,10 +213,6 @@ if __name__ == '__main__':
         print('Number of grounded events [%s]: %d' %
               (version, len([e for e in indexed_events[version].values()
                              if e is not None])))
-        all_terms_grounded_to[version] = \
-            get_all_terms_grounded_to(indexed_events[version])
-        print('All terms grounded to [%s]: %d' %
-              (version, len(all_terms_grounded_to[version])))
 
     drop_compositional(all_stmts['old'])
     drop_compositional(all_stmts['new'])
@@ -213,10 +227,18 @@ if __name__ == '__main__':
     ng = len([d for d in diff_groundings if d[0] is None])
     print('Number of grounded concepts that were ungrounded before: %d' % ng)
 
+    for version in versions:
+        all_terms_grounded_to[version] = \
+            get_all_terms_grounded_to(indexed_events[version])
+        print('All terms grounded to [%s]: %d' %
+              (version, len(all_terms_grounded_to[version])))
     grounded_to_new_term_count = \
         count_grounded_to_new_terms(diff_groundings, all_terms_grounded_to)
     print('Number of groundings that are now grounded to a new term: %d' %
           grounded_to_new_term_count)
+
+    unchanged_grounding_score_diffs = \
+        score_change_for_unchanged_grounding(indexed_events)
 
     # Diff score groundings
     inc = dec = mixed = 0
