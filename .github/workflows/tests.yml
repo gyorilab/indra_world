@@ -28,7 +28,6 @@ jobs:
         pip install -e .[tests,eidos_offline]
         wget -nv https://bigmech.s3.amazonaws.com/travis/eidos.jar
         wget -nv https://bigmech.s3.amazonaws.com/travis/cache.zip
-        mv cache.zip /home/runner/work/indra_world/indra_world/
         cd /home/runner/work/indra_world/indra_world
         unzip cache.zip
     - name: Run unit tests
