@@ -136,7 +136,6 @@ def drop_compositional_indexed(indexed_events):
 
 
 def get_all_terms_grounded_to(indexed_events):
-    breakpoint()
     return set(grounding[0][0] for grounding in indexed_events.values()
                if grounding is not None and grounding[0] is not None)
 

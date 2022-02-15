@@ -92,9 +92,18 @@ def groundings_match(gr1, gr2):
             if entry1 != entry2:
                 return False
         else:
-            if (entry1[0] != entry2[0]) or (abs(entry1[1]-entry1[1]) > 1e-3):
+            if (entry1[0] != entry2[0] and
+                entry1[0].split('/')[-1] != entry2[0].split('/')[-1]) or \
+                    (abs(entry1[1]-entry2[1]) > 1e-3):
                 return False
     return True
+
+
+def grounding_terms_match(grt1, grt2):
+    if grt1 == grt2 or (grt1 is not None and grt2 is not None and
+            grt1.split('/')[-1] == grt2.split('/')[-1]):
+        return True
+    return False
 
 
 def get_different_events(indexed_events):
@@ -136,6 +145,37 @@ def drop_compositional(stmts):
                         grounding[pos] = None
 
 
+def score_change_for_unchanged_grounding(diff_groundings):
+    unchanged_grounding_score_diffs = []
+    for old_grounding, new_grounding, _ in diff_groundings:
+        if old_grounding is not None and new_grounding is not None and \
+                grounding_terms_match(old_grounding[0][0], new_grounding[0][0]):
+            unchanged_grounding_score_diffs.append(
+                new_grounding[0][1] - old_grounding[0][1]
+            )
+    return unchanged_grounding_score_diffs
+
+
+def get_all_terms_grounded_to(indexed_events):
+    return set(grounding[0][0][0] for grounding in indexed_events.values()
+               if grounding is not None and grounding[0] is not None)
+
+
+def count_grounded_to_new_terms(diff_groundings, all_terms_grounded_to):
+    shared_endpoints = \
+        {t.split('/')[-1] for t in all_terms_grounded_to['2.2']} & \
+            {t.split('/')[-1] for t in all_terms_grounded_to['2.1']}
+    diff_grounded_to = {t for t in (all_terms_grounded_to['2.2'] -
+                                    all_terms_grounded_to['2.1'])
+                        if t.split('/')[-1] not in shared_endpoints}
+    count = 0
+    for old_grounding, new_grounding, _ in diff_groundings:
+        if new_grounding is not None and \
+                new_grounding[0][0] in diff_grounded_to:
+            count += 1
+    return count
+
+
 DART_PATH = '/home/ben/data/dart/eidos'
 #DART_PATH = '/Users/ben/Downloads/jan2022redo'
 #DART_PATH = '/Users/ben/tmp/oiad'
@@ -143,6 +183,7 @@ DART_PATH = '/home/ben/data/dart/eidos'
 if __name__ == '__main__':
     versions = ['2.1', '2.2']
     indexed_events = {}
+    all_terms_grounded_to = {}
     all_stmts = {'2.1': [], '2.2': []}
     for version in versions:
         version_pkl = os.path.join(DART_PATH, '%s_stmts.pkl' % version)
@@ -166,8 +207,20 @@ if __name__ == '__main__':
             with open(version_pkl, 'wb') as fh:
                 pickle.dump(all_stmts[version], fh)
         indexed_events[version] = get_indexed_events(all_stmts[version])
+        all_terms_grounded_to[version] = \
+            get_all_terms_grounded_to(indexed_events[version])
+
+    for version in versions:
+        print('All terms grounded to [%s]: %d' %
+              (version, len(all_terms_grounded_to[version])))
 
     diff_groundings = get_different_events(indexed_events)
+
+    unchanged_grounding_score_diffs = \
+        score_change_for_unchanged_grounding(diff_groundings)
+
+    grounded_to_new_term_count = \
+        count_grounded_to_new_terms(diff_groundings, all_terms_grounded_to)
 
     # Diff score groundings
     inc = dec = unchanged = 0
