@@ -23,7 +23,7 @@ def load_text(fname):
         return f.read()
 
 
-@attr('slow', 'webservice')
+@attr('slow', 'webservice', 'notravis')
 def test_cwmsreader_cause():
     # Test extraction of causal relations from the cwms reader service
     text = 'government causes agriculture.'
@@ -48,7 +48,7 @@ def test_cwmsreader_cause():
     assert ev.source_api == 'cwms', ev.source_api
 
 
-@attr('slow', 'webservice')
+@attr('slow', 'webservice', 'notravis')
 def test_cwmsreader_inhibit():
     # Test extraction of inhibition relations from the cwms reader service
     text = 'Persistent insecurity and armed conflict have disrupted ' + \
@@ -72,7 +72,7 @@ def test_cwmsreader_inhibit():
     assert ev.source_api == 'cwms'
 
 
-@attr('slow', 'webservice')
+@attr('slow', 'webservice', 'notravis')
 def test_cwmsreader_influence():
     # Test extraction of causal relations from the cwms reader service
     text = 'government influences agriculture.'
@@ -99,7 +99,7 @@ def test_cwmsreader_influence():
     assert ev.source_api == 'cwms', ev.source_api
 
 
-@attr('slow', 'webservice')
+@attr('slow', 'webservice', 'notravis')
 def test_cwms_agriculture_increases():
     text = 'Agriculture increases food security.'
     cp = process_text(text)
@@ -107,7 +107,7 @@ def test_cwms_agriculture_increases():
     assert len(cp.statements) == 1, cp.statements
 
 
-@attr('slow', 'webservice')
+@attr('slow', 'webservice', 'notravis')
 def test_cwms_two_sentences():
     text = 'Floods decrease agriculture. Agriculture increases food security.'
     cp = process_text(text)
@@ -115,7 +115,7 @@ def test_cwms_two_sentences():
     assert len(cp.statements) == 2
 
 
-@attr('slow', 'webservice')
+@attr('slow', 'webservice', 'notravis')
 def test_second_order_statements():
     # NOTE: the second order statement feature is being developed elsewhere,
     # however this test should still pass as is.
@@ -126,7 +126,7 @@ def test_second_order_statements():
     assert len(cp.statements) == 2, len(cp.statements)
 
 
-@attr('slow', 'webservice')
+@attr('slow', 'webservice', 'notravis')
 def test_three_sentences():
     # These sentences were used in the June 2018 WM East and West coast
     # hackathons for creating a simple test model constructed from all the
@@ -140,7 +140,7 @@ def test_three_sentences():
     assert all(isinstance(st, Influence) for st in cp.statements), cp.statements
 
 
-@attr('slow', 'webservice')
+@attr('slow', 'webservice', 'notravis')
 def test_context_influence_obj():
     text = 'Hunger causes displacement in 2018 in South Sudan.'
     cp = process_text(text)
@@ -152,7 +152,7 @@ def test_context_influence_obj():
     assert cont.time and cont.locations
 
 
-@attr('slow', 'webservice')
+@attr('slow', 'webservice', 'notravis')
 def test_context_influence_subj():
     text = 'Hunger in 2018 in South Sudan causes displacement.'
     cp = process_text(text)
@@ -162,7 +162,7 @@ def test_context_influence_subj():
     assert cont.time and cont.geo_location, cont
 
 
-@attr('slow', 'webservice')
+@attr('slow', 'webservice', 'notravis')
 def test_context_influence_subj_obj():
     text = 'Hunger in 2018 causes displacement in South Sudan.'
     cp = process_text(text)
