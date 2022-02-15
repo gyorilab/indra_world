@@ -1,6 +1,7 @@
 import os
 import json
 from nose.tools import raises
+from nose.plugins.attrib import attr
 from datetime import datetime
 from indra.statements import stmts_from_json, Influence, Event, Concept, \
     QualitativeDelta
@@ -183,6 +184,7 @@ def test_curations():
     assert res[str(stmt_hash)] == curation, res
 
 
+@attr('notravis')
 def test_cwms_process_text():
     sc.db = DbManager(url='sqlite:///:memory:')
     sc.db.create_all()
