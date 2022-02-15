@@ -27,11 +27,10 @@ jobs:
         pip install cython
         pip install -e .[tests,eidos_offline]
         wget -nv https://bigmech.s3.amazonaws.com/travis/eidos.jar
-        wget -nv https://bigmech.s3.amazonaws.com/travis/geonames%2Bworedas.zip
-        mkdir -p /home/runner/work/indra_world/indra_world/cache/geonames/index
-        mv geonames+woredas.zip /home/runner/work/indra_world/indra_world/cache/geonames/index
-        cd /home/runner/work/indra_world/indra_world/cache/geonames/index
-        unzip geonames+woredas.zip
+        wget -nv https://bigmech.s3.amazonaws.com/travis/cache.zip
+        mv cache.zip /home/runner/work/indra_world/indra_world/
+        cd /home/runner/work/indra_world/indra_world
+        unzip cache.zip
     - name: Run unit tests
       run: |
         export NOSEATTR="!notravis"
