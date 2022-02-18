@@ -7,6 +7,7 @@ import glob
 import logging
 import requests
 import itertools
+from typing import Optional
 from datetime import datetime
 from collections import defaultdict
 from indra.config import get_config
@@ -14,9 +15,8 @@ from indra.config import get_config
 
 logger = logging.getLogger(__name__)
 
-
-default_dart_url = ('https://wm-ingest-pipeline-rest-1.prod.dart'
-                    '.worldmodelers.com/dart/api/v1/readers')
+default_dart_url = ('https://wm-ingest-pipeline-rest-1.prod.dart.'
+                    'worldmodelers.com/dart/api/v1')
 
 
 class DartClient:
@@ -61,6 +61,10 @@ class DartClient:
                 dart_config_url = get_config('DART_WM_URL')
                 self.dart_url = dart_config_url if dart_config_url else \
                     default_dart_url
+            # for backwards compatibility, make sure we are using the base
+            # URL here.
+            if self.dart_url and self.dart_url.endswith('/readers'):
+                self.dart_url = self.dart_url[:-8]
             if dart_uname:
                 self.dart_uname = dart_uname
             else:
@@ -191,7 +195,7 @@ class DartClient:
         str
             The content corresponding to the storage key.
         """
-        url = self.dart_url + '/download/%s' % storage_key
+        url = self.dart_url + '/readers/download/%s' % storage_key
         res = requests.get(url=url, auth=(self.dart_uname, self.dart_pwd))
         res.raise_for_status()
         return res.text
@@ -242,7 +246,7 @@ class DartClient:
             if not query_data:
                 return {}
             full_query_data = {'metadata': query_data}
-            url = self.dart_url + '/query'
+            url = self.dart_url + '/readers/query'
             res = requests.post(url, data=full_query_data,
                                 auth=(self.dart_uname, self.dart_pwd))
             res.raise_for_status()
@@ -297,6 +301,24 @@ class DartClient:
         """Return the available versions for a given reader."""
         records = self.get_reader_output_records([reader])
         return {record['version'] for record in records}
+
+    def get_ontology(self, ontology_id: str):
+        """Return the ontology for the given ontology ID."""
+        url = self.dart_url + '/ontologies'
+        res = requests.get(url, params={'id': ontology_id},
+                           auth=(self.dart_uname, self.dart_pwd))
+        return res.json()
+
+    def get_tenant_ontology(self, tenant_id: str,
+                            version: Optional[str] = None):
+        """Return the ontology for the given tenant ID and optional version."""
+        params = {'tenant': tenant_id}
+        if version:
+            params['version'] = version
+        url = self.dart_url + '/ontologies'
+        res = requests.get(url, params=params,
+                           auth=(self.dart_uname, self.dart_pwd))
+        return res.json()
 
 
 def prioritize_records(records, priorities=None):
