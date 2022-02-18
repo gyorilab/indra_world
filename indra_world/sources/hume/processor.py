@@ -144,7 +144,7 @@ class HumeJsonLdProcessor(object):
         for doc in documents:
             sentences = {s['@id']: s['text'] for s in doc.get('sentences', [])}
             self.document_dict[doc['@id']] = {'sentences': sentences,
-                                              'location': doc['location']}
+                                              'location': doc.get('location')}
 
     def _make_world_context(self, entity):
         """Get place and time info from the json for this entity."""

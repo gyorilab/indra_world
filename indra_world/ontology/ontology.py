@@ -24,13 +24,16 @@ def get_term(node, prefix):
 def load_yaml_from_path(path):
     """Return a YAML object loaded from a YAML file URL."""
     import yaml
-    if path.startswith('http'):
-        res = requests.get(path)
-        res.raise_for_status()
-        yml_str = res.content
+    if path:
+        if path.startswith('http'):
+            res = requests.get(path)
+            res.raise_for_status()
+            yml_str = res.content
+        else:
+            with open(path, 'r') as fh:
+                yml_str = fh.read()
     else:
-        with open(path, 'r') as fh:
-            yml_str = fh.read()
+        return None
     root = yaml.load(yml_str, Loader=yaml.FullLoader)
     return root
 
@@ -54,9 +57,9 @@ class WorldOntology(IndraOntology):
     name = 'world'
     version = '1.0'
 
-    def __init__(self, url):
+    def __init__(self, url, yml=None):
         super().__init__()
-        self.yml = None
+        self.yml = yml
         self.url = url
 
     def initialize(self):
@@ -69,7 +72,9 @@ class WorldOntology(IndraOntology):
         logger.info('Ontology has %d nodes' % len(self))
 
     def add_wm_ontology(self, url):
-        self.yml = load_yaml_from_path(url)
+        yml = load_yaml_from_path(url)
+        if yml:
+            self.yml = yml
         self._load_yml(self.yml)
 
     @with_initialize
