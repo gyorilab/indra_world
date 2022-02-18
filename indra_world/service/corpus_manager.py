@@ -4,10 +4,12 @@ for loading into CauseMos."""
 import os
 import json
 import tqdm
+import yaml
 import logging
 import datetime
 from indra.statements import stmts_to_json, stmts_to_json_file
 from indra_world import default_bucket, default_key_base
+from indra_world.ontology import world_ontology
 from indra_world.assembly.incremental_assembler import IncrementalAssembler
 from .controller import ServiceController
 
@@ -19,12 +21,30 @@ class CorpusManager:
     """Corpus manager class allowing running assembly on a set of DART records.
     """
     def __init__(self, db_url, dart_records, corpus_id, metadata,
-                 dart_client=None):
+                 dart_client=None, tenant=None, ontology=None):
         self.sc = ServiceController(db_url=db_url, dart_client=dart_client)
         self.corpus_id = corpus_id
         self.dart_records = dart_records
         self.metadata = metadata
+        if tenant:
+            self.metadata['tenant'] = tenant
         self.assembled_stmts = None
+        if not ontology:
+            # If we don't have an ontology but have a tenant, we get
+            # the latest ontology for that tenant and use it
+            if tenant:
+                from indra_world.ontology import WorldOntology
+                ont_json = self.sc.dart_client.get_tenant_ontology(tenant)
+                self.ontology = \
+                    WorldOntology(url=None,
+                                  yml=yaml.load(ont_json['ontology'],
+                                                Loader=yaml.FullLoader))
+            # Otherwise we revert to the default ontology from Github
+            else:
+                self.ontology = world_ontology
+        # If an ontology is passed in, we use it
+        else:
+            self.ontology = ontology
 
     def prepare(self, records_exist=False):
         """Run the preprocessing pipeline on statements.
@@ -63,7 +83,7 @@ class CorpusManager:
             all_stmts += stmts
         logger.info('Instantiating incremental assembler with %d statements'
                     % len(all_stmts))
-        ia = IncrementalAssembler(all_stmts)
+        ia = IncrementalAssembler(all_stmts, ontology=self.ontology)
         logger.info('Getting assembled statements')
         self.assembled_stmts = ia.get_statements()
         logger.info('Got %d assembled statements' % len(self.assembled_stmts))
@@ -151,6 +171,6 @@ def download_corpus(corpus_id: str, fname: str) -> None:
     """
     s3 = _make_s3_client()
     key = os.path.join(default_key_base, corpus_id, 'statements.json')
-    obj - s3.get_object(Bucket=default_bucket, Key=key)
+    obj = s3.get_object(Bucket=default_bucket, Key=key)
     with open(fname, 'w') as fh:
         fh.write(obj['Body'].read().decode('utf-8'))
