@@ -70,7 +70,8 @@ def test_standalone_events():
 
 
 def test_migration_events():
-    bp = process_jsonld_file(migration_events, extract_filter={'event'})
+    bp = process_jsonld_file(migration_events, extract_filter={'event'},
+                             grounding_mode='flat')
     assert bp, "Processor is none."
     assert len(bp.statements) == 1
     stmt = bp.statements[0]
@@ -97,6 +98,9 @@ def test_migration_events():
 
 def test_compositional_grounding():
     fname = _get_data_file('hume.compositional.output.json-ld')
+    # Note: this file doesn't have Influences with compositional grounding
+    # so is not appropriate for testing compositional groundings at that
+    # level.
     bp = process_jsonld_file(fname, grounding_mode='compositional')
     assert bp
     assert bp.statements
@@ -112,3 +116,12 @@ def test_compositional_grounding():
                        if entry is not None), wmg
             assert all(entry[0].startswith('wm') for entry
                        in wmg if entry is not None)
+
+
+def test_compositional_grounding_influence():
+    fname = _get_data_file('compositional_influence.jsonld')
+    hp = process_jsonld_file(fname, grounding_mode='compositional')
+    assert len(hp.statements) == 1
+    grounding = hp.statements[0].obj.concept.db_refs['WM'][0]
+    assert grounding[0][0] == 'wm/concept/goods/food', grounding
+    assert grounding[2][0] == 'wm/process/access', grounding

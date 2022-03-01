@@ -1,0 +1,356 @@
+{
+ "@context": {
+  "Argument": "https://github.com/BBN-E/Hume/wiki#Argument",
+  "Corpus": "https://github.com/BBN-E/Hume/wiki#Corpus",
+  "Count": "https://github.com/BBN-E/Hume/wiki#Count",
+  "Document": "https://github.com/BBN-E/Hume/wiki#Document",
+  "Extraction": "https://github.com/BBN-E/Hume/wiki#Extraction",
+  "Grounding": "https://github.com/BBN-E/Hume/wiki#Grounding",
+  "Interval": "https://github.com/BBN-E/Hume/wiki#Interval",
+  "OntologyMeta": "https://github.com/BBN-E/Hume/wiki#OntologyMeta",
+  "PropertyMention": "https://github.com/BBN-E/Hume/wiki#PropertyMention",
+  "Provenance": "https://github.com/BBN-E/Hume/wiki#Provenance",
+  "Sentence": "https://github.com/BBN-E/Hume/wiki#Sentence",
+  "State": "https://github.com/BBN-E/Hume/wiki#State",
+  "TimeInterval": "https://github.com/BBN-E/Hume/wiki#TimeInterval",
+  "TimeValueMention": "https://github.com/BBN-E/Hume/wiki#TimeValueMention",
+  "Trigger": "https://github.com/BBN-E/Hume/wiki#Trigger"
+ },
+ "@type": "Corpus",
+ "documents": [
+  {
+   "@id": "f537a88e7ef0d05f208d74e766b6c721",
+   "@type": "Document",
+   "sentences": [
+    {
+     "@id": "f537a88e7ef0d05f208d74e766b6c721#14432#14667",
+     "@type": "Sentence",
+     "text": "It is clear from Figure 3 that private trade and public interventions failed to stabilize food supplies and prices, and it was high prices that undermined access to food and converted a relatively minor production decline into a famine."
+    }
+   ]
+  }
+ ],
+ "extractions": [
+  {
+   "@id": "f537a88e7ef0d05f208d74e766b6c721#KBMention#14597#14600",
+   "@type": "Extraction",
+   "canonicalName": "food",
+   "grounding": [
+    {
+     "@type": "Grounding",
+     "name": "bbn",
+     "ontologyConcept": "/wm/concept/goods/food",
+     "value": 0.8
+    }
+   ],
+   "labels": [
+    "Entity"
+   ],
+   "provenance": [
+    {
+     "@type": "Provenance",
+     "document": {
+      "@id": "f537a88e7ef0d05f208d74e766b6c721"
+     },
+     "documentCharPositions": {
+      "@type": "Interval",
+      "end": 14600,
+      "start": 14597
+     },
+     "sentence": "f537a88e7ef0d05f208d74e766b6c721#14432#14667",
+     "sentenceCharPositions": {
+      "@type": "Interval",
+      "end": 168,
+      "start": 165
+     }
+    }
+   ],
+   "subtype": "entity",
+   "text": "food",
+   "type": "concept"
+  },
+  {
+   "@id": "f537a88e7ef0d05f208d74e766b6c721#KBEventMention#14559#14569",
+   "@type": "Extraction",
+   "arguments": [
+    {
+     "@type": "Argument",
+     "type": "has_property",
+     "value": {
+      "@id": "f537a88e7ef0d05f208d74e766b6c721#KBValueMention#14564#14569"
+     }
+    }
+   ],
+   "canonicalName": "high prices",
+   "grounding": [
+    {
+     "@type": "Grounding",
+     "name": "bbn",
+     "ontologyConcept": "/wm/property/price_or_cost",
+     "value": 0.7
+    }
+   ],
+   "labels": [
+    "Event"
+   ],
+   "provenance": [
+    {
+     "@type": "Provenance",
+     "document": {
+      "@id": "f537a88e7ef0d05f208d74e766b6c721"
+     },
+     "documentCharPositions": {
+      "@type": "Interval",
+      "end": 14569,
+      "start": 14559
+     },
+     "sentence": "f537a88e7ef0d05f208d74e766b6c721#14432#14667",
+     "sentenceCharPositions": {
+      "@type": "Interval",
+      "end": 137,
+      "start": 127
+     }
+    }
+   ],
+   "states": [
+    {
+     "@type": "State",
+     "text": "Asserted",
+     "type": "modality"
+    },
+    {
+     "@type": "State",
+     "text": "Specific",
+     "type": "genericity"
+    },
+    {
+     "@type": "State",
+     "text": 1.0,
+     "type": "magnitude"
+    },
+    {
+     "@type": "State",
+     "text": "Positive",
+     "type": "polarity"
+    },
+    {
+     "@type": "State",
+     "text": "Unknown",
+     "type": "direction_of_change"
+    }
+   ],
+   "subtype": "event",
+   "text": "high prices",
+   "trigger": {
+    "@type": "Trigger",
+    "head text": "high prices",
+    "provenance": [
+     {
+      "@type": "Provenance",
+      "document": {
+       "@id": "f537a88e7ef0d05f208d74e766b6c721"
+      },
+      "documentCharPositions": {
+       "@type": "Interval",
+       "end": 14569,
+       "start": 14559
+      },
+      "sentence": "f537a88e7ef0d05f208d74e766b6c721#14432#14667",
+      "sentenceCharPositions": {
+       "@type": "Interval",
+       "end": 137,
+       "start": 127
+      }
+     }
+    ],
+    "text": "high prices"
+   },
+   "type": "concept"
+  },
+  {
+   "@id": "f537a88e7ef0d05f208d74e766b6c721#KBValueMention#14564#14569",
+   "@type": "Extraction",
+   "canonicalName": "prices",
+   "grounding": [
+    {
+     "@type": "Grounding",
+     "name": "bbn",
+     "ontologyConcept": "/wm/property/price_or_cost",
+     "value": 0.75
+    }
+   ],
+   "labels": [
+    "Entity"
+   ],
+   "provenance": [
+    {
+     "@type": "Provenance",
+     "document": {
+      "@id": "f537a88e7ef0d05f208d74e766b6c721"
+     },
+     "documentCharPositions": {
+      "@type": "Interval",
+      "end": 14569,
+      "start": 14564
+     },
+     "sentence": "f537a88e7ef0d05f208d74e766b6c721#14432#14667",
+     "sentenceCharPositions": {
+      "@type": "Interval",
+      "end": 137,
+      "start": 132
+     }
+    }
+   ],
+   "subtype": "entity",
+   "text": "prices",
+   "type": "concept"
+  },
+  {
+   "@id": "f537a88e7ef0d05f208d74e766b6c721#KBEventMention#14587#14592",
+   "@type": "Extraction",
+   "arguments": [
+    {
+     "@type": "Argument",
+     "type": "has_theme",
+     "value": {
+      "@id": "f537a88e7ef0d05f208d74e766b6c721#KBMention#14597#14600"
+     }
+    }
+   ],
+   "canonicalName": "access",
+   "grounding": [
+    {
+     "@type": "Grounding",
+     "name": "bbn",
+     "ontologyConcept": "/wm/process/access",
+     "value": 0.9648197849948501
+    }
+   ],
+   "labels": [
+    "Event"
+   ],
+   "provenance": [
+    {
+     "@type": "Provenance",
+     "document": {
+      "@id": "f537a88e7ef0d05f208d74e766b6c721"
+     },
+     "documentCharPositions": {
+      "@type": "Interval",
+      "end": 14592,
+      "start": 14587
+     },
+     "sentence": "f537a88e7ef0d05f208d74e766b6c721#14432#14667",
+     "sentenceCharPositions": {
+      "@type": "Interval",
+      "end": 160,
+      "start": 155
+     }
+    }
+   ],
+   "states": [
+    {
+     "@type": "State",
+     "text": "Asserted",
+     "type": "modality"
+    },
+    {
+     "@type": "State",
+     "text": "Specific",
+     "type": "genericity"
+    },
+    {
+     "@type": "State",
+     "text": 0.5,
+     "type": "magnitude"
+    },
+    {
+     "@type": "State",
+     "text": "Positive",
+     "type": "polarity"
+    },
+    {
+     "@type": "State",
+     "text": "Unknown",
+     "type": "direction_of_change"
+    }
+   ],
+   "subtype": "event",
+   "text": "access",
+   "trigger": {
+    "@type": "Trigger",
+    "head text": "access",
+    "provenance": [
+     {
+      "@type": "Provenance",
+      "document": {
+       "@id": "f537a88e7ef0d05f208d74e766b6c721"
+      },
+      "documentCharPositions": {
+       "@type": "Interval",
+       "end": 14592,
+       "start": 14587
+      },
+      "sentence": "f537a88e7ef0d05f208d74e766b6c721#14432#14667",
+      "sentenceCharPositions": {
+       "@type": "Interval",
+       "end": 160,
+       "start": 155
+      }
+     }
+    ],
+    "text": "access"
+   },
+   "type": "concept"
+  },
+  {
+   "@id": "f537a88e7ef0d05f208d74e766b6c721#KBEventMention#14559#14569#mitigation#f537a88e7ef0d05f208d74e766b6c721#KBEventMention#14587#14592",
+   "@type": "Extraction",
+   "arguments": [
+    {
+     "@type": "Argument",
+     "type": "source",
+     "value": {
+      "@id": "f537a88e7ef0d05f208d74e766b6c721#KBEventMention#14559#14569"
+     }
+    },
+    {
+     "@type": "Argument",
+     "type": "destination",
+     "value": {
+      "@id": "f537a88e7ef0d05f208d74e766b6c721#KBEventMention#14587#14592"
+     }
+    }
+   ],
+   "labels": [
+    "DirectedRelation"
+   ],
+   "provenance": [
+    {
+     "@type": "Provenance",
+     "document": {
+      "@id": "f537a88e7ef0d05f208d74e766b6c721"
+     },
+     "documentCharPositions": {
+      "@type": "Interval",
+      "end": 14592,
+      "start": 14559
+     },
+     "sentence": "f537a88e7ef0d05f208d74e766b6c721#14432#14667",
+     "sentenceCharPositions": {
+      "@type": "Interval",
+      "end": 160,
+      "start": 127
+     }
+    }
+   ],
+   "subtype": "mitigation",
+   "type": "relation"
+  }
+ ],
+ "ontologyMeta": {
+  "@type": "OntologyMeta",
+  "URL": "https://raw.githubusercontent.com/WorldModelers/Ontologies/acab3922-b952-4bc0-9fb1-129659a42baa/CompositionalOntology_metadata.yml",
+  "commit": "acab3922-b952-4bc0-9fb1-129659a42baa"
+ }
+}
