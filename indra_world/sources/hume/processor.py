@@ -355,10 +355,8 @@ class HumeJsonLdProcessorCompositional(HumeJsonLdProcessor):
         ev = self.concept_dict[eid]
         concept, metadata = self._make_concept(ev)
 
-        # is_migration_event = False
-
-        property_id = _choose_id(event, 'has_property')
-        theme_id = _choose_id(event, 'has_theme')
+        property_id = _choose_id(ev, 'has_property')
+        theme_id = _choose_id(ev, 'has_theme')
         property = self.extractions_by_id[property_id] \
             if property_id else None
         theme = self.extractions_by_id[theme_id] \
