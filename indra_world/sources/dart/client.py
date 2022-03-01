@@ -219,9 +219,8 @@ class DartClient:
             {"readers": ["MyAwesomeTool", "SomeOtherAwesomeTool"],
             "versions": ["3.1.4", "1.3.3.7"],
             "document_ids": ["qwerty1234", "poiuyt0987"],
-            "timestamp": {"before": "yyyy-mm-dd"|"yyyy-mm-dd hh:mm:ss",
-            "after": "yyyy-mm-dd"|"yyyy-mm-dd hh:mm:ss",
-            "on": "yyyy-mm-dd"}}
+            "timestamp": {"before": "yyyy-mm-ddThh:mm:ss",
+            "after": "yyyy-mm-ddThh:mm:ss"}}
 
         Parameters
         ----------
@@ -231,9 +230,8 @@ class DartClient:
             A list of versions to match with the reader name(s)
         document_ids : list
             A list of document identifiers
-        timestamp : dict("on"|"before"|"after",str)
-            The timestamp string must be formatted "yyyy-mm-dd" or "yyyy-mm-dd
-            hh:mm:ss" (only for "before" and "after").
+        timestamp : dict("before"|"after",str)
+            The timestamp string must be formatted "yyyy-mm-ddThh:mm:ss".
 
         Returns
         -------
@@ -376,14 +374,13 @@ def _check_timestamp_dict(ts_dict):
     Parameters
     ----------
     ts_dict : dict
-        Timestamp should be of format "yyyy-mm-dd". "yyyy-mm-dd hh:mm:ss"
-        is allowed as well for the keys "before" and "after".
+        Timestamp should be of format "yyyy-mm-ddThh:mm:ss".
 
     Returns
     -------
     dict
     """
-    def _is_valid_ts(k, tstr):
+    def _is_valid_ts(tstr):
         """
         %Y - Year as Zero padded decimal
         %m - month as zero padded number
@@ -392,21 +389,13 @@ def _check_timestamp_dict(ts_dict):
         %M - minute as zero padded number
         %S - second as zero padded number
         """
-        ts_fmt = '%Y-%m-%d'
-        ts_long_fmt = '%Y-%m-%d %H:%M:%S'
-        if k == 'on':
-            dt = datetime.strptime(tstr, ts_fmt)
-        else:
-            try:
-                dt = datetime.strptime(tstr, ts_long_fmt)
-            except ValueError:
-                try:
-                    dt = datetime.strptime(tstr, ts_fmt)
-                except ValueError as err:
-                    raise ValueError(
-                        f'Timestamp "{tstr}" is not in a valid format. '
-                        f'Format must be "%Y-%m-%d" or "%Y-%m-%d %H:%M:%S" '
-                        f'(for "before" and "after" only)') from err
+        ts_long_fmt = '%Y-%m-%dT%H:%M:%S'
+        try:
+            dt = datetime.strptime(tstr, ts_long_fmt)
+        except ValueError as err:
+            raise ValueError(
+                f'Timestamp "{tstr}" is not in a valid format. '
+                f'Format must be "%Y-%m-%dT%H:%M:%S"') from err
         try:
             if dt < datetime(1900, 1, 1):
                 logger.warning('Timestamp is before 1900-JAN-01, ignoring')
@@ -416,16 +405,10 @@ def _check_timestamp_dict(ts_dict):
             return False
         return True
 
-    ek = {'on', 'before', 'after'}
+    ek = {'before', 'after'}
     if sum(k in ek for k in ts_dict) > 0:
-        if 'on' in ts_dict and \
-                sum(k in ek for k in ts_dict) > 1 and \
-                _is_valid_ts('on', ts_dict['on']):
-            logger.warning('Ignoring any other keys than "on"')
-            ts = {'on': ts_dict['on']}
-        else:
-            ts = {k: v for k, v in ts_dict.items() if k in ek and
-                  _is_valid_ts(k, v)}
+        ts = {k: v for k, v in ts_dict.items() if k in ek and
+              _is_valid_ts(v)}
     else:
         raise ValueError(f'None of the allowed keys '
                          f'{", ".join(list(ek))} were provided')
@@ -444,7 +427,7 @@ def _jsonify_query_data(readers=None, versions=None, document_ids=None,
         Versions of reading systems.
     document_ids : list
         Document IDs.
-    timestamp : dict("on"|"before"|"after",str)
+    timestamp : dict("before"|"after",str)
         Reader output time stamp constraint.
 
     Returns
