@@ -232,7 +232,7 @@ class DartClient:
         document_ids : list
             A list of document identifiers
         timestamp : dict("on"|"before"|"after",str)
-            The timestamp string must of format "yyyy-mm-dd" or "yyyy-mm-dd
+            The timestamp string must be format "yyyy-mm-dd" or "yyyy-mm-dd
             hh:mm:ss" (only for "before" and "after").
 
         Returns
