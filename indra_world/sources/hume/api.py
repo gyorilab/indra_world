@@ -6,7 +6,7 @@ from . import processor
 
 logger = logging.getLogger(__name__)
 
-default_grounding_mode = 'flat'
+default_grounding_mode = 'compositional'
 
 
 def process_jsonld_file(fname, extract_filter=None,
