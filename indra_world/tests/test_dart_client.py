@@ -8,14 +8,15 @@ import indra_world.sources.dart.client as dart_client
 def test_timestamp():
     # Should ignore "after"
     assert dart_client._jsonify_query_data(
-        timestamp={'on': '2020-01-01',
-                   'after': '2020-01-02'}) == \
-        json.dumps({"timestamp": {"on": "2020-01-01"}})
+        timestamp={'before': '2020-01-01T00:00:00',
+                   'after': '1888-01-02T00:00:00'}) == \
+        json.dumps({"timestamp": {"before": "2020-01-01T00:00:00"}})
     assert dart_client._jsonify_query_data(
-        timestamp={'after': '2020-01-01',
-                   'before': '2020-01-05'}) == \
+        timestamp={'after': '2020-01-01T00:00:00',
+                   'before': '2020-01-05T00:00:00'}) == \
         json.dumps(
-            {'timestamp': {'after': '2020-01-01', 'before': '2020-01-05'}})
+            {'timestamp': {'after': '2020-01-01T00:00:00',
+                           'before': '2020-01-05T00:00:00'}})
 
 
 def test_lists():
