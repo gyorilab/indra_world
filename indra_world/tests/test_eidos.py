@@ -75,15 +75,17 @@ def test_process_polarity():
 
 
 def test_process_json_ld_file():
-    ep = eidos.process_json_file(test_jsonld)
+    ep = eidos.process_json_file(test_jsonld, grounding_mode='flat')
     assert len(ep.statements) == 1
     st = ep.statements[0]
-    assert 'UN' in st.subj.concept.db_refs
-    assert 'UN' in st.obj.concept.db_refs
+    assert 'UN' in st.subj.concept.db_refs, st.subj.concept.db_refs
+    assert 'UN' in st.obj.concept.db_refs, st.obj.concept.db_refs
 
-    ep = eidos.process_json_file(test_jsonld, grounding_ns=['UN'])
+    ep = eidos.process_json_file(test_jsonld, grounding_ns=['UN'],
+                                 grounding_mode='flat')
     st = ep.statements[0]
-    assert set(st.subj.concept.db_refs.keys()) == {'TEXT', 'UN'}
+    assert set(st.subj.concept.db_refs.keys()) == {'TEXT', 'UN'}, \
+        st.subj.concept.db_refs
 
 
 def test_process_corefs():
