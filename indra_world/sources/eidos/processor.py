@@ -199,9 +199,16 @@ class EidosProcessorCompositional(EidosWorldProcessor):
                         compositional_entry[0] = compositional_entry[1]
                         compositional_entry[1] = None
                     # Promote theme process property into theme property
-                    if compositional_entry[3] and not compositional_entry[2] \
+                    if compositional_entry[3] and compositional_entry[0] and \
+                            not compositional_entry[2] \
                             and not compositional_entry[1]:
                         compositional_entry[1] = compositional_entry[3]
+                        compositional_entry[3] = None
+                    # If there is only a theme process property and nothing
+                    # else, we promote it to be the theme
+                    if compositional_entry[3] and not any(
+                            compositional_entry[:-1]):
+                        compositional_entry[0] = compositional_entry[3]
                         compositional_entry[3] = None
                     if any(compositional_entry):
                         entries.append(compositional_entry)
