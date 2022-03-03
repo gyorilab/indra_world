@@ -210,6 +210,12 @@ class EidosProcessorCompositional(EidosWorldProcessor):
                             compositional_entry[:-1]):
                         compositional_entry[0] = compositional_entry[3]
                         compositional_entry[3] = None
+                    # Remove dangling theme process property if theme
+                    # and property are available but there is no process
+                    if compositional_entry[0] and compositional_entry[1] and \
+                            not compositional_entry[2] \
+                            and compositional_entry[3]:
+                        compositional_entry[3] = None
                     if any(compositional_entry):
                         entries.append(compositional_entry)
             return entries
