@@ -20,8 +20,8 @@ if __name__ == '__main__':
         timestamp={'before': '2022-03-01T22:00:00'})
     recs += dc.get_reader_output_records(['eidos'],
         timestamp={'after': '2022-03-02T22:00:00'})
-    recs = [r for r in recs if r['doc_id'] in doc_ids]
-    recs = [r for r in recs if r['ontology_version'] == ontology_version]
+    recs = [r for r in recs if r['document_id'] in doc_ids]
+    recs = [r for r in recs if r['output_version'] == ontology_version]
 
     print(len(recs))
 
@@ -34,7 +34,7 @@ if __name__ == '__main__':
         'description': 'February 2022 embed initial corpus for DSMT-E v2 with ' \
             'grounding improvements',
         'display_name': 'Feb. 2022 Initial DSMT-E v2',
-        'readers': readers,
+        'readers': ['eidos', 'hume'],
         'assembly': {
             'level': 'grounding_location',
             'grounding_threshold': 0.6,
@@ -48,7 +48,7 @@ if __name__ == '__main__':
     cm = CorpusManager(
         db_url=get_config('INDRA_WM_SERVICE_DB'),
         dart_records=recs,
-        corpus_id='feb2022_initial_dsmte',
+        corpus_id='feb2022_initial_dsmte_v2',
         ontology=ontology,
         metadata=meta_data,
         dart_client=dc,
