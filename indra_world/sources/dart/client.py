@@ -301,7 +301,7 @@ class DartClient:
         return {record['version'] for record in records}
 
     def get_ontology(self, ontology_id: str):
-        """Return the ontology for the given ontology ID."""
+        """Return the DART ontology record JSON for the given ontology ID."""
         url = self.dart_url + '/ontologies'
         res = requests.get(url, params={'id': ontology_id},
                            auth=(self.dart_uname, self.dart_pwd))
@@ -309,7 +309,8 @@ class DartClient:
 
     def get_tenant_ontology(self, tenant_id: str,
                             version: Optional[str] = None):
-        """Return the ontology for the given tenant ID and optional version."""
+        """Return the DART ontology record JSON for the given tenant ID and
+        optional version."""
         params = {'tenant': tenant_id}
         if version:
             params['version'] = version
@@ -317,6 +318,30 @@ class DartClient:
         res = requests.get(url, params=params,
                            auth=(self.dart_uname, self.dart_pwd))
         return res.json()
+
+    def get_ontology_graph(self, ontology_id: str):
+        """Return the ontology graph for the given ontology ID."""
+        ont_json = self.get_ontology(ontology_id)
+        return self._get_ontology_graph_from_json(ont_json)
+
+    def get_tenant_ontology_graph(self, tenant_id: str,
+                                  version: Optional[str] = None):
+        """Return the ontology graph for the given tenant ID and optional
+        version."""
+        ont_json = self.get_tenant_ontology(tenant_id, version=version)
+        return self._get_ontology_graph_from_json(ont_json)
+
+    @staticmethod
+    def _get_ontology_graph_from_json(ont_json):
+        import yaml
+        from indra_world.ontology import WorldOntology
+        ontology = \
+            WorldOntology(url=None,
+                          yml=yaml.load(ont_json['ontology'],
+                                        Loader=yaml.FullLoader))
+        ontology.initialize()
+        return ontology
+
 
 
 def prioritize_records(records, priorities=None):
