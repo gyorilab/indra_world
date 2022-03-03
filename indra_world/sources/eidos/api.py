@@ -10,7 +10,7 @@ from .processor import EidosWorldProcessor, EidosProcessorCompositional
 logger = logging.getLogger(__name__)
 
 
-default_grounding_mode = 'flat'  # The alternative is 'compositional'
+default_grounding_mode = 'compositional'  # The alternative is 'compositional'
 
 
 def process_text(text, save_json='eidos_output.json',
