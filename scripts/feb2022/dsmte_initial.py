@@ -89,5 +89,6 @@ if __name__ == '__main__':
     cm.prepare(records_exist=True)
     logger.info('Assembling statements')
     cm.assemble()
-    logger.info('Dumping statements to S3')
-    cm.dump_s3()
+    if cm.assembled_stmts:
+        logger.info('Dumping statements to S3')
+        cm.dump_s3()
