@@ -19,7 +19,7 @@ bad_grnd = {'event1'}
 class SofiaProcessor(object):
     """A processor extracting statements from reading done by Sofia"""
     def __init__(self, score_cutoff=None,
-                 grounding_mode='flat'):
+                 grounding_mode='compositional'):
         self._entities = {}
         self._events = {}
         self._score_cutoff = score_cutoff
@@ -463,9 +463,11 @@ class SofiaProcessor(object):
         # Remove initial slash
         if grnd.startswith('/'):
             grnd = grnd[1:]
+        # Groundings currently look like e.g., event/base_path/concept/plan
+        grnd = grnd.lstrip('event/base_path/')
         # Add initial wm
         if grnd and not grnd.startswith('wm'):
-            grnd = f'wm/{grnd_type}/{grnd}'
+            grnd = f'wm/{grnd}'
 
         # Remove special misgrounding
         if any(mg in grnd for mg in bad_grnd):
