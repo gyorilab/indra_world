@@ -464,7 +464,7 @@ class SofiaProcessor(object):
         if grnd.startswith('/'):
             grnd = grnd[1:]
         # Groundings currently look like e.g., event/base_path/concept/plan
-        grnd = grnd.lstrip('event/base_path/')
+        grnd = grnd.replace('event/base_path/', '')
         # Add initial wm
         if grnd and not grnd.startswith('wm'):
             grnd = f'wm/{grnd}'

@@ -3,6 +3,7 @@ import unittest
 from nose.plugins.attrib import attr
 
 from indra_world.sources import sofia
+from indra_world.sources.sofia.processor import SofiaProcessor
 from indra.statements.statements import Influence, Event
 from indra.statements.context import WorldContext
 
@@ -86,3 +87,12 @@ def test_influence_event_polarity():
     assert isinstance(stmt, Influence)
     assert stmt.subj.delta.polarity == 1, stmt.subj.delta
     assert stmt.obj.delta.polarity == -1, stmt.obj.delta
+
+
+def test_grounding_normalize():
+    grnd, _ = SofiaProcessor._clean_grnd_filter(
+        'event/base_path/concept/plan', 0.6, 'process')
+    assert grnd == 'wm/concept/plan', grnd
+    grnd, _ = SofiaProcessor._clean_grnd_filter(
+        'event/base_path/process/provision', 0.6, 'process')
+    assert grnd == 'wm/process/provision', grnd
