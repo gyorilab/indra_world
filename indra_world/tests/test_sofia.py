@@ -32,7 +32,7 @@ def test_text_process_webservice():
 
 def test_process_json():
     test_file = _get_data_file('sofia_test.json')
-    sp = sofia.process_json_file(test_file)
+    sp = sofia.process_json_file(test_file, grounding_mode='flat')
     assert len(sp.statements) == 2
     assert isinstance(sp.statements[0], Influence)
     assert sp.statements[0].subj.concept.name == 'rainfall'
@@ -65,7 +65,7 @@ def test_compositional_grounding():
 
 def test_event_decrease():
     test_file = _get_data_file('sofia_event_decreased.json')
-    sp = sofia.process_json_file(test_file)
+    sp = sofia.process_json_file(test_file, grounding_mode='flat')
     assert len(sp.statements) == 1, sp.statements
     stmt = sp.statements[0]
     assert isinstance(stmt, Event), stmt
@@ -73,13 +73,14 @@ def test_event_decrease():
     assert stmt.concept.name == 'rainfall', stmt.concept
 
     # Test extraction filter
-    sp = sofia.process_json_file(test_file, extract_filter={'influence'})
+    sp = sofia.process_json_file(test_file, extract_filter={'influence'},
+                                 grounding_mode='flat')
     assert len(sp.statements) == 0
 
 
 def test_influence_event_polarity():
     test_file = _get_data_file('sofia_infl_polarities.json')
-    sp = sofia.process_json_file(test_file)
+    sp = sofia.process_json_file(test_file, grounding_mode='flat')
     assert len(sp.statements) == 1, sp.statements
     stmt = sp.statements[0]
     assert isinstance(stmt, Influence)
