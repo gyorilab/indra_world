@@ -61,11 +61,12 @@ if __name__ == '__main__':
     ontology = dc.get_ontology_graph(ontology_version)
     ontology.initialize()
 
-    corpus_id = 'mar2022_dsmte_v1'
+    version = '3'
+    corpus_id = 'mar2022_dsmte_v%s' % version
     meta_data = {
         'corpus_id': corpus_id,
-        'description': 'March 2022 embed corpus for DSMT-E v1',
-        'display_name': 'Mar. 2022 DSMT-E v1',
+        'description': 'March 2022 embed corpus for DSMT-E v%s' % version,
+        'display_name': 'Mar. 2022 DSMT-E v%s' % version,
         'readers': readers,
         'assembly': {
             'level': 'grounding_location',
