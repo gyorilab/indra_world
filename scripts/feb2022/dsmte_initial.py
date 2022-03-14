@@ -10,7 +10,8 @@ from indra_world.service.corpus_manager import CorpusManager
 
 ontology_version = '49277ea4-7182-46d2-ba4e-87800ee5a315'
 tenant = 'dsmt-e'
-reader_versions = {'eidos': None, 'hume': 'R2022_02_18', 'sofia': 'march2022exp'}
+reader_versions = {'eidos': 'feb2022expV2', 'hume': 'R2022_02_18',
+                   'sofia': 'march2022exp'}
 
 
 logger = logging.getLogger(__name__)
