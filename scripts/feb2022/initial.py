@@ -28,12 +28,12 @@ if __name__ == '__main__':
     ontology = dc.get_ontology_graph(ontology_version)
     ontology.initialize()
 
-    corpus_id = 'feb2022_initial_dsmte_v2'
+    corpus_id = 'feb2022_initial_dsmte_v3'
     meta_data = {
         'corpus_id': corpus_id,
-        'description': 'February 2022 embed initial corpus for DSMT-E v2 with ' \
+        'description': 'February 2022 embed initial corpus for DSMT-E v3 with ' \
             'grounding improvements',
-        'display_name': 'Feb. 2022 Initial DSMT-E v2',
+        'display_name': 'Feb. 2022 Initial DSMT-E v3',
         'readers': ['eidos', 'hume'],
         'assembly': {
             'level': 'grounding_location',
@@ -48,7 +48,7 @@ if __name__ == '__main__':
     cm = CorpusManager(
         db_url=get_config('INDRA_WM_SERVICE_DB'),
         dart_records=recs,
-        corpus_id='feb2022_initial_dsmte_v2',
+        corpus_id='feb2022_initial_dsmte_v3',
         ontology=ontology,
         metadata=meta_data,
         dart_client=dc,

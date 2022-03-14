@@ -5,7 +5,7 @@ import requests
 from indra.config import get_config
 from .processor import SofiaJsonProcessor, SofiaExcelProcessor
 
-default_grounding_mode = 'flat'
+default_grounding_mode = 'compositional'
 
 
 def process_table(fname, extract_filter=None,

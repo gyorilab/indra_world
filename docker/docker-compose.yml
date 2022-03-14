@@ -8,4 +8,6 @@ services:
     entrypoint: gunicorn -w 1 -b :8000 -t 600 indra_world.service.app:app
   db:
     image: indralab/indra_world_db
+    ports:
+      - "5435:5432"
     env_file: indra_world_db.env
