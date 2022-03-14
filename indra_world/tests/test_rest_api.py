@@ -269,7 +269,7 @@ def test_sofia_json():
     with open(_get_data_file('sofia_test.json'), 'r') as fh:
         test_json = fh.read()
     res_json = _call_api('post', 'sources/sofia/process_json',
-                         json={'json': test_json})
+                         json={'json': test_json, 'grounding_mode': 'flat'})
     stmts_json = res_json.get('statements')
     stmts = stmts_from_json(stmts_json)
     assert len(stmts) == 2
@@ -279,7 +279,8 @@ def test_sofia_json():
     # Extract filter
     res_json = _call_api('post', 'sources/sofia/process_json',
                          json={'json': test_json,
-                               'extract_filter': ['influence']})
+                               'extract_filter': ['influence'],
+                               'grounding_mode' :'flat'})
     stmts_json = res_json.get('statements')
     stmts = stmts_from_json(stmts_json)
     assert len(stmts) == 1
