@@ -10,7 +10,7 @@ from indra_world.service.corpus_manager import CorpusManager
 
 ontology_version = '49277ea4-7182-46d2-ba4e-87800ee5a315'
 tenant = 'dsmt-e'
-reader_versions = {'eidos': 'feb2022expV2', 'hume': 'R2022_02_18',
+reader_versions = {'eidos': 'feb2022expV2', 'hume': 'R2022_03_15_3',
                    'sofia': 'march2022exp'}
 
 
@@ -61,7 +61,7 @@ if __name__ == '__main__':
     ontology = dc.get_ontology_graph(ontology_version)
     ontology.initialize()
 
-    version = '3'
+    version = '4'
     corpus_id = 'mar2022_dsmte_v%s' % version
     meta_data = {
         'corpus_id': corpus_id,
