@@ -3,7 +3,7 @@ import json
 from indra.config import get_config
 from indra.statements import stmts_to_json
 from flask import Flask, request, abort
-from flask_restx import Api, Resource, fields
+from flask_restx import Api, Resource, fields, reqparse
 from .controller import ServiceController
 from ..sources.dart import DartClient
 from ..sources import hume, cwms, sofia, eidos
@@ -66,11 +66,9 @@ dart_record_model = api.model(
     }
 )
 
-project_model = api.model(
-    'Project',
-    {'project_id': fields.String(example='project1', required=True,
-                                 description='ID of a project')}
-)
+project_request_model = reqparse.RequestParser()
+project_request_model.add_argument('project_id', type=str, required=True,
+                                   help='ID of a project')
 
 project_records_model = api.model(
     'ProjectRecords',
@@ -374,18 +372,20 @@ class GetProjects(Resource):
     @assembly_ns.marshal_list_with(project_resp_model,
                                    description='List of projects')
     def get(self):
-        """Get a list of all projects."""
+        """Get a list of all projects.
+
+        Returns
+        -------
+        records : list[dict]
+            A list of projects.
+        """
         projects = sc.get_projects()
         return projects
 
 
-@assembly_ns.expect(project_model)
-@assembly_ns.route('/get_project_records')
+@assembly_ns.expect(project_request_model)
+@assembly_ns.route('/get_project_records', methods=['GET'])
 class GetProjectRecords(Resource):
-    @api.doc(False)
-    def options(self):
-        return {}
-
     @assembly_ns.response(200, 'A list of records', project_records_resp)
     def get(self):
         """Get records for a project.
@@ -400,12 +400,13 @@ class GetProjectRecords(Resource):
         records : list[dict]
             A list of records for the project.
         """
-        project_id = request.json.get('project_id')
+        project_id = request.args.get('project_id')
+        if not project_id:
+            abort(400, 'The project_id parameter is missing or empty.')
         records = sc.get_project_records(project_id)
         return records
 
 
-@assembly_ns.expect(project_model)
 @assembly_ns.route('/get_all_records')
 class GetAllRecords(Resource):
     @api.doc(False)
@@ -465,7 +466,7 @@ class SubmitCurations(Resource):
         return {str(nh): str(oh) for nh, oh in mappings.items()}
 
 
-@assembly_ns.expect(project_model)
+@assembly_ns.expect(project_request_model)
 @assembly_ns.route('/get_project_curations')
 class GetProjectCurations(Resource):
     @api.doc(False)
@@ -487,7 +488,9 @@ class GetProjectCurations(Resource):
         curations : list[dict]
             A list of curations for the project.
         """
-        project_id = request.json.get('project_id')
+        project_id = request.args.get('project_id')
+        if not project_id:
+            abort(400, 'The project_id parameter is missing or empty.')
         curations = sc.get_project_curations(project_id)
         return curations
 
