@@ -330,8 +330,8 @@ def test_polarity_curations():
     mappings = _call_api('post', 'assembly/submit_curations',
                          json=cur)
     assert mappings == {'18354331688382610': '-18369311868314428'}, mappings
-    res = _call_api('get', 'assembly/get_project_curations',
-                    json=dict(project_id=project_id))
+    res = _call_api('get',
+                    f'assembly/get_project_curations?project_id={project_id}')
     assert len(res) == 1, res
     stmt_hash = 18354331688382610
     assert isinstance(res[str(stmt_hash)], dict)
