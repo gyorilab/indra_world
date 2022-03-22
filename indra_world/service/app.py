@@ -22,6 +22,7 @@ VERSION = '2.0'
 
 app = Flask(__name__)
 app.config['RESTX_MASK_SWAGGER'] = False
+app.config["SWAGGER_UI_DOC_EXPANSION"] = "list"
 api = Api(app, title='INDRA World Modelers API',
           description='REST API for INDRA World Modelers',
           version=VERSION)
