@@ -110,9 +110,9 @@ def test_get_projects():
     _call_api('post', 'assembly/new_project',
               json=dict(
                   project_id='p1',
-                  project_name='Project 1'
-              ))
-    res = _call_api('get', 'assembly/get_projects', json={})
+                  project_name='Project 1')
+              )
+    res = _call_api('get', f'assembly/get_projects')
     assert res
 
 
