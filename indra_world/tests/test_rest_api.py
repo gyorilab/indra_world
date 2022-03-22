@@ -178,8 +178,7 @@ def test_curations():
                             curations={stmt_hash: curation}
                          ))
     assert mappings
-    res = _call_api('get', 'assembly/get_project_curations',
-                    json=dict(project_id='p1'))
+    res = _call_api('get', 'assembly/get_project_curations?project_id=p1')
     assert len(res) == 1
     assert res[str(stmt_hash)] == curation, res
 
