@@ -110,9 +110,9 @@ def test_get_projects():
     _call_api('post', 'assembly/new_project',
               json=dict(
                   project_id='p1',
-                  project_name='Project 1'
-              ))
-    res = _call_api('get', 'assembly/get_projects', json={})
+                  project_name='Project 1')
+              )
+    res = _call_api('get', f'assembly/get_projects')
     assert res
 
 
@@ -143,8 +143,8 @@ def test_get_project_records():
                         project_id='p1',
                         records=[record]
                     ))
-    res = _call_api('get', 'assembly/get_project_records',
-                    json=dict(project_id='p1'))
+    res = _call_api('get',
+                    f'assembly/get_project_records?project_id=p1')
     assert res == [storage_key]
     sc.dart_client.get_output_from_record = _orig
 
@@ -178,8 +178,7 @@ def test_curations():
                             curations={stmt_hash: curation}
                          ))
     assert mappings
-    res = _call_api('get', 'assembly/get_project_curations',
-                    json=dict(project_id='p1'))
+    res = _call_api('get', 'assembly/get_project_curations?project_id=p1')
     assert len(res) == 1
     assert res[str(stmt_hash)] == curation, res
 
@@ -331,8 +330,8 @@ def test_polarity_curations():
     mappings = _call_api('post', 'assembly/submit_curations',
                          json=cur)
     assert mappings == {'18354331688382610': '-18369311868314428'}, mappings
-    res = _call_api('get', 'assembly/get_project_curations',
-                    json=dict(project_id=project_id))
+    res = _call_api('get',
+                    f'assembly/get_project_curations?project_id={project_id}')
     assert len(res) == 1, res
     stmt_hash = 18354331688382610
     assert isinstance(res[str(stmt_hash)], dict)
