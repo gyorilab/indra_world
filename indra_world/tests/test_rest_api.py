@@ -143,8 +143,8 @@ def test_get_project_records():
                         project_id='p1',
                         records=[record]
                     ))
-    res = _call_api('get', 'assembly/get_project_records',
-                    json=dict(project_id='p1'))
+    res = _call_api('get',
+                    f'assembly/get_project_records?project_id=p1')
     assert res == [storage_key]
     sc.dart_client.get_output_from_record = _orig
 
