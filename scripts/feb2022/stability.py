@@ -20,10 +20,13 @@ if __name__ == '__main__':
     dc = DartClient()
     recs = dc.get_reader_output_records(
         readers=list(reader_versions.keys()),
-        versions=list(reader_versions.items()),
+        #versions=list(reader_versions.values()),
         ontology_id=ontology_version,
         tenant=tenant,
         unique=True)
+
+    recs = [r for r in recs if (reader_versions[r['identity']] is None or
+                                reader_versions[r['identity']] == r['version'])]
 
     print_record_stats(recs)
 
