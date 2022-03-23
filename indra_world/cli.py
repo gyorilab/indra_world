@@ -1,8 +1,10 @@
 import argparse
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="INDRA World assembly CLI")
+def main():
+    parser = argparse.ArgumentParser(
+        prog='indra_world',
+        description="INDRA World assembly CLI")
 
     group = parser.add_argument_group('Input options')
     gg = group.add_mutually_exclusive_group()
