@@ -35,3 +35,51 @@ For more information, see https://github.com/indralab/indra_world/tree/master/do
 
 Detailed documentation is available at:
 https://indra-world.readthedocs.io/en/latest/.
+
+## Command line interface
+
+The INDRA World command line interface allows running assembly using externally
+supplied arguments and configurations files. This serves as an alternative
+to using the Python API.
+
+```
+usage: indra_world [-h]
+                   (--reader-output-files READER_OUTPUT_FILES | --reader-output-dart-query READER_OUTPUT_DART_QUERY | --reader-output-dart-keys READER_OUTPUT_DART_KEYS)
+                   [--assembly-config ASSEMBLY_CONFIG]
+                   (--ontology-path ONTOLOGY_PATH | --ontology-id ONTOLOGY_ID) --output-path OUTPUT_PATH
+                   [--causemos-metadata CAUSEMOS_METADATA]
+
+INDRA World assembly CLI
+
+optional arguments:
+  -h, --help            show this help message and exit
+
+Input options:
+  --reader-output-files READER_OUTPUT_FILES
+                        Path to a JSON file whose keys are reading system identifiers and whose values are
+                        lists of file paths to outputs from the given system to be used in assembly.
+  --reader-output-dart-query READER_OUTPUT_DART_QUERY
+                        Path to a JSON file that specifies query parameters for reader output records in DART.
+                        Only applicable if DART is being used.
+  --reader-output-dart-keys READER_OUTPUT_DART_KEYS
+                        Path to a text file where each line is a DART storage key corresponding to a reader
+                        output record. Only applicable if DART is being used.
+
+Assembly options:
+  --assembly-config ASSEMBLY_CONFIG
+                        Path to a JSON file that specifies the INDRA assembly pipeline. If not provided, the
+                        default assembly pipeline will be used.
+  --ontology-path ONTOLOGY_PATH
+                        Path to an ontology YAML file.
+  --ontology-id ONTOLOGY_ID
+                        The identifier of an ontology registered in DART. Only applicable if DART is being
+                        used.
+
+Output options:
+  --output-path OUTPUT_PATH
+                        The path to a folder to which the INDRA output will be written.
+  --causemos-metadata CAUSEMOS_METADATA
+                        Path to a JSON file that provides metadata to be used for a Causemos-compatible dump
+                        of INDRA output (which consists of multiple files). THe --output-path option must also
+                        be used along with this option.
+```

@@ -89,15 +89,17 @@ class CorpusManager:
         logger.info('Got %d assembled statements' % len(self.assembled_stmts))
         self.metadata['num_statements'] = len(self.assembled_stmts)
 
-    def dump_local(self, base_folder):
+    def dump_local(self, base_folder, causemos_compatible=True):
         """Dump assembled corpus into local files."""
-        corpus_folder = os.path.join(base_folder, self.corpus_id)
-        os.makedirs(corpus_folder, exist_ok=True)
-        stmts_to_json_file(self.assembled_stmts,
-                           os.path.join(corpus_folder, 'statements.json'),
-                           format='jsonl')
-        with open(os.path.join(corpus_folder, 'metadata.json'), 'w') as fh:
-            json.dump(fh, self.metadata)
+        if causemos_compatible:
+            corpus_folder = os.path.join(base_folder, self.corpus_id)
+            os.makedirs(corpus_folder, exist_ok=True)
+            with open(os.path.join(corpus_folder, 'metadata.json'), 'w') as fh:
+                json.dump(fh, self.metadata)
+            fname = os.path.join(corpus_folder, 'statements.json')
+        else:
+            fname = os.path.join(base_folder, 'statements.json')
+        stmts_to_json_file(self.assembled_stmts, fname, format='jsonl')
 
     def dump_s3(self):
         """Dump assembled corpus onto S3."""

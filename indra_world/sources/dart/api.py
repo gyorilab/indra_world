@@ -48,17 +48,19 @@ def process_reader_output(reader, reader_output_str, doc_id,
         return []
 
 
-def process_reader_outputs(outputs, corpus_id, grounding_mode='compositional',
+def process_reader_outputs(outputs, corpus_id=None,
+                           grounding_mode='compositional',
                            extract_filter=None):
     if not extract_filter:
         extract_filter = ['influence']
     all_stmts = []
     for reader, reader_outputs in outputs.items():
-        fname = '%s_%s_raw.pkl' % (corpus_id, reader)
-        if os.path.exists(fname):
-            with open(fname, 'rb') as fh:
-                all_stmts += pickle.load(fh)
-                continue
+        if corpus_id:
+            fname = '%s_%s_raw.pkl' % (corpus_id, reader)
+            if os.path.exists(fname):
+                with open(fname, 'rb') as fh:
+                    all_stmts += pickle.load(fh)
+                    continue
         logger.info('Processing %d outputs for %s' %
                     (len(reader_outputs), reader))
         reader_stmts = []
@@ -68,8 +70,9 @@ def process_reader_outputs(outputs, corpus_id, grounding_mode='compositional',
                                                   doc_id,
                                                   grounding_mode=grounding_mode,
                                                   extract_filter=extract_filter)
-        with open(fname, 'wb') as fh:
-            pickle.dump(reader_stmts, fh)
+        if corpus_id:
+            with open(fname, 'wb') as fh:
+                pickle.dump(reader_stmts, fh)
         all_stmts += reader_stmts
     assert all(isinstance(stmt, Statement) for stmt in all_stmts)
     return all_stmts
