@@ -45,11 +45,13 @@ to using the Python API.
 ```
 usage: indra_world [-h]
                    (--reader-output-files READER_OUTPUT_FILES |
-                   --reader-output-dart-query READER_OUTPUT_DART_QUERY |
-                   --reader-output-dart-keys READER_OUTPUT_DART_KEYS)
-                   [--assembly-config ASSEMBLY_CONFIG] (--ontology-path
-                   ONTOLOGY_PATH | --ontology-id ONTOLOGY_ID) --output-folder
-                   OUTPUT_FOLDER [--causemos-metadata CAUSEMOS_METADATA]
+                    --reader-output-dart-query READER_OUTPUT_DART_QUERY |
+                    --reader-output-dart-keys READER_OUTPUT_DART_KEYS)
+                   [--assembly-config ASSEMBLY_CONFIG]
+                   (--ontology-path ONTOLOGY_PATH |
+                    --ontology-id ONTOLOGY_ID)
+                    --output-folder OUTPUT_FOLDER
+                   [--causemos-metadata CAUSEMOS_METADATA]
 
 INDRA World assembly CLI
 
