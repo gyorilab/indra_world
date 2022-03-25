@@ -72,7 +72,7 @@ def main():
     group = parser.add_argument_group('Output options')
 
     group.add_argument(
-        '--output-path', type=str, required=True,
+        '--output-folder', type=str, required=True,
         help="The path to a folder to which the INDRA output will be written.")
     group.add_argument(
         '--causemos-metadata', type=str,
@@ -130,12 +130,12 @@ def main():
     if args.causemos_metadata:
         metadata = load_json_file(args.causemos_metadata)
         metadata['num_statements'] = len(assembled_stmts)
-        corpus_folder = os.path.join(args.output_path, metadata['corpus_id'])
+        corpus_folder = os.path.join(args.output_folder, metadata['corpus_id'])
         with open(os.path.join(corpus_folder, 'metadata.json'), 'w') as fh:
             json.dump(fh, metadata)
         output_fname = os.path.join(corpus_folder, 'statements.json')
     else:
-        output_fname = os.path.join(args.output_path, 'statements.json')
+        output_fname = os.path.join(args.output_folder, 'statements.json')
     stmts_to_json_file(assembled_stmts, output_fname, format='jsonl')
 
 
