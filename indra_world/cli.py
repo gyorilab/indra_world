@@ -1,5 +1,20 @@
 import json
+import logging
 import argparse
+from collections import defaultdict
+from indra.pipeline import AssemblyPipeline
+from indra_world.sources import dart, eidos, hume, sofia
+from indra_world.ontology import WorldOntology
+from indra_world.assembly.operations import *
+from indra_world.service.controller import preparation_pipeline
+
+
+logger = logging.getLogger('indra_world.cli')
+
+
+def load_text_file(fname):
+    with open(fname, 'r') as fh:
+        return fh.read()
 
 
 def load_json_file(fname):
@@ -9,9 +24,7 @@ def load_json_file(fname):
 
 
 def load_list_file(fname):
-    with open(fname, 'r') as fh:
-        elements = fh.read().splitlines()
-    return elements
+    return load_text_file(fname).splitlines()
 
 
 def main():
@@ -68,13 +81,36 @@ def main():
 
     args = parser.parse_args()
 
+    if args.assembly_config:
+        assembly_pipeline = AssemblyPipeline.from_json_file(args.assembly_config)
+    else:
+        assembly_pipeline = preparation_pipeline
+
+    if args.ontology_path:
+        ontology = WorldOntology(args.ontology_path)
+    elif args.ontology_id:
+        dc = dart.DartClient()
+        ontology = dc.get_ontology_graph(args.ontology_id)
+
     if args.reader_output_files:
         index = load_json_file(args.reader_output_files)
+        reader_outputs = {}
         for reader, files in index.items():
-            pass
+            reader_outputs[reader] = {}
+            for file in files:
+                content = load_text_file(file)
+                reader_outputs[reader][file] = content
     elif args.reader_output_dart_query:
         query_args = load_json_file(args.reader_output_dart_query)
-        pass
+        dc = dart.DartClient()
+        records = dc.get_reader_output_records(**query_args)
+        reader_outputs = dc.get_outputs_from_records(records)
     elif args.reader_output_dart_keys:
+        dc = dart.DartClient()
+        records = dc.get_reader_output_records(
+            readers=['eidos', 'sofia', 'hume'])
         record_keys = load_list_file(args.reader_output_dart_keys)
-        pass
+        records = [r for r in records if r['storage_key'] in set(record_keys)]
+        reader_outputs = dc.get_outputs_from_records(records)
+    stmts = dart.process_reader_outputs(reader_outputs)
+
