@@ -11,6 +11,7 @@ from typing import Optional
 from datetime import datetime
 from collections import defaultdict
 from indra.config import get_config
+from .api import get_unique_records
 
 
 logger = logging.getLogger(__name__)
@@ -212,7 +213,9 @@ class DartClient:
         return fname
 
     def get_reader_output_records(self, readers=None, versions=None,
-                                  document_ids=None, timestamp=None):
+                                  document_ids=None, timestamp=None,
+                                  tenant=None, ontology_id=None,
+                                  unique=False):
         """Return reader output metadata records by querying the DART API
 
         Query json structure:
@@ -232,6 +235,12 @@ class DartClient:
             A list of document identifiers
         timestamp : dict("before"|"after",str)
             The timestamp string must be formatted "yyyy-mm-ddThh:mm:ss".
+        tenant : Optional[str]
+            Return only records for the given tenant.
+        ontology_id : Optional[str]
+            Return only records for the given ontology ID.
+        unique : Optional[bool]
+            If true, records that are duplicates are collapsed. Default: False.
 
         Returns
         -------
@@ -293,6 +302,13 @@ class DartClient:
             else:
                 raise ValueError('Must provide readers for searching in local '
                                  'mode.')
+        if ontology_id:
+            records = [r for r in records if r['output_version'] == ontology_id]
+        if tenant:
+            records = [r for r in records if r['tenants'] and
+                       tenant in r['tenants']]
+        if unique:
+            records = get_unique_records(records)
         return records
 
     def get_reader_versions(self, reader):

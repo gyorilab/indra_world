@@ -1,9 +1,11 @@
-__all__ = ['process_reader_output', 'process_reader_outputs']
+__all__ = ['process_reader_output', 'process_reader_outputs',
+           'print_record_stats', 'get_record_key', 'get_unique_records']
 
 import os
 import json
 import pickle
 import logging
+from collections import Counter
 from indra.statements import Statement
 from indra_world.sources import eidos, hume, sofia, cwms
 
@@ -76,3 +78,29 @@ def process_reader_outputs(outputs, corpus_id=None,
         all_stmts += reader_stmts
     assert all(isinstance(stmt, Statement) for stmt in all_stmts)
     return all_stmts
+
+
+def print_record_stats(recs):
+    """Print statistics for a list of DART records."""
+    print("reader,tenants,reader_version,ontology_version,count")
+    for (reader, tenants, reader_version, ontology_version), count in sorted(
+            Counter([get_record_key(rec) for rec in recs]).items(),
+            key=lambda x: x[1], reverse=True):
+        print(
+            f"{reader},{'|'.join(tenants)},{reader_version},"
+            f"{ontology_version},{count}"
+        )
+
+
+def get_record_key(rec):
+    """Return a key for a DART record for purposes of deduplication."""
+    return (rec['identity'], tuple(sorted(rec['tenants'])), rec['version'],
+            rec['output_version'])
+
+
+def get_unique_records(recs):
+    """Deduplicate DART records based on an identifier key."""
+    return list({(get_record_key(rec), rec['document_id']): rec
+                 for rec in recs}.values())
+
+
