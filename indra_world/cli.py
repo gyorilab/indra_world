@@ -2,11 +2,10 @@ import os
 import json
 import logging
 import argparse
-from collections import defaultdict
 from indra.pipeline import AssemblyPipeline
 from indra.statements import stmts_to_json_file
 from indra_world.assembly.incremental_assembler import IncrementalAssembler
-from indra_world.sources import dart, eidos, hume, sofia
+from indra_world.sources import dart
 from indra_world.ontology import WorldOntology
 from indra_world.assembly.operations import *
 from indra_world.service.controller import preparation_pipeline
@@ -138,3 +137,7 @@ def main():
     else:
         output_fname = os.path.join(args.output_path, 'statements.json')
     stmts_to_json_file(assembled_stmts, output_fname, format='jsonl')
+
+
+if __name__ == '__main__':
+    main()
