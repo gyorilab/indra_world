@@ -48,8 +48,16 @@ class ServiceController:
             prepared_stmts += self.db.get_statements_for_record(record_key)
         # 3. Select curations for project
         curations = self.get_project_curations(project_id)
-        # 4. Initiate an assembler
-        assembler = IncrementalAssembler(prepared_stmts, curations=curations)
+        # 4. Try to find the right ontology
+        ontology = None
+        corpus_id = self.db.get_corpus_for_project(project_id)
+        if corpus_id:
+            tenant = self.db.get_tenant_for_corpus(corpus_id)
+            if tenant:
+                ontology = self.dart_client.get_tenant_ontology_graph(tenant)
+        # 5. Initiate an assembler
+        assembler = IncrementalAssembler(prepared_stmts, curations=curations,
+                                         ontology=ontology)
         self.assemblers[project_id] = assembler
 
     def unload_project(self, project_id):
