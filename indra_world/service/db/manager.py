@@ -55,7 +55,7 @@ class DbManager:
             session.rollback()
             return None
 
-    def add_project(self, project_id, name):
+    def add_project(self, project_id, name, corpus_id=None):
         """Add a new project.
 
         Parameters
@@ -64,9 +64,13 @@ class DbManager:
             The project ID.
         name : str
             The project name
+        corpus_id : Optional[str]
+            The corpus ID from which the project was derived, if
+            available.
         """
         op = insert(wms_schema.Projects).values(id=project_id,
-                                                name=name)
+                                                name=name,
+                                                corpus_id=corpus_id)
         return self.execute(op)
 
     def add_records_for_project(self, project_id, record_keys):

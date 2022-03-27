@@ -30,7 +30,7 @@ class ServiceController:
 
     def new_project(self, project_id, name, corpus_id=None):
         """Create a new blank project or one based on an existing corpus."""
-        res = self.db.add_project(project_id, name)
+        res = self.db.add_project(project_id, name, corpus_id=corpus_id)
         if res is None:
             return None
         if corpus_id:
