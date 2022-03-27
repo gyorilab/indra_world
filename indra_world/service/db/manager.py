@@ -100,9 +100,31 @@ class DbManager:
         return doc_ids
 
     def get_projects(self):
+        """Retyurn a list of all projects."""
         q = self.query(wms_schema.Projects)
         projects = [{'id': p.id, 'name': p.name} for p in q.all()]
         return projects
+
+    def get_corpus_for_project(self, project_id):
+        """Return the corpus ID that a project was derived from, if available."""
+        q = self.query(wms_schema.Projects.corpus_id).filter(
+            wms_schema.Projects.id.like(project_id))
+        res = list(q.all())
+        if res:
+            return res[0][0]
+        else:
+            return None
+
+    def get_tenant_for_corpus(self, corpus_id):
+        """Return the tenant for a given corpus, if available."""
+        q = self.query(wms_schema.Corpora.meta_data).filter(
+            wms_schema.Corpora.id.like(corpus_id))
+        res = list(q.all())
+        if res:
+            metadata = res[0][0]
+            return metadata.get('tenant')
+        else:
+            return None
 
     def add_corpus(self, corpus_id, metadata):
         op = insert(wms_schema.Corpora).values(id=corpus_id,
