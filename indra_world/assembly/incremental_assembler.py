@@ -52,7 +52,7 @@ class IncrementalAssembler:
                  matches_fun=location_matches_compositional,
                  curations=None,
                  post_processing_steps=None,
-                 ontology=world_ontology):
+                 ontology=None):
         self.matches_fun = matches_fun
         # These are preassembly data structures
         self.stmts_by_hash = {}
@@ -60,7 +60,7 @@ class IncrementalAssembler:
         self.refinement_edges = set()
         self.prepared_stmts = prepared_stmts
         self.known_corrects = set()
-        self.ontology = ontology
+        self.ontology = ontology if ontology else world_ontology
 
         if not refinement_filters:
             logger.info('Instantiating refinement filters')
