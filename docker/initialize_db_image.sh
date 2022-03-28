@@ -15,12 +15,14 @@ TEMP_CONTAINER_PORT=5434
 docker pull postgres:latest
 # We next run the postgres container and get its container ID
 container_id=$(docker run --rm -p $TEMP_CONTAINER_PORT:5432 -e POSTGRES_PASSWORD=$POSTGRES_PASSWORD -d -e PGDATA=/var/lib/postgresql/pgdata postgres:latest)
+# Wait a bit
+sleep 5
 # We can now initialize the DB using the INDRA World schema. This requires
 # having indra_world on the importable Python path (e.g., PYTHONPATH).
 python -c "from indra_world.service.db import DbManager;
 db = DbManager('postgresql://postgres:$POSTGRES_PASSWORD@localhost:$TEMP_CONTAINER_PORT');
 db.create_all()"
 # We now commit the Docker image with the schema baked in
-docker commit $container_id indra_world_db:latest
+docker commit $container_id indralab/indra_world_db:latest
 # We can finally stop the container
 docker stop $container_id
