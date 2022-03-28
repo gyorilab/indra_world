@@ -191,10 +191,10 @@ class DbManager:
         stmts = stmts_from_json([r[0] for r in q.all()])
         return stmts
 
-    def get_statements_for_records(self, record_keys):
+    def get_statements_for_records(self, record_keys, batch_size=1000):
         """Return prepared statements for given list of record keys."""
         stmts = []
-        for record_key_batch in batch_iter(record_keys, 100, list):
+        for record_key_batch in batch_iter(record_keys, batch_size, list):
             qfilter = wms_schema.PreparedStatements.record_key.in_(
                 record_key_batch)
             q = self.query(wms_schema.PreparedStatements.stmt).filter(qfilter)
