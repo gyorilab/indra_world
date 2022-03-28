@@ -43,9 +43,7 @@ class ServiceController:
         if record_keys is None:
             record_keys = self.db.get_records_for_project(project_id)
         # 2. Select statements from prepared stmts table
-        prepared_stmts = []
-        for record_key in record_keys:
-            prepared_stmts += self.db.get_statements_for_record(record_key)
+        prepared_stmts = self.db.get_statements_for_records(record_keys)
         # 3. Select curations for project
         curations = self.get_project_curations(project_id)
         # 4. Try to find the right ontology
@@ -135,10 +133,7 @@ class ServiceController:
         logger.info('Loading the project with its existing statements')
         self.load_project(project_id, old_record_keys)
         # 3. Now get the new statements associated with the new records
-        new_stmts = []
-        for record_key in new_record_keys:
-            stmts = self.db.get_statements_for_record(record_key)
-            new_stmts += stmts
+        new_stmts = self.db.get_statements_for_records(new_record_keys)
         # 4. Finally get an incremental assembly delta and return it
         logger.info('Running incremental assembly')
         delta = self.assemblers[project_id].add_statements(new_stmts)
