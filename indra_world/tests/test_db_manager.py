@@ -75,6 +75,12 @@ def test_statements():
     # Hashes are different in the DB due to no matches_fun used in
     # serialization
     assert {s.uuid for s in stmts} == {s1.uuid, s2.uuid}
+    db.add_dart_record('eidos', '1.0', 'abc1', 'xyz2', 'today')
+    db.add_statements_for_record(record_key='xyz2',
+                                 indra_version='1.0',
+                                 stmts=[s1, s2])
+    stmts = db.get_statements_for_records(['xyz2', 'xyz1'])
+    assert len(stmts) == 4
 
 
 def test_curations():
