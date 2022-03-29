@@ -35,8 +35,9 @@ class IncrementalAssembler:
         A custom matches function for determining matching statements and
         calculating hashes. Default: matches function that takes
         compositional grounding and location into account.
-    curations : list[dict]
-        A list of user curations to be integrated into the assembly results.
+    curations : dict[dict]
+        A dict of user curations to be integrated into the assembly results,
+        keyed by statement hash.
     post_processing_steps : list[dict]
         Steps that can be used in an INDRA AssemblyPipeline to do
         post-processing on statements.
@@ -71,7 +72,7 @@ class IncrementalAssembler:
         else:
             self.refinement_filters = refinement_filters
 
-        self.curations = curations if curations else []
+        self.curations = curations if curations else {}
         self.post_processing_steps = [
                 {'function': 'add_flattened_grounding_compositional'},
                 {'function': 'standardize_names_compositional'},
@@ -158,11 +159,8 @@ class IncrementalAssembler:
 
     def apply_curations(self):
         """Apply the set of curations to the de-duplicated statements."""
-        hashes_by_uuid = {stmt.uuid: sh
-                          for sh, stmt in self.stmts_by_hash.items()}
-        for curation in self.curations:
-            stmt_hash = hashes_by_uuid.get(curation['statement_id'])
-            if not stmt_hash:
+        for stmt_hash, curation in self.curations.items():
+            if stmt_hash not in self.stmts_by_hash:
                 continue
             stmt = self.stmts_by_hash[stmt_hash]
             # Remove the statement

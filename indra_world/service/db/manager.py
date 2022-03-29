@@ -5,6 +5,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.engine.url import make_url
 from sqlalchemy import and_, insert, create_engine
 from indra.statements import stmts_from_json, stmts_to_json
+from indra.util import batch_iter
 from . import schema as wms_schema
 
 logger = logging.getLogger(__name__)
@@ -184,10 +185,20 @@ class DbManager:
         return self.execute(op)
 
     def get_statements_for_record(self, record_key):
-        """Return prepared statements for given record."""
+        """Return prepared statements for given record key."""
         qfilter = wms_schema.PreparedStatements.record_key.like(record_key)
         q = self.query(wms_schema.PreparedStatements.stmt).filter(qfilter)
         stmts = stmts_from_json([r[0] for r in q.all()])
+        return stmts
+
+    def get_statements_for_records(self, record_keys, batch_size=1000):
+        """Return prepared statements for given list of record keys."""
+        stmts = []
+        for record_key_batch in batch_iter(record_keys, batch_size, list):
+            qfilter = wms_schema.PreparedStatements.record_key.in_(
+                record_key_batch)
+            q = self.query(wms_schema.PreparedStatements.stmt).filter(qfilter)
+            stmts += stmts_from_json([r[0] for r in q.all()])
         return stmts
 
     def get_statements(self):
