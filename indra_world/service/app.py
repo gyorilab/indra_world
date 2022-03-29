@@ -446,6 +446,11 @@ class SubmitCurations(Resource):
             ID of a project.
         curations : list[dict]
             A list of curations to submit.
+        calculate_mappings : bool
+            Whether to calculate and return a mappings data structure
+            representing the changes made by the curations to the overall
+            project corpus. This is False by default since for large
+            projects this calculation can take a long time.
 
         Returns
         -------
@@ -458,11 +463,13 @@ class SubmitCurations(Resource):
         """
         project_id = request.json.get('project_id')
         curations = request.json.get('curations')
+        calculate_mappings = request.json.get('calculate_mappings', False)
         logger.info('Got %d curations for project %s' %
                     (len(curations), project_id))
         # Convert to int hashes here
         curations = {int(sh): cur for sh, cur in curations.items()}
-        mappings = sc.add_curations(project_id, curations)
+        mappings = sc.add_curations(project_id, curations,
+                                    calculate_mappings=calculate_mappings)
         # Convert back to strings for consistency
         return {str(nh): str(oh) for nh, oh in mappings.items()}
 
