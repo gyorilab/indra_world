@@ -175,17 +175,26 @@ def test_curations():
     mappings = _call_api('post', 'assembly/submit_curations',
                          json=dict(
                             project_id='p1',
-                            curations={stmt_hash: curation}
+                            curations={stmt_hash: curation},
+                            calculate_mappings=True
                          ))
     assert mappings
     res = _call_api('get', 'assembly/get_project_curations?project_id=p1')
     assert len(res) == 1
     assert res[str(stmt_hash)] == curation, res
+    curation = {'project_id': 'p1',
+                'statement_id': 'abcdef',
+                'update_type': 'polarity'}
     mappings = _call_api('post', 'assembly/submit_curations',
                          json=dict(
                              project_id='p1',
-                             curations={stmt_hash: curation}
-                         ))
+                             # We add one here just to make the hash different
+                             curations={stmt_hash+1: curation},
+                             calculate_mappings=False)
+                         )
+    assert not mappings
+    res = _call_api('get', 'assembly/get_project_curations?project_id=p1')
+    assert len(res.values()) == 2, res
 
 
 @attr('notravis')
@@ -332,8 +341,9 @@ def test_polarity_curations():
     stmt = Influence(subj, obj)
     sc.db.add_statements_for_record('r1', [stmt], '1.0')
 
+    payload = dict(**cur, calculate_mappings=True)
     mappings = _call_api('post', 'assembly/submit_curations',
-                         json=cur)
+                         json=payload)
     assert mappings == {'18354331688382610': '-18369311868314428'}, mappings
     res = _call_api('get',
                     f'assembly/get_project_curations?project_id={project_id}')
