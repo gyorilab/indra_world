@@ -181,6 +181,11 @@ def test_curations():
     res = _call_api('get', 'assembly/get_project_curations?project_id=p1')
     assert len(res) == 1
     assert res[str(stmt_hash)] == curation, res
+    mappings = _call_api('post', 'assembly/submit_curations',
+                         json=dict(
+                             project_id='p1',
+                             curations={stmt_hash: curation}
+                         ))
 
 
 @attr('notravis')
