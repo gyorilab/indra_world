@@ -6,6 +6,7 @@ World Modelers INDRA service stack
 Using the INDRA World API
 -------------------------
 The API is deployed and documented at `wm.indra.bio <http://wm.indra.bio/>`_.
+It can also be run locally via Docker through steps documented `here <https://github.com/indralab/indra_world/tree/master/docker#dockerized-indra-world-service>`_ and below.
 
 .. _wm-service-local-setup:
 
@@ -14,13 +15,10 @@ Setting up the INDRA World API locally
 These instructions describe setting up and using the INDRA service stack
 for World Modelers applications.
 
-First, you need to build the INDRA World Docker image as follows:
-
 .. code-block:: sh
 
     git clone https://github.com/indralab/indra_world.git
     cd indra_world/docker
-    docker build --tag indra_world:latest .
 
 Then, in the same folder, do:
 
@@ -28,11 +26,12 @@ Then, in the same folder, do:
 
     docker-compose up -d
 
-to run the INDRA world service as well as an associated postgres container
+to run the INDRA World service as well as an associated postgres container
 with the relational database used by the service. The `docker-compose` file
 reads secret configuration values for accessing various resources from two
 files: `indra_world.env` and `indra_world_db.env`. These files are not part
-of the public code and need to be added manually.
+of the public code and need to be added manually. You can find more details
+`here <https://github.com/indralab/indra_world/tree/master/docker#dockerized-indra-world-service>`_.
 
 .. _wm-service-s3:
 
@@ -67,14 +66,9 @@ identifier, for instance, all the files for the test1_newlines corpus
 are under the indra_models/test1_newlines/ key base. The list of files
 for each corpus are as follows
 
-- `statements.json`: a JSON dump of assembled INDRA Statements. As of May 2020,
-  each statement's JSON representation is on a separate line in this file.
-  Any corpus uploaded before that has a standard JSON structure. This is the
-  main file that CauseMos needs to ingest for UI interaction.
-
-- `raw_statements.json`: a JSON dump of raw INDRA Statements. This file is
-  typically not needed in downstream usage, however, the INDRA curation
-  service needs to have access to it for internal assembly tasks.
+- `statements.json`: a JSON dump of assembled INDRA Statements.
+  Each statement's JSON representation is on a separate line in this file.
+  This is the main file that CauseMos needs to ingest for UI interaction.
 
 - `metadata.json`: a JSON file containing key-value pairs that describe the
   corpus. The standard keys in this file are as follows:
@@ -97,11 +91,9 @@ for each corpus are as follows
     i.e., statements.json).
   - `num_documents`: the number of documents that were read by readers to
     produce the statements that were assembled.
+  - `tenant`: if DART is used, a corpus is typically associated with a tenant
+    (i.e., a user or an institution); this field provides the tenant ID.
 
-  Note that any of these keys may be missing if unavailable, for instance,
-  in the case of old uploads.
-
-- `curations.json`: a JSON file which persists curations as collected by INDRA.
-  This is the basis of surfacing reader-specific curations in the
-  download_curation endpoint (see above).
+Note that any of these keys may be missing if unavailable, for instance,
+in the case of old uploads.
 
