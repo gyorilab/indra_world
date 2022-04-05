@@ -9,8 +9,10 @@ INDRA World
 .. toctree::
    :maxdepth: 3
 
+   general.rst
    service.rst
    modules/index
+
 
 
 Indices and tables
