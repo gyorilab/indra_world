@@ -9,4 +9,4 @@ sqlalchemy
 flask_wtf
 flask_bootstrap
 flask_restx
-m2r
+m2r2
