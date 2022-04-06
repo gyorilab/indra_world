@@ -28,28 +28,23 @@ reader_names = [('eidos', 'eidos'),
                 ('hume', 'hume'),
                 ('sofia', 'sofia')]
 
-assembly_levels = [('grounding', 'grounding'),
-                   ('location', 'location'),
-                   ('location_and_time', 'location_and_time')]
-
 
 class RunAssemblyForm(FlaskForm):
     """Defines the main input form constituting the dashboard."""
-    after_date = DateField(label='After date', format='%Y-%m-%d')
-    before_date = DateField(label='Before date', format='%Y-%m-%d')
     readers = SelectMultipleField(label='Readers',
                                   id='reader-select',
                                   choices=reader_names,
                                   validators=[validators.input_required()])
+    reader_versions = StringField(label='Reader versions')
+    tenant = StringField(label='Tenant ID')
+    after_date = DateField(label='After date', format='%Y-%m-%dT%H:%M:%S')
+    before_date = DateField(label='Before date', format='%Y-%m-%dT%H:%M:%S')
     corpus_id = StringField(label='Corpus ID',
                             validators=[validators.input_required()])
     corpus_name = StringField(label='Corpus display name',
                               validators=[validators.input_required()])
-    assembly_config_name = StringField(label='Assembly configuration name')
     corpus_descr = TextAreaField(label='Corpus description',
                                  validators=[validators.input_required()])
-    assembly_level = SelectField(label='Level of assembly',
-                                 choices=assembly_levels)
     submit_button = SubmitField('Run assembly')
 
 
@@ -66,29 +61,31 @@ def run_assembly():
     """Run assembly."""
     readers = request.form.getlist('readers')
     readers = readers if readers else None
+    reader_versions = request.form.get('reader_versions')
+    reader_versions = [r.strip() for r in reader_versions.split(',')] \
+        if reader_versions else []
     after_date = request.form.get('after_date')
     before_date = request.form.get('before_date')
+    tenant = request.form.get('tenant')
     corpus_id = request.form.get('corpus_id')
     corpus_name = request.form.get('corpus_name')
     corpus_descr = request.form.get('corpus_descr')
-    assembly_level = request.form.get('assembly_level')
     timestamp = None if (not before_date and not after_date) else {}
     if after_date:
         timestamp['after'] = after_date
     if before_date:
         timestamp['before'] = before_date
-    logger.info('Fetching reader output for readers %s and dates %s' %
-                (str(readers), str(timestamp)))
+    logger.info('Fetching reader output for readers %s, dates %s, and tenant %s'
+                % (str(readers), str(timestamp), str(tenant)))
 
-    # TODO: make this parameterizable
-    reader_priorities = {}
-
-    records = dart_client.get_reader_output_records(readers,
-                                                    timestamp=timestamp)
+    records = dart_client.get_reader_output_records(
+        readers=readers,
+        versions=reader_versions,
+        timestamp=timestamp,
+        tenant=tenant
+    )
     if not records:
         return jsonify({})
-
-    records = prioritize_records(records, reader_priorities)
 
     num_docs = len({rec['document_id'] for rec in records})
 
@@ -98,13 +95,14 @@ def run_assembly():
         'display_name': corpus_name,
         'readers': readers,
         'assembly': {
-            'level': assembly_level,
+            'level': 'location',
             'grounding_threshold': 0.7,
         },
         'num_documents': num_docs
     }
 
     cm = CorpusManager(db_url=DB_URL,
+                       dart_records=records,
                        corpus_id=corpus_id,
                        metadata=meta_data)
     cm.dump_s3()
