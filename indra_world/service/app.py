@@ -2,12 +2,12 @@ import logging
 import json
 from indra.config import get_config
 from indra.statements import stmts_to_json
-from flask import Flask, request, abort
+from flask import Flask, request, abort, jsonify
 from flask_bootstrap import Bootstrap
 from flask_restx import Api, Resource, fields, reqparse
 from .controller import ServiceController
 from .corpus_manager import CorpusManager
-from ..sources.dart import DartClient
+from ..sources.dart import DartClient, print_record_stats
 from ..sources import hume, cwms, sofia, eidos
 
 logger = logging.getLogger('indra_world.service.app')
@@ -724,16 +724,22 @@ from flask_wtf import FlaskForm
 from flask import render_template
 
 
-class RunAssemblyForm(FlaskForm):
-    """Defines the main input form constituting the dashboard."""
+class RecordFinderForm(FlaskForm):
+    """Defines the form to find DART records."""
     readers = SelectMultipleField(label='Readers',
                                   id='reader-select',
                                   choices=reader_names,
+                                  default=[r for r, _ in reader_names],
                                   validators=[validators.input_required()])
     reader_versions = StringField(label='Reader versions')
     tenant = StringField(label='Tenant ID')
-    after_date = DateField(label='After date', format='%Y-%m-%dT%H:%M:%S')
-    before_date = DateField(label='Before date', format='%Y-%m-%dT%H:%M:%S')
+    after_date = DateField(label='After date', format='%Y-%M-%d')
+    before_date = DateField(label='Before date', format='%Y-%M-%d')
+    submit_button = SubmitField('Find reader output records')
+
+
+class RunAssemblyForm(FlaskForm):
+    """Defines the form for running assembly."""
     corpus_id = StringField(label='Corpus ID',
                             validators=[validators.input_required()])
     corpus_name = StringField(label='Corpus display name',
@@ -743,16 +749,59 @@ class RunAssemblyForm(FlaskForm):
     submit_button = SubmitField('Run assembly')
 
 
-@app.route('/dashboard', methods=['GET'])
+@app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
+    record_finder_form = RecordFinderForm(
+        readers=[r for r, _ in reader_names],
+    )
     run_assembly_form = RunAssemblyForm()
-    kwargs = {'run_assembly_form': run_assembly_form}
-    return render_template('dashboard.html', **kwargs)
+
+    if not record_finder_form.is_submitted():
+        return render_template(
+            'dashboard.html',
+            record_finder_form=record_finder_form,
+            run_assembly_form=run_assembly_form,
+            record_summary='No record selected yet'
+        )
+
+    timestamp = None if (not record_finder_form.before_date.data
+                         and not record_finder_form.after_date.data) else {}
+    if record_finder_form.after_date.data:
+        timestamp['after'] = record_finder_form.after_date.data
+    if record_finder_form.before_date.data:
+        timestamp['before'] = record_finder_form.before_date.data
+
+    records = dart_client.get_reader_output_records(
+        readers=record_finder_form.readers.data,
+        versions=record_finder_form.reader_versions.data,
+        tenant=record_finder_form.tenant.data,
+        timestamp=timestamp,
+    )
+    print_record_stats(records)
+    from collections import Counter
+    from indra_world.sources.dart import get_record_key
+    stats_rows = ["reader,tenants,reader_version,ontology_version,count"]
+    for (reader, tenants, reader_version, ontology_version), count in sorted(
+         Counter([get_record_key(rec) for rec in records]).items(),
+            key=lambda x: x[1], reverse=True):
+            stats_rows.append(
+                f"{reader},{'|'.join(tenants)},{reader_version},"
+                f"{ontology_version},{count}"
+            )
+    record_summary = '<br/>'.join(stats_rows)
+
+    return render_template(
+        'dashboard.html',
+        record_finder_form=record_finder_form,
+        run_assembly_form=run_assembly_form,
+        record_summary=record_summary
+)
 
 
 @app.route('/dashboard_assembly', methods=['POST'])
 def dashboard_assembly():
     """Run assembly."""
+    breakpoint()
     readers = request.form.getlist('readers')
     readers = readers if readers else None
     reader_versions = request.form.get('reader_versions')
@@ -772,12 +821,8 @@ def dashboard_assembly():
     logger.info('Fetching reader output for readers %s, dates %s, and tenant %s'
                 % (str(readers), str(timestamp), str(tenant)))
 
-    records = dart_client.get_reader_output_records(
-        readers=readers,
-        versions=reader_versions,
-        timestamp=timestamp,
-        tenant=tenant
-    )
+    print_record_stats(records)
+
     if not records:
         return jsonify({})
 
