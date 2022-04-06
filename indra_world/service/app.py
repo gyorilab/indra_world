@@ -1,13 +1,14 @@
-import logging
+from collections import Counter
 import json
+import logging
 from indra.config import get_config
 from indra.statements import stmts_to_json
-from flask import Flask, request, abort, jsonify
+from flask import Flask, request, abort
 from flask_bootstrap import Bootstrap
 from flask_restx import Api, Resource, fields, reqparse
 from .controller import ServiceController
 from .corpus_manager import CorpusManager
-from ..sources.dart import DartClient, print_record_stats
+from ..sources.dart import DartClient, get_record_key
 from ..sources import hume, cwms, sofia, eidos
 
 logger = logging.getLogger('indra_world.service.app')
@@ -735,7 +736,7 @@ class RecordFinderForm(FlaskForm):
     tenant = StringField(label='Tenant ID')
     after_date = DateField(label='After date', format='%Y-%M-%d')
     before_date = DateField(label='Before date', format='%Y-%M-%d')
-    submit_button = SubmitField('Find reader output records')
+    query_submit_button = SubmitField('Find reader output records')
 
 
 class RunAssemblyForm(FlaskForm):
@@ -746,7 +747,27 @@ class RunAssemblyForm(FlaskForm):
                               validators=[validators.input_required()])
     corpus_descr = TextAreaField(label='Corpus description',
                                  validators=[validators.input_required()])
-    submit_button = SubmitField('Run assembly')
+    assembly_submit_button = SubmitField('Run assembly')
+
+global records
+
+
+def _get_record_stats(records):
+    stats_rows = [['reader', 'tenants', 'reader_version', 'ontology_version',
+                   'count']]
+    for (reader, tenants, reader_version, ontology_version), count in sorted(
+            Counter([get_record_key(rec) for rec in records]).items(),
+            key=lambda x: x[1], reverse=True):
+        stats_rows.append([
+            reader, '|'.join(tenants), reader_version,
+            ontology_version, str(count)])
+    record_summary = 'The query returned the following reader output records<br/>'
+    record_summary += '<table border="1" padding="1">' + \
+                      '\n'.join(['<tr><td>'
+                                 + ('</td><td>'.join(row))
+                                 + '</td></tr>' for row in stats_rows]) + \
+                      '</table>'
+    return record_summary
 
 
 @app.route('/dashboard', methods=['GET', 'POST'])
@@ -756,58 +777,40 @@ def dashboard():
     )
     run_assembly_form = RunAssemblyForm()
 
-    print(record_finder_form.is_submitted(),
-          run_assembly_form.is_submitted())
+    state = (record_finder_form.query_submit_button.data,
+             run_assembly_form.assembly_submit_button.data)
 
-    if not record_finder_form.is_submitted():
+    global records
+    if state == (False, False):
         return render_template(
             'dashboard.html',
             record_finder_form=record_finder_form,
             run_assembly_form=run_assembly_form,
             record_summary='No record selected yet'
         )
-    else:
+    if state[0] is True:
         timestamp = None if (not record_finder_form.before_date.data
                              and not record_finder_form.after_date.data) else {}
         if record_finder_form.after_date.data:
             timestamp['after'] = record_finder_form.after_date.data
         if record_finder_form.before_date.data:
             timestamp['before'] = record_finder_form.before_date.data
-
         records = dart_client.get_reader_output_records(
             readers=record_finder_form.readers.data,
             versions=record_finder_form.reader_versions.data,
             tenant=record_finder_form.tenant.data,
             timestamp=timestamp,
         )
-        print_record_stats(records)
-        from collections import Counter
-        from indra_world.sources.dart import get_record_key
-        stats_rows = [['reader', 'tenants', 'reader_version', 'ontology_version',
-                       'count']]
-        for (reader, tenants, reader_version, ontology_version), count in sorted(
-             Counter([get_record_key(rec) for rec in records]).items(),
-                key=lambda x: x[1], reverse=True):
-                stats_rows.append([
-                    reader, '|'.join(tenants), reader_version,
-                    ontology_version, str(count)])
-        record_summary = 'The query returned the following reader output records<br/>'
-        record_summary += '<table border="1" padding="1">' + \
-            '\n'.join(['<tr><td>'
-                       + ('</td><td>'.join(row))
-                       + '</td></tr>' for row in stats_rows]) + \
-            '</table>'
-    if not run_assembly_form.is_submitted():
         return render_template(
             'dashboard.html',
             record_finder_form=record_finder_form,
             run_assembly_form=run_assembly_form,
-            record_summary=record_summary
+            record_summary=_get_record_stats(records)
         )
-    else:
-        corpus_id = request.form.get('corpus_id')
-        corpus_name = request.form.get('corpus_name')
-        corpus_descr = request.form.get('corpus_descr')
+    if state[1] is True:
+        corpus_id = run_assembly_form.corpus_id.data
+        corpus_name = run_assembly_form.corpus_name.data
+        corpus_descr = run_assembly_form.corpus_descr.data
 
         num_docs = len({rec['document_id'] for rec in records})
 
@@ -831,6 +834,12 @@ def dashboard():
         cm.prepare(records_exist=True)
         cm.assemble()
         cm.dump_local('~/%s.json' % corpus_id, causemos_compatible=True)
+        return render_template(
+            'dashboard.html',
+            record_finder_form=record_finder_form,
+            run_assembly_form=run_assembly_form,
+            record_summary=_get_record_stats(records)
+        )
 
 
 if __name__ == '__main__':
