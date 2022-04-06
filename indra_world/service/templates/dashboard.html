@@ -67,6 +67,7 @@
                             {{ wtf.form_field(record_finder_form.readers, class_="form-control") }}
                             {{ wtf.form_field(record_finder_form.reader_versions, class_="form-control") }}
                             {{ wtf.form_field(record_finder_form.tenant, class_="form-control") }}
+                            {{ wtf.form_field(record_finder_form.ontology_id, class_="form-control") }}
                             {{ wtf.form_field(record_finder_form.after_date, class_="form-control") }}
                             {{ wtf.form_field(record_finder_form.before_date, class_="form-control") }}
                             {{ wtf.form_field(record_finder_form.query_submit_button, class="btn btn-primary") }}
@@ -94,6 +95,7 @@
                                 {{ wtf.form_field(run_assembly_form.corpus_id, class_="form-control", value="xxx") }}
                                 {{ wtf.form_field(run_assembly_form.corpus_name, class_="form-control") }}
                                 {{ wtf.form_field(run_assembly_form.corpus_descr, class_="form-control") }}
+                                {{ wtf.form_field(run_assembly_form.output_path, class_="form-control") }}
                                 {{ wtf.form_field(run_assembly_form.assembly_submit_button, class="btn btn-primary") }}
                             </form>
                         </div>

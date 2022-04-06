@@ -725,8 +725,19 @@ from flask_wtf import FlaskForm
 from flask import render_template
 
 
+def _path_exists(form, field):
+    import os
+    if field is None:
+        return
+    folder = os.path.isdir(field.data)
+    if not folder:
+        raise validators.ValidationError('%s is not an existing local folder'
+                                         % field.data)
+
+
 class RecordFinderForm(FlaskForm):
     """Defines the form to find DART records."""
+
     readers = SelectMultipleField(label='Readers',
                                   id='reader-select',
                                   choices=reader_names,
@@ -734,6 +745,7 @@ class RecordFinderForm(FlaskForm):
                                   validators=[validators.input_required()])
     reader_versions = StringField(label='Reader versions')
     tenant = StringField(label='Tenant ID')
+    ontology_id = StringField(label='Ontology ID')
     after_date = DateField(label='After date', format='%Y-%M-%d')
     before_date = DateField(label='Before date', format='%Y-%M-%d')
     query_submit_button = SubmitField('Find reader output records')
@@ -747,7 +759,10 @@ class RunAssemblyForm(FlaskForm):
                               validators=[validators.input_required()])
     corpus_descr = TextAreaField(label='Corpus description',
                                  validators=[validators.input_required()])
+    output_path = StringField(label='Output folder path',
+                              validators=[_path_exists])
     assembly_submit_button = SubmitField('Run assembly')
+
 
 global records
 
@@ -800,6 +815,7 @@ def dashboard():
             versions=record_finder_form.reader_versions.data,
             tenant=record_finder_form.tenant.data,
             timestamp=timestamp,
+            ontology_id=record_finder_form.ontology_id.data,
         )
         return render_template(
             'dashboard.html',
@@ -811,6 +827,7 @@ def dashboard():
         corpus_id = run_assembly_form.corpus_id.data
         corpus_name = run_assembly_form.corpus_name.data
         corpus_descr = run_assembly_form.corpus_descr.data
+        output_path = run_assembly_form.output_path.data
 
         num_docs = len({rec['document_id'] for rec in records})
 
