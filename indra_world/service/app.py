@@ -3,8 +3,10 @@ import json
 from indra.config import get_config
 from indra.statements import stmts_to_json
 from flask import Flask, request, abort
+from flask_bootstrap import Bootstrap
 from flask_restx import Api, Resource, fields, reqparse
 from .controller import ServiceController
+from .corpus_manager import CorpusManager
 from ..sources.dart import DartClient
 from ..sources import hume, cwms, sofia, eidos
 
@@ -21,8 +23,10 @@ VERSION = '2.0'
 
 
 app = Flask(__name__)
+Bootstrap(app)
 app.config['RESTX_MASK_SWAGGER'] = False
 app.config["SWAGGER_UI_DOC_EXPANSION"] = "list"
+app.config['SECRET_KEY'] = 'dev_key'
 api = Api(app, title='INDRA World Modelers API',
           description='REST API for INDRA World Modelers',
           version=VERSION)
@@ -705,6 +709,101 @@ class SofiaProcessJson(Resource):
         ep = sofia.process_json(
             jj, extract_filter=extract_filter, grounding_mode=grounding_mode)
         return _stmts_from_proc(ep)
+
+
+### Dashboard app
+
+reader_names = [('eidos', 'eidos'),
+                ('hume', 'hume'),
+                ('sofia', 'sofia')]
+
+from wtforms import SubmitField, validators, SelectMultipleField, \
+    StringField, TextAreaField
+from wtforms.fields.html5 import DateField
+from flask_wtf import FlaskForm
+from flask import render_template
+
+
+class RunAssemblyForm(FlaskForm):
+    """Defines the main input form constituting the dashboard."""
+    readers = SelectMultipleField(label='Readers',
+                                  id='reader-select',
+                                  choices=reader_names,
+                                  validators=[validators.input_required()])
+    reader_versions = StringField(label='Reader versions')
+    tenant = StringField(label='Tenant ID')
+    after_date = DateField(label='After date', format='%Y-%m-%dT%H:%M:%S')
+    before_date = DateField(label='Before date', format='%Y-%m-%dT%H:%M:%S')
+    corpus_id = StringField(label='Corpus ID',
+                            validators=[validators.input_required()])
+    corpus_name = StringField(label='Corpus display name',
+                              validators=[validators.input_required()])
+    corpus_descr = TextAreaField(label='Corpus description',
+                                 validators=[validators.input_required()])
+    submit_button = SubmitField('Run assembly')
+
+
+@app.route('/dashboard', methods=['GET'])
+def dashboard():
+    run_assembly_form = RunAssemblyForm()
+    kwargs = {'run_assembly_form': run_assembly_form}
+    return render_template('dashboard.html', **kwargs)
+
+
+@app.route('/dashboard_assembly', methods=['POST'])
+def dashboard_assembly():
+    """Run assembly."""
+    readers = request.form.getlist('readers')
+    readers = readers if readers else None
+    reader_versions = request.form.get('reader_versions')
+    reader_versions = [r.strip() for r in reader_versions.split(',')] \
+        if reader_versions else []
+    after_date = request.form.get('after_date')
+    before_date = request.form.get('before_date')
+    tenant = request.form.get('tenant')
+    corpus_id = request.form.get('corpus_id')
+    corpus_name = request.form.get('corpus_name')
+    corpus_descr = request.form.get('corpus_descr')
+    timestamp = None if (not before_date and not after_date) else {}
+    if after_date:
+        timestamp['after'] = after_date
+    if before_date:
+        timestamp['before'] = before_date
+    logger.info('Fetching reader output for readers %s, dates %s, and tenant %s'
+                % (str(readers), str(timestamp), str(tenant)))
+
+    records = dart_client.get_reader_output_records(
+        readers=readers,
+        versions=reader_versions,
+        timestamp=timestamp,
+        tenant=tenant
+    )
+    if not records:
+        return jsonify({})
+
+    num_docs = len({rec['document_id'] for rec in records})
+
+    meta_data = {
+        'corpus_id': corpus_id,
+        'description': corpus_descr,
+        'display_name': corpus_name,
+        'readers': readers,
+        'assembly': {
+            'level': 'location',
+            'grounding_threshold': 0.7,
+        },
+        'num_documents': num_docs
+    }
+
+    cm = CorpusManager(db_url=db_url,
+                       dart_client=dart_client,
+                       dart_records=records,
+                       corpus_id=corpus_id,
+                       metadata=meta_data)
+    cm.prepare(records_exist=True)
+    cm.assemble()
+    cm.dump_local('~/%s.json' % corpus_id, causemos_compatible=True)
+    return 'Assembly complete'
 
 
 if __name__ == '__main__':
