@@ -16,6 +16,19 @@
                     This website allows searching for machine reader output, and
                     running INDRA assembly.
                 </p>
+                <p>
+                    First, you need to query for
+                    a set of reader outputs available in DART. You need
+                    to select at least one reader, while other arguments
+                    such as reader versions, tenant ID, and before/after
+                    dates are optional and can be used to further constrain
+                    the query.
+                </p>
+                <p>
+                    Once a set of records has been selected, you need to
+                    set a corpus ID, a display name, and a description, then
+                    click on the Run assembly button.
+                </p>
             </div>
         </div>
         <div class="panel panel-default">
@@ -67,7 +80,7 @@
                     <div class="col-md-8" align="left">
                         <div id="record-results-panel" class="panel panel-default" style="padding:2%">
                             <p>
-                                {{record_summary}}
+                                {{record_summary|safe}}
                             </p>
                         </div>
                     </div>

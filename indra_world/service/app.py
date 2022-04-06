@@ -756,6 +756,9 @@ def dashboard():
     )
     run_assembly_form = RunAssemblyForm()
 
+    print(record_finder_form.is_submitted(),
+          run_assembly_form.is_submitted())
+
     if not record_finder_form.is_submitted():
         return render_template(
             'dashboard.html',
@@ -763,92 +766,71 @@ def dashboard():
             run_assembly_form=run_assembly_form,
             record_summary='No record selected yet'
         )
+    else:
+        timestamp = None if (not record_finder_form.before_date.data
+                             and not record_finder_form.after_date.data) else {}
+        if record_finder_form.after_date.data:
+            timestamp['after'] = record_finder_form.after_date.data
+        if record_finder_form.before_date.data:
+            timestamp['before'] = record_finder_form.before_date.data
 
-    timestamp = None if (not record_finder_form.before_date.data
-                         and not record_finder_form.after_date.data) else {}
-    if record_finder_form.after_date.data:
-        timestamp['after'] = record_finder_form.after_date.data
-    if record_finder_form.before_date.data:
-        timestamp['before'] = record_finder_form.before_date.data
+        records = dart_client.get_reader_output_records(
+            readers=record_finder_form.readers.data,
+            versions=record_finder_form.reader_versions.data,
+            tenant=record_finder_form.tenant.data,
+            timestamp=timestamp,
+        )
+        print_record_stats(records)
+        from collections import Counter
+        from indra_world.sources.dart import get_record_key
+        stats_rows = [['reader', 'tenants', 'reader_version', 'ontology_version',
+                       'count']]
+        for (reader, tenants, reader_version, ontology_version), count in sorted(
+             Counter([get_record_key(rec) for rec in records]).items(),
+                key=lambda x: x[1], reverse=True):
+                stats_rows.append([
+                    reader, '|'.join(tenants), reader_version,
+                    ontology_version, str(count)])
+        record_summary = 'The query returned the following reader output records<br/>'
+        record_summary += '<table border="1" padding="1">' + \
+            '\n'.join(['<tr><td>'
+                       + ('</td><td>'.join(row))
+                       + '</td></tr>' for row in stats_rows]) + \
+            '</table>'
+    if not run_assembly_form.is_submitted():
+        return render_template(
+            'dashboard.html',
+            record_finder_form=record_finder_form,
+            run_assembly_form=run_assembly_form,
+            record_summary=record_summary
+        )
+    else:
+        corpus_id = request.form.get('corpus_id')
+        corpus_name = request.form.get('corpus_name')
+        corpus_descr = request.form.get('corpus_descr')
 
-    records = dart_client.get_reader_output_records(
-        readers=record_finder_form.readers.data,
-        versions=record_finder_form.reader_versions.data,
-        tenant=record_finder_form.tenant.data,
-        timestamp=timestamp,
-    )
-    print_record_stats(records)
-    from collections import Counter
-    from indra_world.sources.dart import get_record_key
-    stats_rows = ["reader,tenants,reader_version,ontology_version,count"]
-    for (reader, tenants, reader_version, ontology_version), count in sorted(
-         Counter([get_record_key(rec) for rec in records]).items(),
-            key=lambda x: x[1], reverse=True):
-            stats_rows.append(
-                f"{reader},{'|'.join(tenants)},{reader_version},"
-                f"{ontology_version},{count}"
-            )
-    record_summary = '<br/>'.join(stats_rows)
+        num_docs = len({rec['document_id'] for rec in records})
 
-    return render_template(
-        'dashboard.html',
-        record_finder_form=record_finder_form,
-        run_assembly_form=run_assembly_form,
-        record_summary=record_summary
-)
+        meta_data = {
+            'corpus_id': corpus_id,
+            'description': corpus_descr,
+            'display_name': corpus_name,
+            'readers': sorted({rec['identity'] for rec in records}),
+            'assembly': {
+                'level': 'location',
+                'grounding_threshold': 0.7,
+            },
+            'num_documents': num_docs
+        }
 
-
-@app.route('/dashboard_assembly', methods=['POST'])
-def dashboard_assembly():
-    """Run assembly."""
-    breakpoint()
-    readers = request.form.getlist('readers')
-    readers = readers if readers else None
-    reader_versions = request.form.get('reader_versions')
-    reader_versions = [r.strip() for r in reader_versions.split(',')] \
-        if reader_versions else []
-    after_date = request.form.get('after_date')
-    before_date = request.form.get('before_date')
-    tenant = request.form.get('tenant')
-    corpus_id = request.form.get('corpus_id')
-    corpus_name = request.form.get('corpus_name')
-    corpus_descr = request.form.get('corpus_descr')
-    timestamp = None if (not before_date and not after_date) else {}
-    if after_date:
-        timestamp['after'] = after_date
-    if before_date:
-        timestamp['before'] = before_date
-    logger.info('Fetching reader output for readers %s, dates %s, and tenant %s'
-                % (str(readers), str(timestamp), str(tenant)))
-
-    print_record_stats(records)
-
-    if not records:
-        return jsonify({})
-
-    num_docs = len({rec['document_id'] for rec in records})
-
-    meta_data = {
-        'corpus_id': corpus_id,
-        'description': corpus_descr,
-        'display_name': corpus_name,
-        'readers': readers,
-        'assembly': {
-            'level': 'location',
-            'grounding_threshold': 0.7,
-        },
-        'num_documents': num_docs
-    }
-
-    cm = CorpusManager(db_url=db_url,
-                       dart_client=dart_client,
-                       dart_records=records,
-                       corpus_id=corpus_id,
-                       metadata=meta_data)
-    cm.prepare(records_exist=True)
-    cm.assemble()
-    cm.dump_local('~/%s.json' % corpus_id, causemos_compatible=True)
-    return 'Assembly complete'
+        cm = CorpusManager(db_url=db_url,
+                           dart_client=dart_client,
+                           dart_records=records,
+                           corpus_id=corpus_id,
+                           metadata=meta_data)
+        cm.prepare(records_exist=True)
+        cm.assemble()
+        cm.dump_local('~/%s.json' % corpus_id, causemos_compatible=True)
 
 
 if __name__ == '__main__':
