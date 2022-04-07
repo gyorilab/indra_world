@@ -717,147 +717,152 @@ class SofiaProcessJson(Resource):
 
 
 ### Dashboard app
+if os.environ.get('LOCAL_DEPLOYMENT'):
+    reader_names = [('eidos', 'eidos'),
+                    ('hume', 'hume'),
+                    ('sofia', 'sofia')]
 
-reader_names = [('eidos', 'eidos'),
-                ('hume', 'hume'),
-                ('sofia', 'sofia')]
-
-from wtforms import SubmitField, validators, SelectMultipleField, \
-    StringField, TextAreaField
-from wtforms.fields.html5 import DateField
-from flask_wtf import FlaskForm
-from flask import flash, render_template
+    from wtforms import SubmitField, validators, SelectMultipleField, \
+        StringField, TextAreaField
+    from wtforms.fields.html5 import DateField
+    from flask_wtf import FlaskForm
+    from flask import flash, render_template
 
 
-class RecordFinderForm(FlaskForm):
-    """Defines the form to find DART records."""
+    class RecordFinderForm(FlaskForm):
+        """Defines the form to find DART records."""
 
-    readers = SelectMultipleField(label='Readers',
-                                  id='reader-select',
-                                  choices=reader_names,
-                                  default=[r for r, _ in reader_names],
+        readers = SelectMultipleField(label='Readers',
+                                      id='reader-select',
+                                      choices=reader_names,
+                                      default=[r for r, _ in reader_names],
+                                      validators=[validators.input_required()])
+        reader_versions = StringField(label='Reader versions')
+        tenant = StringField(label='Tenant ID')
+        ontology_id = StringField(label='Ontology ID')
+        after_date = DateField(label='After date', format='%Y-%M-%d')
+        before_date = DateField(label='Before date', format='%Y-%M-%d')
+        query_submit_button = SubmitField('Find reader output records')
+
+
+    class RunAssemblyForm(FlaskForm):
+        """Defines the form for running assembly."""
+        corpus_id = StringField(label='Corpus ID',
+                                validators=[validators.input_required()])
+        corpus_name = StringField(label='Corpus display name',
                                   validators=[validators.input_required()])
-    reader_versions = StringField(label='Reader versions')
-    tenant = StringField(label='Tenant ID')
-    ontology_id = StringField(label='Ontology ID')
-    after_date = DateField(label='After date', format='%Y-%M-%d')
-    before_date = DateField(label='Before date', format='%Y-%M-%d')
-    query_submit_button = SubmitField('Find reader output records')
+        corpus_descr = TextAreaField(label='Corpus description',
+                                     validators=[validators.input_required()])
+        output_path = StringField(label='Output folder path')
+        assembly_submit_button = SubmitField('Run assembly')
 
-
-class RunAssemblyForm(FlaskForm):
-    """Defines the form for running assembly."""
-    corpus_id = StringField(label='Corpus ID',
-                            validators=[validators.input_required()])
-    corpus_name = StringField(label='Corpus display name',
-                              validators=[validators.input_required()])
-    corpus_descr = TextAreaField(label='Corpus description',
-                                 validators=[validators.input_required()])
-    output_path = StringField(label='Output folder path')
-    assembly_submit_button = SubmitField('Run assembly')
-
-
-global records
-
-
-def _get_record_stats(records):
-    stats_rows = [['reader', 'tenants', 'reader_version', 'ontology_version',
-                   'count']]
-    for (reader, tenants, reader_version, ontology_version), count in sorted(
-            Counter([get_record_key(rec) for rec in records]).items(),
-            key=lambda x: x[1], reverse=True):
-        stats_rows.append([
-            reader, '|'.join(tenants), reader_version,
-            ontology_version, str(count)])
-    record_summary = 'The query returned the following reader output records<br/>'
-    record_summary += '<table class="table">' + \
-                      '\n'.join(['<tr><td>'
-                                 + ('</td><td>'.join(row))
-                                 + '</td></tr>' for row in stats_rows]) + \
-                      '</table>'
-    return record_summary
-
-
-@app.route('/dashboard', methods=['GET', 'POST'])
-def dashboard():
-    record_finder_form = RecordFinderForm(
-        readers=[r for r, _ in reader_names],
-    )
-    run_assembly_form = RunAssemblyForm()
-
-    state = (record_finder_form.query_submit_button.data,
-             run_assembly_form.assembly_submit_button.data)
 
     global records
-    if state == (False, False):
-        return render_template(
-            'dashboard.html',
-            record_finder_form=record_finder_form,
-            run_assembly_form=None,
-            record_summary='No record selected yet'
+
+
+    def _get_record_stats(records):
+        stats_rows = [['reader', 'tenants', 'reader_version', 'ontology_version',
+                       'count']]
+        for (reader, tenants, reader_version, ontology_version), count in sorted(
+                Counter([get_record_key(rec) for rec in records]).items(),
+                key=lambda x: x[1], reverse=True):
+            stats_rows.append([
+                reader, '|'.join(tenants), reader_version,
+                ontology_version, str(count)])
+        record_summary = 'The query returned the following reader output records<br/>'
+        record_summary += '<table class="table">' + \
+                          '\n'.join(['<tr><td>'
+                                     + ('</td><td>'.join(row))
+                                     + '</td></tr>' for row in stats_rows]) + \
+                          '</table>'
+        return record_summary
+
+
+    @app.route('/dashboard', methods=['GET', 'POST'])
+    def dashboard():
+        record_finder_form = RecordFinderForm(
+            readers=[r for r, _ in reader_names],
         )
-    if state[0] is True:
-        timestamp = None if (not record_finder_form.before_date.data
-                             and not record_finder_form.after_date.data) else {}
-        if record_finder_form.after_date.data:
-            timestamp['after'] = record_finder_form.after_date.data
-        if record_finder_form.before_date.data:
-            timestamp['before'] = record_finder_form.before_date.data
-        records = dart_client.get_reader_output_records(
-            readers=record_finder_form.readers.data,
-            versions=record_finder_form.reader_versions.data,
-            tenant=record_finder_form.tenant.data,
-            timestamp=timestamp,
-            ontology_id=record_finder_form.ontology_id.data,
-        )
-        return render_template(
-            'dashboard.html',
-            record_finder_form=record_finder_form,
-            run_assembly_form=run_assembly_form,
-            record_summary=_get_record_stats(records)
-        )
-    if state[1] is True:
-        corpus_id = run_assembly_form.corpus_id.data
-        corpus_name = run_assembly_form.corpus_name.data
-        corpus_descr = run_assembly_form.corpus_descr.data
-        output_path = run_assembly_form.output_path.data
-        if not os.path.exists(output_path):
-            flash('Output folder %s doesn\'t exist' % output_path)
+        run_assembly_form = RunAssemblyForm()
+
+        state = (record_finder_form.query_submit_button.data,
+                 run_assembly_form.assembly_submit_button.data)
+
+        global records
+        if state == (False, False):
+            return render_template(
+                'dashboard.html',
+                record_finder_form=record_finder_form,
+                run_assembly_form=None,
+                record_summary='No record selected yet'
+            )
+        if state[0] is True:
+            timestamp = None if (not record_finder_form.before_date.data
+                                 and not record_finder_form.after_date.data) else {}
+            if record_finder_form.after_date.data:
+                timestamp['after'] = record_finder_form.after_date.data
+            if record_finder_form.before_date.data:
+                timestamp['before'] = record_finder_form.before_date.data
+            records = dart_client.get_reader_output_records(
+                readers=record_finder_form.readers.data,
+                versions=record_finder_form.reader_versions.data,
+                tenant=record_finder_form.tenant.data,
+                timestamp=timestamp,
+                ontology_id=record_finder_form.ontology_id.data,
+            )
             return render_template(
                 'dashboard.html',
                 record_finder_form=record_finder_form,
                 run_assembly_form=run_assembly_form,
                 record_summary=_get_record_stats(records)
             )
+        if state[1] is True:
+            corpus_id = run_assembly_form.corpus_id.data
+            corpus_name = run_assembly_form.corpus_name.data
+            corpus_descr = run_assembly_form.corpus_descr.data
+            output_path = run_assembly_form.output_path.data
+            if not os.path.exists(output_path):
+                flash('Output folder %s doesn\'t exist' % output_path)
+                return render_template(
+                    'dashboard.html',
+                    record_finder_form=record_finder_form,
+                    run_assembly_form=run_assembly_form,
+                    record_summary=_get_record_stats(records)
+                )
 
-        num_docs = len({rec['document_id'] for rec in records})
+            num_docs = len({rec['document_id'] for rec in records})
 
-        meta_data = {
-            'corpus_id': corpus_id,
-            'description': corpus_descr,
-            'display_name': corpus_name,
-            'readers': sorted({rec['identity'] for rec in records}),
-            'assembly': {
-                'level': 'location',
-                'grounding_threshold': 0.7,
-            },
-            'num_documents': num_docs
-        }
+            meta_data = {
+                'corpus_id': corpus_id,
+                'description': corpus_descr,
+                'display_name': corpus_name,
+                'readers': sorted({rec['identity'] for rec in records}),
+                'assembly': {
+                    'level': 'location',
+                    'grounding_threshold': 0.7,
+                },
+                'num_documents': num_docs
+            }
 
-        cm = CorpusManager(db_url=db_url,
-                           dart_client=dart_client,
-                           dart_records=records,
-                           corpus_id=corpus_id,
-                           metadata=meta_data)
-        cm.prepare(records_exist=True)
-        cm.assemble()
-        cm.dump_local(output_path, causemos_compatible=True)
-        return render_template(
-            'dashboard.html',
-            record_finder_form=record_finder_form,
-            run_assembly_form=run_assembly_form,
-            record_summary=_get_record_stats(records)
-        )
+            cm = CorpusManager(db_url=db_url,
+                               dart_client=dart_client,
+                               dart_records=records,
+                               corpus_id=corpus_id,
+                               metadata=meta_data)
+            cm.prepare(records_exist=True)
+            cm.assemble()
+            cm.dump_local(output_path, causemos_compatible=True)
+            return render_template(
+                'dashboard.html',
+                record_finder_form=record_finder_form,
+                run_assembly_form=run_assembly_form,
+                record_summary=_get_record_stats(records)
+            )
+else:
+    @app.route('/dashboard', methods=['GET'])
+    def dashboard():
+        return 'Dashboard only available in local deployment'
+
 
 
 if __name__ == '__main__':
