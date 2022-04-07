@@ -3,8 +3,6 @@ from collections import Counter
 import json
 import logging
 
-import flask
-
 from indra.config import get_config
 from indra.statements import stmts_to_json
 from flask import Flask, request, abort
@@ -24,7 +22,7 @@ else:
     dart_client = DartClient(storage_mode='web')
 sc = ServiceController(db_url, dart_client=dart_client)
 
-VERSION = '2.0'
+VERSION = '3.0'
 
 
 app = Flask(__name__)
@@ -853,7 +851,8 @@ if os.environ.get('LOCAL_DEPLOYMENT'):
             cm.assemble()
             cm.dump_local(output_path, causemos_compatible=True)
             flash('Assembly successful! Outputs (statements.json and '
-                  'metadata.json) written to %s/%s.' % (output_path, corpus_id))
+                  'metadata.json) written to %s.' %
+                  os.path.join(output_path, corpus_id))
             return render_template(
                 'dashboard.html',
                 record_finder_form=record_finder_form,
@@ -864,7 +863,6 @@ else:
     @app.route('/dashboard', methods=['GET'])
     def dashboard():
         return 'Dashboard only available in local deployment'
-
 
 
 if __name__ == '__main__':
