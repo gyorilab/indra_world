@@ -1,6 +1,10 @@
+import os.path
 from collections import Counter
 import json
 import logging
+
+import flask
+
 from indra.config import get_config
 from indra.statements import stmts_to_json
 from flask import Flask, request, abort
@@ -722,17 +726,7 @@ from wtforms import SubmitField, validators, SelectMultipleField, \
     StringField, TextAreaField
 from wtforms.fields.html5 import DateField
 from flask_wtf import FlaskForm
-from flask import render_template
-
-
-def _path_exists(form, field):
-    import os
-    if field is None:
-        return
-    folder = os.path.isdir(field.data)
-    if not folder:
-        raise validators.ValidationError('%s is not an existing local folder'
-                                         % field.data)
+from flask import flash, render_template
 
 
 class RecordFinderForm(FlaskForm):
@@ -759,8 +753,7 @@ class RunAssemblyForm(FlaskForm):
                               validators=[validators.input_required()])
     corpus_descr = TextAreaField(label='Corpus description',
                                  validators=[validators.input_required()])
-    output_path = StringField(label='Output folder path',
-                              validators=[_path_exists])
+    output_path = StringField(label='Output folder path')
     assembly_submit_button = SubmitField('Run assembly')
 
 
@@ -777,7 +770,7 @@ def _get_record_stats(records):
             reader, '|'.join(tenants), reader_version,
             ontology_version, str(count)])
     record_summary = 'The query returned the following reader output records<br/>'
-    record_summary += '<table border="1" padding="1">' + \
+    record_summary += '<table class="table">' + \
                       '\n'.join(['<tr><td>'
                                  + ('</td><td>'.join(row))
                                  + '</td></tr>' for row in stats_rows]) + \
@@ -828,6 +821,8 @@ def dashboard():
         corpus_name = run_assembly_form.corpus_name.data
         corpus_descr = run_assembly_form.corpus_descr.data
         output_path = run_assembly_form.output_path.data
+        if not os.path.exists(output_path):
+            flash('Output folder %s doesn\'t exist' % output_path)
 
         num_docs = len({rec['document_id'] for rec in records})
 
@@ -850,7 +845,7 @@ def dashboard():
                            metadata=meta_data)
         cm.prepare(records_exist=True)
         cm.assemble()
-        cm.dump_local('~/%s.json' % corpus_id, causemos_compatible=True)
+        cm.dump_local(output_path, causemos_compatible=True)
         return render_template(
             'dashboard.html',
             record_finder_form=record_finder_form,
