@@ -852,6 +852,8 @@ if os.environ.get('LOCAL_DEPLOYMENT'):
             cm.prepare(records_exist=True)
             cm.assemble()
             cm.dump_local(output_path, causemos_compatible=True)
+            flash('Assembly successful! Outputs (statements.json and '
+                  'metadata.json) written to %s/%s.' % (output_path, corpus_id))
             return render_template(
                 'dashboard.html',
                 record_finder_form=record_finder_form,
