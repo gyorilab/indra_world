@@ -4,7 +4,7 @@
 {% import "bootstrap/utils.html" as util %}
 
 {% block content %}
-{{util.flashed_messages(dismissible=True)}}
+{{util.flashed_messages(dismissible=True, container=False)}}
 <div class="container">
     <div class="col-md-offset-2 col-md-8 col-sm-offset-2 col-sm-8">
         <div class="panel panel-info">
@@ -76,6 +76,7 @@
                 </div>
                 <div class="col-md-2"></div>
             </div>
+
                 <div class="row">
                     <div class="col-md-2"></div>
                     <div class="col-md-8" align="left">
@@ -87,6 +88,7 @@
                     </div>
                     <div class="col-md-2"></div>
                 </div>
+                {% if run_assembly_form is not none %}
                 <div class="row">
                     <div class="col-md-2"></div>
                     <div class="col-md-8" align="left">
@@ -102,6 +104,7 @@
                     </div>
                     <div class="col-md-2"></div>
                 </div>
+                {% endif %}
 
             </div>
         </div>

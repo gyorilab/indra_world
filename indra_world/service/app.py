@@ -793,7 +793,7 @@ def dashboard():
         return render_template(
             'dashboard.html',
             record_finder_form=record_finder_form,
-            run_assembly_form=run_assembly_form,
+            run_assembly_form=None,
             record_summary='No record selected yet'
         )
     if state[0] is True:
@@ -823,6 +823,12 @@ def dashboard():
         output_path = run_assembly_form.output_path.data
         if not os.path.exists(output_path):
             flash('Output folder %s doesn\'t exist' % output_path)
+            return render_template(
+                'dashboard.html',
+                record_finder_form=record_finder_form,
+                run_assembly_form=run_assembly_form,
+                record_summary=_get_record_stats(records)
+            )
 
         num_docs = len({rec['document_id'] for rec in records})
 
