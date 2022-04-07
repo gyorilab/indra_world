@@ -31,7 +31,15 @@ AWS_ACCESS_KEY_ID=<AWS account key ID, necessary if assembled outputs need to be
 AWS_SECRET_ACCESS_KEY=<AWS account secret key, necessary if assembled outputs need to be dumped to S3 for CauseMos>
 AWS_REGION=us-east-1
 INDRA_WORLD_ONTOLOGY_URL=<GitHub URL to ontology being used>
+LOCAL_DEPLOYMENT=1
 ```
+
+Above, `LOCAL_DEPLOYMENT` should only be set if the service is intended to
+be run on and accessed from localhost. This enables the assembly dashboard
+app at `http://localhost:8001/dashboard` which can write assembled corpus
+output to the container's disk (this can either be mounted to correspond to
+a host folder or files can be copied to the host using docker cp).
+
 
 `indra_world_db.env`
 ```

@@ -95,7 +95,7 @@ class CorpusManager:
             corpus_folder = os.path.join(base_folder, self.corpus_id)
             os.makedirs(corpus_folder, exist_ok=True)
             with open(os.path.join(corpus_folder, 'metadata.json'), 'w') as fh:
-                json.dump(fh, self.metadata)
+                json.dump(self.metadata, fh)
             fname = os.path.join(corpus_folder, 'statements.json')
         else:
             fname = os.path.join(base_folder, 'statements.json')
