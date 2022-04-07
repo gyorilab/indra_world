@@ -467,6 +467,8 @@ class SofiaProcessor(object):
         grnd = grnd.replace('event/base_path/', '')
         # There are also cases where we just have base_path/process/ending
         grnd = grnd.replace('base_path/', '')
+        # Finally, in some Sofia versions we have just event/ as the prefix
+        grnd = grnd.replace('event/', '')
         # Add initial wm
         if grnd and not grnd.startswith('wm'):
             grnd = f'wm/{grnd}'
