@@ -39,7 +39,11 @@
             <div class="row">
                 <div class="col-md-2"></div>
                 <div class="col-md-8" align="left">
-                    <div id="record-search-panel" class="panel panel-default" style="padding:2%">
+                    <div id="record-search-panel" class="panel panel-default">
+                        <div class="panel-heading">
+                            <h5 class="panel-title">Step 1: Find Reader Outputs</h5>
+                        </div>
+                        <div class="panel-body">
                         <form class="form" method="post" action='dashboard' role="form">
                             {{ wtf.form_field(record_finder_form.readers, class_="form-control") }}
                             {{ wtf.form_field(record_finder_form.reader_versions, class_="form-control") }}
@@ -49,6 +53,7 @@
                             {{ wtf.form_field(record_finder_form.before_date, class_="form-control") }}
                             {{ wtf.form_field(record_finder_form.query_submit_button, class="btn btn-primary") }}
                         </form>
+                        </div>
                     </div>
                 </div>
                 <div class="col-md-2"></div>
@@ -58,8 +63,10 @@
                     <div class="col-md-2"></div>
                     <div class="col-md-8" align="left">
                         <div id="record-results-panel" class="panel panel-default">
-                            <div class="panel-heading">The query returned the following reader output records</div>
-
+                            <div class="panel-heading">
+                                <h5 class="panel-title">Step 2: Filter Corpus and Repeat Step 1</h5>
+                            </div>
+                            <div class="panel-body">The query returned the following reader output records:</div>
                             <table class="table table-striped table-hover">
                                 <thead>
                                 <tr>
@@ -85,7 +92,11 @@
                 <div class="row">
                     <div class="col-md-2"></div>
                     <div class="col-md-8" align="left">
-                        <div id="assembly-form-panel" class="panel panel-default" style="padding:2%">
+                        <div id="assembly-form-panel" class="panel panel-default">
+                            <div class="panel-heading">
+                                <h5 class="panel-title">Step 3: Define a Corpus</h5>
+                            </div>
+                            <div class="panel-body">
                             <form class="form" method="post" action='dashboard' role="form">
                                 {{ wtf.form_field(run_assembly_form.corpus_id, class_="form-control") }}
                                 {{ wtf.form_field(run_assembly_form.corpus_name, class_="form-control") }}
@@ -93,6 +104,7 @@
                                 {{ wtf.form_field(run_assembly_form.output_path, class_="form-control") }}
                                 {{ wtf.form_field(run_assembly_form.assembly_submit_button, class="btn btn-primary") }}
                             </form>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-2"></div>
