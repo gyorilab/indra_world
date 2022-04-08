@@ -7,9 +7,9 @@
 {{util.flashed_messages(dismissible=True, container=False)}}
 <div class="container">
     <div class="col-md-offset-2 col-md-8 col-sm-offset-2 col-sm-8">
-        <div class="panel panel-info">
+        <div class="panel panel-info" style="margin-top: 2em;">
             <div class="panel-heading">
-                <h2>INDRA World Modelers assembly dashboard</h2>
+                <h2 style="margin: 0 auto">INDRA World Modelers Assembly Dashboard</h2>
             </div>
             <div class="panel-body">
                 <p>
@@ -36,29 +36,6 @@
                 <h3 class="panel-title">Run assembly</h3>
             </div>
             <div class="panel-body">
-            <style>
-                .form-control {
-                    width: 90%;
-                }
-                .btn {
-                    margin: 5px;
-                }
-            </style>
-            <!-- jQuery -->
-            <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
-
-            <!-- Choices multiselect library: https://github.com/jshjohnson/Choices -->
-            <!-- Include Choices CSS -->
-            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
-            <!-- Include Choices JavaScript -->
-            <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
-
-            <script>
-                $(document).ready(function() {
-                    // see https://github.com/jshjohnson/Choices
-                    const readerSelect = new Choices('#reader-select');
-                })
-            </script>
             <div class="row">
                 <div class="col-md-2"></div>
                 <div class="col-md-8" align="left">
@@ -76,18 +53,34 @@
                 </div>
                 <div class="col-md-2"></div>
             </div>
-
+            {% if record_summary is defined %}
                 <div class="row">
                     <div class="col-md-2"></div>
                     <div class="col-md-8" align="left">
-                        <div id="record-results-panel" class="panel panel-default" style="padding:2%">
-                            <p>
-                                {{record_summary|safe}}
-                            </p>
+                        <div id="record-results-panel" class="panel panel-default">
+                            <div class="panel-heading">The query returned the following reader output records</div>
+
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                <tr>
+                                {% for cell in record_header %}
+                                    <th scope="col">{{ cell.replace("_", " ").title() }}</th>
+                                {% endfor %}
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for row in record_summary %}
+                                    {% for cell in row %}
+                                        <td>{{ cell }}</td>
+                                    {% endfor %}
+                                {% endfor %}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                     <div class="col-md-2"></div>
                 </div>
+            {% endif %}
                 {% if run_assembly_form is not none %}
                 <div class="row">
                     <div class="col-md-2"></div>
@@ -105,7 +98,6 @@
                     <div class="col-md-2"></div>
                 </div>
                 {% endif %}
-
             </div>
         </div>
         <div class="well">
@@ -128,6 +120,32 @@
 {% endblock %}
 
 {% block head %}
-{{super()}}
-{{fixes.ie8()}}
+    {{super()}}
+    {{fixes.ie8()}}
+    <style>
+        .form-control {
+            width: 90%;
+        }
+        .btn {
+            margin: 5px;
+        }
+    </style>
+{% endblock %}
+
+{% block scripts %}
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+
+    <!-- Choices multiselect library: https://github.com/jshjohnson/Choices -->
+    <!-- Include Choices CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
+    <!-- Include Choices JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            // see https://github.com/jshjohnson/Choices
+            const readerSelect = new Choices('#reader-select');
+        })
+    </script>
 {% endblock %}

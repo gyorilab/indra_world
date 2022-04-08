@@ -757,23 +757,18 @@ if os.environ.get('LOCAL_DEPLOYMENT'):
 
     global records
 
+    stats_header = ['reader', 'tenants', 'reader_version', 'ontology_version',
+                    'count']
 
     def _get_record_stats(records):
-        stats_rows = [['reader', 'tenants', 'reader_version', 'ontology_version',
-                       'count']]
+        stats_rows = []
         for (reader, tenants, reader_version, ontology_version), count in sorted(
                 Counter([get_record_key(rec) for rec in records]).items(),
                 key=lambda x: x[1], reverse=True):
             stats_rows.append([
                 reader, '|'.join(tenants), reader_version,
                 ontology_version, str(count)])
-        record_summary = 'The query returned the following reader output records<br/>'
-        record_summary += '<table class="table">' + \
-                          '\n'.join(['<tr><td>'
-                                     + ('</td><td>'.join(row))
-                                     + '</td></tr>' for row in stats_rows]) + \
-                          '</table>'
-        return record_summary
+        return stats_rows
 
 
     @app.route('/dashboard', methods=['GET', 'POST'])
@@ -792,7 +787,6 @@ if os.environ.get('LOCAL_DEPLOYMENT'):
                 'dashboard.html',
                 record_finder_form=record_finder_form,
                 run_assembly_form=None,
-                record_summary='No record selected yet'
             )
         if state[0] is True:
             timestamp = None if (not record_finder_form.before_date.data
@@ -812,6 +806,7 @@ if os.environ.get('LOCAL_DEPLOYMENT'):
                 'dashboard.html',
                 record_finder_form=record_finder_form,
                 run_assembly_form=run_assembly_form,
+                record_header=stats_header,
                 record_summary=_get_record_stats(records)
             )
         if state[1] is True:
@@ -825,6 +820,7 @@ if os.environ.get('LOCAL_DEPLOYMENT'):
                     'dashboard.html',
                     record_finder_form=record_finder_form,
                     run_assembly_form=run_assembly_form,
+                    record_header=stats_header,
                     record_summary=_get_record_stats(records)
                 )
 
@@ -857,6 +853,7 @@ if os.environ.get('LOCAL_DEPLOYMENT'):
                 'dashboard.html',
                 record_finder_form=record_finder_form,
                 run_assembly_form=run_assembly_form,
+                record_header=stats_header,
                 record_summary=_get_record_stats(records)
             )
 else:
