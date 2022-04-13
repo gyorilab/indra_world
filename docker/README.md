@@ -23,14 +23,14 @@ variables for each container with the following names and content:
 
 `indra_world.env`
 ```
-INDRA_WM_SERVICE_DB=postgresql://postgres:<password for local postgres>@db:5432
+INDRA_WM_SERVICE_DB=postgresql://postgres:mysecretpassword@db:5432
 DART_WM_URL=<DART URL>
 DART_WM_USERNAME=<DART username>
 DART_WM_PASSWORD=<DART password>
 AWS_ACCESS_KEY_ID=<AWS account key ID, necessary if assembled outputs need to be dumped to S3 for CauseMos>
 AWS_SECRET_ACCESS_KEY=<AWS account secret key, necessary if assembled outputs need to be dumped to S3 for CauseMos>
 AWS_REGION=us-east-1
-INDRA_WORLD_ONTOLOGY_URL=<GitHub URL to ontology being used>
+INDRA_WORLD_ONTOLOGY_URL=<GitHub URL to ontology being used, only necessary if DART is not used.>
 LOCAL_DEPLOYMENT=1
 ```
 
@@ -43,9 +43,13 @@ a host folder or files can be copied to the host using docker cp).
 
 `indra_world_db.env`
 ```
-POSTGRES_PASSWORD=<password for local postgres>
+POSTGRES_PASSWORD=mysecretpassword
 PGDATA=/var/lib/postgresql/pgdata
 ```
+
+Note that if necessary, the default `POSTGRES_PASSWORD=mysecretpassword` setting
+can be changed using standard `psql` commands in the `indra_world_db` container
+and then committed to an image.
 
 ## Building the Docker images locally
 
