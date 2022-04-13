@@ -78,7 +78,7 @@ def main():
         '--causemos-metadata', type=str,
         help="Path to a JSON file that provides metadata to be used for a "
              "Causemos-compatible dump of INDRA output (which consists of "
-             "multiple files). THe --output-path option must also be used "
+             "multiple files). The --output-folder option must also be used "
              "along with this option.")
 
     args = parser.parse_args()
