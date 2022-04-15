@@ -726,6 +726,14 @@ if os.environ.get('LOCAL_DEPLOYMENT'):
     from flask_wtf import FlaskForm
     from flask import flash, render_template
 
+    def process_reader_versions(data, num_readers):
+        if not data:
+            return []
+        versions = data.split(',')
+        if len(versions) != num_readers:
+            versions = versions[:num_readers] + \
+                [None] * (num_readers - len(versions))
+        return versions
 
     class RecordFinderForm(FlaskForm):
         """Defines the form to find DART records."""
@@ -803,7 +811,10 @@ if os.environ.get('LOCAL_DEPLOYMENT'):
                 timestamp['before'] = record_finder_form.before_date.data
             records = dart_client.get_reader_output_records(
                 readers=record_finder_form.readers.data,
-                versions=record_finder_form.reader_versions.data,
+                versions=process_reader_versions(
+                    record_finder_form.reader_versions.data,
+                    len(record_finder_form.readers.data)
+                ),
                 tenant=record_finder_form.tenant.data,
                 timestamp=timestamp,
                 ontology_id=record_finder_form.ontology_id.data,
