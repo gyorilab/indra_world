@@ -743,7 +743,7 @@ if os.environ.get('LOCAL_DEPLOYMENT'):
                                       choices=reader_names,
                                       default=[r for r, _ in reader_names],
                                       validators=[validators.input_required()])
-        reader_versions = StringField(label='Reader versions')
+        reader_versions = StringField(label='Reader versions (comma separated)')
         tenant = StringField(label='Tenant ID')
         ontology_id = StringField(label='Ontology ID')
         after_date = DateField(label='After date', format='%Y-%M-%d')
@@ -759,7 +759,7 @@ if os.environ.get('LOCAL_DEPLOYMENT'):
                                   validators=[validators.input_required()])
         corpus_descr = TextAreaField(label='Corpus description',
                                      validators=[validators.input_required()])
-        output_path = StringField(label='Output folder path')
+        output_path = StringField(label='Output folder base path (needs to exist)')
         assembly_submit_button = SubmitField('Run assembly')
 
 
@@ -789,7 +789,9 @@ if os.environ.get('LOCAL_DEPLOYMENT'):
         record_finder_form = RecordFinderForm(
             readers=[r for r, _ in reader_names],
         )
-        run_assembly_form = RunAssemblyForm()
+        run_assembly_form = RunAssemblyForm(
+            output_path='/data'
+        )
 
         state = (record_finder_form.query_submit_button.data,
                  run_assembly_form.assembly_submit_button.data)
