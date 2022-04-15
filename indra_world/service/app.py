@@ -759,7 +759,7 @@ if os.environ.get('LOCAL_DEPLOYMENT'):
                                   validators=[validators.input_required()])
         corpus_descr = TextAreaField(label='Corpus description',
                                      validators=[validators.input_required()])
-        output_path = StringField(label='Output folder base path (needs to exist)')
+        output_path = StringField(label='Output base folder (needs to exist)')
         assembly_submit_button = SubmitField('Run assembly')
 
 
