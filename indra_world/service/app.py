@@ -722,7 +722,7 @@ if os.environ.get('LOCAL_DEPLOYMENT'):
 
     from wtforms import SubmitField, validators, SelectMultipleField, \
         StringField, TextAreaField
-    from wtforms.fields.html5 import DateField
+    from wtforms.fields import DateField
     from flask_wtf import FlaskForm
     from flask import flash, render_template
 
